@@ -47,9 +47,9 @@ export default function DisciplinePage() {
   if (loading) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="h-8 bg-slate-800 rounded w-40" />
+        <div className="h-8 bg-white/50 rounded w-40" />
         <div className="grid grid-cols-3 gap-4">
-          {[...Array(3)].map((_, i) => <div key={i} className="bg-slate-800 rounded-xl h-24 border border-slate-700" />)}
+          {[...Array(3)].map((_, i) => <div key={i} className="glass rounded-2xl h-24 border border-pink-200/40" />)}
         </div>
       </div>
     );
@@ -61,10 +61,10 @@ export default function DisciplinePage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Discipline</h1>
-          <p className="text-sm text-slate-400 mt-1">Track accountability, chart time, and goal progress</p>
+          <h1 className="text-2xl font-bold text-gray-900">Discipline</h1>
+          <p className="text-sm text-gray-500 mt-1">Track accountability, chart time, and goal progress</p>
         </div>
-        <div className="bg-slate-800 rounded-xl border border-slate-700">
+        <div className="glass rounded-2xl border border-pink-200/40">
           <EmptyState
             icon={Target}
             title="No discipline data yet"
@@ -78,16 +78,16 @@ export default function DisciplinePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Discipline</h1>
-        <p className="text-sm text-slate-400 mt-1">Accountability, chart time, and goal progress</p>
+        <h1 className="text-2xl font-bold text-gray-900">Discipline</h1>
+        <p className="text-sm text-gray-500 mt-1">Accountability, chart time, and goal progress</p>
       </div>
 
       {/* Overall score + breakdown */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
-        <div className="lg:col-span-2 bg-slate-800 rounded-xl p-5 border border-slate-700 flex flex-col items-center justify-center">
-          <span className="text-xs text-slate-400 uppercase tracking-wide mb-2">Overall Discipline</span>
+        <div className="lg:col-span-2 glass rounded-2xl p-5 border border-pink-200/40 flex flex-col items-center justify-center">
+          <span className="text-xs text-gray-500 uppercase tracking-wide mb-2">Overall Discipline</span>
           <span className={`text-5xl font-bold ${scoreColor(scores.overall)}`}>{scores.overall}</span>
-          <span className="text-xs text-slate-500 mt-1">out of 100</span>
+          <span className="text-xs text-gray-400 mt-1">out of 100</span>
         </div>
         {[
           { label: "Chart Time", value: scores.chartTime, icon: Clock },
@@ -95,10 +95,10 @@ export default function DisciplinePage() {
           { label: "Risk", value: scores.riskDiscipline, icon: Target },
           { label: "Plan", value: scores.planAdherence, icon: CheckCircle },
         ].map((s) => (
-          <div key={s.label} className="bg-slate-800 rounded-xl p-4 border border-slate-700">
+          <div key={s.label} className="glass rounded-2xl p-4 border border-pink-200/40">
             <div className="flex items-center gap-2 mb-2">
               <s.icon size={14} className={scoreColor(s.value)} />
-              <span className="text-[10px] text-slate-400 uppercase tracking-wide">{s.label}</span>
+              <span className="text-[10px] text-gray-500 uppercase tracking-wide">{s.label}</span>
             </div>
             <div className={`text-2xl font-bold ${scoreColor(s.value)}`}>{s.value}</div>
             <ProgressBar value={s.value} color={scoreBg(s.value)} />
@@ -108,15 +108,15 @@ export default function DisciplinePage() {
 
       {/* Radar + Chart Time */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
-          <h3 className="text-sm font-semibold text-white mb-4">Discipline Radar</h3>
+        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+          <h3 className="text-sm font-semibold text-gray-900 mb-4">Discipline Radar</h3>
           <DisciplineRadarChart data={radarData} />
         </div>
 
-        <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
+        <div className="glass rounded-2xl p-5 border border-pink-200/40">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-white">Chart Time</h3>
-            <div className="flex gap-3 text-xs text-slate-400">
+            <h3 className="text-sm font-semibold text-gray-900">Chart Time</h3>
+            <div className="flex gap-3 text-xs text-gray-500">
               <span>{totalHours}h total</span>
               <span>{avgPerDay}m/day avg</span>
             </div>
@@ -124,24 +124,24 @@ export default function DisciplinePage() {
           {chartTimeEntries.length > 0 ? (
             <ChartTimeBarChart data={chartTimeEntries} />
           ) : (
-            <p className="text-xs text-slate-500 py-16 text-center">No chart time data</p>
+            <p className="text-xs text-gray-400 py-16 text-center">No chart time data</p>
           )}
         </div>
       </div>
 
       {/* Chart time vs pips correlation */}
       {chartTimeVsPips.length > 0 && (
-        <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
-          <h3 className="text-sm font-semibold text-white mb-4">Chart Time vs Performance</h3>
+        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+          <h3 className="text-sm font-semibold text-gray-900 mb-4">Chart Time vs Performance</h3>
           <CorrelationDualAxisChart data={chartTimeVsPips} />
         </div>
       )}
 
       {/* Missed trades */}
       {missedTrades.length > 0 && (
-        <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
+        <div className="glass rounded-2xl p-5 border border-pink-200/40">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-white">Missed & Avoided Trades</h3>
+            <h3 className="text-sm font-semibold text-gray-900">Missed & Avoided Trades</h3>
             <div className="flex gap-2 text-xs">
               <span className="text-emerald-400">{avoidedLosses} losses avoided</span>
               <span className="text-amber-400">{avoidedWins} wins missed</span>
@@ -149,10 +149,10 @@ export default function DisciplinePage() {
           </div>
           <div className="space-y-2">
             {missedTrades.map((m) => (
-              <div key={m.id} className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
+              <div key={m.id} className="flex items-center justify-between p-3 bg-pink-50/80 rounded-lg">
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-slate-500 w-16">{m.trade_date.slice(5)}</span>
-                  <span className="text-xs text-white font-medium">{m.pair}</span>
+                  <span className="text-xs text-gray-400 w-16">{m.trade_date.slice(5)}</span>
+                  <span className="text-xs text-gray-900 font-medium">{m.pair}</span>
                   <span className={`flex items-center gap-1 text-xs ${m.direction === "Long" ? "text-emerald-400" : "text-red-400"}`}>
                     {m.direction === "Long" ? <ArrowUp size={10} /> : <ArrowDown size={10} />}
                     {m.direction}
@@ -165,7 +165,7 @@ export default function DisciplinePage() {
                     </Badge>
                   )}
                   {m.reason_missed && (
-                    <span className="text-[10px] text-slate-500 max-w-[200px] truncate">{m.reason_missed}</span>
+                    <span className="text-[10px] text-gray-400 max-w-[200px] truncate">{m.reason_missed}</span>
                   )}
                 </div>
               </div>
@@ -176,8 +176,8 @@ export default function DisciplinePage() {
 
       {/* Goals */}
       {goals && (
-        <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
-          <h3 className="text-sm font-semibold text-white mb-4">Trading Goals</h3>
+        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+          <h3 className="text-sm font-semibold text-gray-900 mb-4">Trading Goals</h3>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <GoalSection title="Primary Goals" goals={goals.primary_goals} pct={primaryPct} color="bg-indigo-500" />
             <GoalSection title="Process Goals" goals={goals.process_goals} pct={processPct} color="bg-emerald-500" />
@@ -185,12 +185,12 @@ export default function DisciplinePage() {
           </div>
 
           {goals.improvement_items.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-slate-700">
-              <h4 className="text-xs text-slate-400 font-semibold mb-2 uppercase tracking-wide">What I Need to Improve</h4>
+            <div className="mt-4 pt-4 border-t border-pink-200/40">
+              <h4 className="text-xs text-gray-500 font-semibold mb-2 uppercase tracking-wide">What I Need to Improve</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {goals.improvement_items.map((item, i) => (
-                  <div key={i} className="flex items-start gap-2 p-2 bg-slate-700/30 rounded text-xs text-slate-300">
-                    <span className="text-indigo-400 font-bold shrink-0">{i + 1}.</span>
+                  <div key={i} className="flex items-start gap-2 p-2 bg-pink-50/80 rounded text-xs text-gray-600">
+                    <span className="text-pink-500 font-bold shrink-0">{i + 1}.</span>
                     {item.item}
                   </div>
                 ))}
@@ -199,8 +199,8 @@ export default function DisciplinePage() {
           )}
 
           {goals.intention_text && (
-            <div className="mt-4 p-3 bg-indigo-900/20 border border-indigo-800/30 rounded-lg">
-              <p className="text-xs text-indigo-300 italic">{goals.intention_text}</p>
+            <div className="mt-4 p-3 bg-pink-50/80 border border-pink-300/30 rounded-lg">
+              <p className="text-xs text-pink-400 italic">{goals.intention_text}</p>
             </div>
           )}
         </div>
@@ -225,8 +225,8 @@ function GoalSection({
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <span className="text-xs text-slate-400 font-medium">{title}</span>
-        <span className="text-xs text-slate-500">{pct}%</span>
+        <span className="text-xs text-gray-500 font-medium">{title}</span>
+        <span className="text-xs text-gray-400">{pct}%</span>
       </div>
       <ProgressBar value={pct} color={color} />
       <div className="mt-2 space-y-1">
@@ -235,9 +235,9 @@ function GoalSection({
             {g.completed ? (
               <CheckCircle size={12} className="text-emerald-400 mt-0.5 shrink-0" />
             ) : (
-              <XCircle size={12} className="text-slate-600 mt-0.5 shrink-0" />
+              <XCircle size={12} className="text-gray-300 mt-0.5 shrink-0" />
             )}
-            <span className={g.completed ? "text-slate-400 line-through" : "text-slate-300"}>{g.goal}</span>
+            <span className={g.completed ? "text-gray-500 line-through" : "text-gray-600"}>{g.goal}</span>
           </div>
         ))}
       </div>

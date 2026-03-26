@@ -50,24 +50,24 @@ export default function Sidebar({
     <div
       className={`${
         collapsed ? "w-16" : "w-60"
-      } bg-slate-900 border-r border-slate-800 flex flex-col transition-all duration-200 shrink-0`}
+      } glass-sidebar flex flex-col transition-all duration-200 shrink-0`}
     >
       {/* Logo */}
-      <div className="p-4 flex items-center gap-3 border-b border-slate-800">
+      <div className="p-4 flex items-center gap-3 border-b border-pink-200/30">
         {collapsed ? (
-          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center mx-auto">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center mx-auto shadow-md shadow-pink-500/20">
             <Zap size={18} className="text-white" />
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center shadow-md shadow-pink-500/20">
               <Zap size={18} className="text-white" />
             </div>
             <div>
-              <div className="text-sm font-bold text-white tracking-tight">
+              <div className="text-sm font-bold text-gray-900 tracking-tight">
                 Traderess
               </div>
-              <div className="text-[10px] text-indigo-400 font-medium">
+              <div className="text-[10px] text-pink-500 font-medium">
                 COPILOT
               </div>
             </div>
@@ -76,17 +76,17 @@ export default function Sidebar({
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-2 space-y-1">
+      <nav className="flex-1 p-2 space-y-0.5">
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${
                 isActive
-                  ? "bg-indigo-600/20 text-indigo-400 font-medium"
-                  : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+                  ? "bg-pink-500/15 text-pink-600 font-medium shadow-sm"
+                  : "text-gray-500 hover:bg-pink-50 hover:text-gray-700"
               }`}
             >
               <item.icon size={18} />
@@ -97,17 +97,17 @@ export default function Sidebar({
       </nav>
 
       {/* Logout + Collapse */}
-      <div className="p-3 border-t border-slate-800 space-y-1">
+      <div className="p-3 border-t border-pink-200/30 space-y-1">
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-400 hover:bg-red-900/20 hover:text-red-400 transition-colors"
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
         >
           <LogOut size={18} />
           {!collapsed && <span>Log Out</span>}
         </button>
         <button
           onClick={onToggle}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs text-slate-500 hover:text-slate-300 transition-colors"
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs text-gray-400 hover:text-gray-600 transition-colors"
         >
           {collapsed ? (
             <ChevronRight size={14} />

@@ -52,15 +52,15 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="h-8 bg-slate-800 rounded w-48" />
+        <div className="h-8 bg-white/50 rounded w-48" />
         <div className="grid grid-cols-6 gap-4">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="bg-slate-800 rounded-xl h-24 border border-slate-700" />
+            <div key={i} className="glass rounded-2xl h-24 border border-pink-200/40" />
           ))}
         </div>
         <div className="grid grid-cols-3 gap-4">
-          <div className="col-span-2 bg-slate-800 rounded-xl h-64 border border-slate-700" />
-          <div className="bg-slate-800 rounded-xl h-64 border border-slate-700" />
+          <div className="col-span-2 glass rounded-2xl h-64 border border-pink-200/40" />
+          <div className="glass rounded-2xl h-64 border border-pink-200/40" />
         </div>
       </div>
     );
@@ -70,24 +70,24 @@ export default function DashboardPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-          <p className="text-sm text-slate-400 mt-1">Your trading copilot overview</p>
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-sm text-gray-500 mt-1">Your trading copilot overview</p>
         </div>
-        <div className="bg-slate-800 rounded-xl border border-slate-700">
+        <div className="glass rounded-2xl border border-pink-200/40">
           <EmptyState
             icon={LayoutDashboard}
             title="No trading data yet"
             description="Connect your Google Sheet trading tracker to see your performance dashboard with charts, stats, and insights."
           />
         </div>
-        <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
-          <h3 className="text-sm font-semibold text-white mb-3">Copilot Quick Actions</h3>
+        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+          <h3 className="text-sm font-semibold text-gray-900 mb-3">Copilot Quick Actions</h3>
           <div className="grid grid-cols-2 gap-2">
             {QUICK_ACTIONS.map((a) => (
-              <button key={a.label} className="flex flex-col items-start p-3 bg-slate-700/50 rounded-lg hover:bg-slate-700 transition-colors text-left">
-                <a.icon size={16} className="text-indigo-400 mb-1.5" />
-                <span className="text-xs font-medium text-white">{a.label}</span>
-                <span className="text-[10px] text-slate-500">{a.desc}</span>
+              <button key={a.label} className="flex flex-col items-start p-3 bg-pink-50/60 rounded-lg hover:bg-pink-100/60 transition-colors text-left">
+                <a.icon size={16} className="text-pink-500 mb-1.5" />
+                <span className="text-xs font-medium text-gray-900">{a.label}</span>
+                <span className="text-[10px] text-gray-400">{a.desc}</span>
               </button>
             ))}
           </div>
@@ -102,10 +102,10 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-          <p className="text-sm text-slate-400 mt-1">Your trading copilot overview</p>
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-sm text-gray-500 mt-1">Your trading copilot overview</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-500 transition-colors">
+        <button className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white text-sm rounded-lg hover:bg-pink-600 transition-colors">
           <Play size={14} /> Run Briefing
         </button>
       </div>
@@ -140,76 +140,76 @@ export default function DashboardPage() {
           icon={Clock}
           label="Chart Time"
           value={totalHours > 0 ? `${totalHours}h` : "—"}
-          color="text-indigo-400"
+          color="text-pink-500"
         />
         <StatCard
           icon={Shield}
           label="Discipline"
           value={scores.overall > 0 ? scores.overall : "—"}
-          color={scores.overall >= 80 ? "text-emerald-400" : scores.overall >= 60 ? "text-amber-400" : "text-slate-400"}
+          color={scores.overall >= 80 ? "text-emerald-400" : scores.overall >= 60 ? "text-amber-400" : "text-gray-500"}
         />
       </div>
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 bg-slate-800 rounded-xl p-5 border border-slate-700">
-          <h3 className="text-sm font-semibold text-white mb-4">Cumulative P/L Curve</h3>
+        <div className="lg:col-span-2 glass rounded-2xl p-5 border border-pink-200/40">
+          <h3 className="text-sm font-semibold text-gray-900 mb-4">Cumulative P/L Curve</h3>
           {stats.cumPnl.length > 0 ? (
             <PnlAreaChart data={stats.cumPnl} />
           ) : (
-            <p className="text-xs text-slate-500 py-16 text-center">No performance data yet</p>
+            <p className="text-xs text-gray-400 py-16 text-center">No performance data yet</p>
           )}
         </div>
-        <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
-          <h3 className="text-sm font-semibold text-white mb-4">Win / Loss / BE</h3>
+        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+          <h3 className="text-sm font-semibold text-gray-900 mb-4">Win / Loss / BE</h3>
           {stats.winLossData.some((d) => d.value > 0) ? (
             <WinLossPieChart data={stats.winLossData} />
           ) : (
-            <p className="text-xs text-slate-500 py-16 text-center">No trade results yet</p>
+            <p className="text-xs text-gray-400 py-16 text-center">No trade results yet</p>
           )}
         </div>
       </div>
 
       {/* Account Balances */}
       {hasBalances && (
-        <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
-          <h3 className="text-sm font-semibold text-white mb-4">Account Balances</h3>
+        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+          <h3 className="text-sm font-semibold text-gray-900 mb-4">Account Balances</h3>
           <AccountBalanceLineChart byAccount={byAccount} accountNames={accountNames} />
         </div>
       )}
 
       {/* Events + Quick Actions Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
-          <h3 className="text-sm font-semibold text-white mb-3">
+        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+          <h3 className="text-sm font-semibold text-gray-900 mb-3">
             This Week&apos;s High Impact Events
           </h3>
           {highImpactEvents.length > 0 ? (
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {highImpactEvents.map((e, i) => (
-                <div key={i} className="flex items-center justify-between py-1.5 border-b border-slate-700/50 last:border-0">
+                <div key={i} className="flex items-center justify-between py-1.5 border-b border-pink-200/30 last:border-0">
                   <div className="flex items-center gap-3">
-                    <span className="text-xs text-slate-500 w-8">{e.day}</span>
-                    <span className="text-xs text-slate-400 w-12">{e.time}</span>
-                    <span className="text-sm text-slate-200">{e.event}</span>
+                    <span className="text-xs text-gray-400 w-8">{e.day}</span>
+                    <span className="text-xs text-gray-500 w-12">{e.time}</span>
+                    <span className="text-sm text-gray-700">{e.event}</span>
                   </div>
                   <Badge variant="high">{e.currency}</Badge>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-xs text-slate-500 py-6 text-center">No briefing data — run a weekly briefing to see events</p>
+            <p className="text-xs text-gray-400 py-6 text-center">No briefing data — run a weekly briefing to see events</p>
           )}
         </div>
 
-        <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
-          <h3 className="text-sm font-semibold text-white mb-3">Copilot Quick Actions</h3>
+        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+          <h3 className="text-sm font-semibold text-gray-900 mb-3">Copilot Quick Actions</h3>
           <div className="grid grid-cols-2 gap-2">
             {QUICK_ACTIONS.map((a) => (
-              <button key={a.label} className="flex flex-col items-start p-3 bg-slate-700/50 rounded-lg hover:bg-slate-700 transition-colors text-left">
-                <a.icon size={16} className="text-indigo-400 mb-1.5" />
-                <span className="text-xs font-medium text-white">{a.label}</span>
-                <span className="text-[10px] text-slate-500">{a.desc}</span>
+              <button key={a.label} className="flex flex-col items-start p-3 bg-pink-50/60 rounded-lg hover:bg-pink-100/60 transition-colors text-left">
+                <a.icon size={16} className="text-pink-500 mb-1.5" />
+                <span className="text-xs font-medium text-gray-900">{a.label}</span>
+                <span className="text-[10px] text-gray-400">{a.desc}</span>
               </button>
             ))}
           </div>

@@ -63,24 +63,24 @@ export default function WorkflowPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Copilot Workflow</h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <h1 className="text-2xl font-bold text-gray-900">Copilot Workflow</h1>
+          <p className="text-sm text-gray-500 mt-1">
             The automation pipeline that powers your trading copilot
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 px-3 py-1.5 bg-slate-700 text-slate-300 text-xs rounded-lg hover:bg-slate-600 transition-colors">
+          <button className="flex items-center gap-2 px-3 py-1.5 bg-pink-100/60 text-gray-600 text-xs rounded-lg hover:bg-slate-600 transition-colors">
             <Timer size={12} /> Schedule
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-500 transition-colors">
+          <button className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white text-sm rounded-lg hover:bg-pink-600 transition-colors">
             <Play size={14} /> Run Full Pipeline
           </button>
         </div>
       </div>
 
       {/* Pipeline Phases */}
-      <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
-        <h3 className="text-sm font-semibold text-white mb-4">
+      <div className="glass rounded-2xl p-5 border border-pink-200/40">
+        <h3 className="text-sm font-semibold text-gray-900 mb-4">
           Pipeline Phases
         </h3>
         <div className="space-y-3">
@@ -95,28 +95,28 @@ export default function WorkflowPage() {
                     className={`w-10 h-10 rounded-xl flex items-center justify-center ${
                       isManual
                         ? "bg-amber-900/30 border border-amber-800/50"
-                        : "bg-indigo-900/30 border border-indigo-800/50"
+                        : "bg-pink-100/50 border border-pink-300/50"
                     }`}
                   >
                     <Icon
                       size={18}
                       className={
-                        isManual ? "text-amber-400" : "text-indigo-400"
+                        isManual ? "text-amber-400" : "text-pink-500"
                       }
                     />
                   </div>
                   {i < WORKFLOW_STEPS.length - 1 && (
-                    <div className="w-px h-8 bg-slate-700 mt-2" />
+                    <div className="w-px h-8 bg-pink-100/60 mt-2" />
                   )}
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 pb-2">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs text-slate-500 font-mono">
+                    <span className="text-xs text-gray-400 font-mono">
                       Phase {s.phase}
                     </span>
-                    <h4 className="text-sm font-semibold text-white">
+                    <h4 className="text-sm font-semibold text-gray-900">
                       {s.title}
                     </h4>
                     {isManual ? (
@@ -125,13 +125,13 @@ export default function WorkflowPage() {
                       <Badge variant="info">Automated</Badge>
                     )}
                   </div>
-                  <p className="text-xs text-slate-400 mb-2">{s.desc}</p>
+                  <p className="text-xs text-gray-500 mb-2">{s.desc}</p>
                   {s.agents.length > 0 && (
                     <div className="flex gap-1.5 flex-wrap">
                       {s.agents.map((a) => (
                         <span
                           key={a}
-                          className="text-[10px] px-2 py-0.5 bg-slate-700 rounded text-slate-300 flex items-center gap-1"
+                          className="text-[10px] px-2 py-0.5 bg-pink-100/60 rounded text-gray-600 flex items-center gap-1"
                         >
                           <Bot size={10} /> {a}
                         </span>
@@ -148,8 +148,8 @@ export default function WorkflowPage() {
       {/* Data Sources + Schedule */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Data Sources */}
-        <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
-          <h3 className="text-sm font-semibold text-white mb-3">
+        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+          <h3 className="text-sm font-semibold text-gray-900 mb-3">
             Data Sources
           </h3>
           <div className="space-y-2">
@@ -158,11 +158,11 @@ export default function WorkflowPage() {
               return (
                 <div
                   key={s.name}
-                  className="flex items-center justify-between p-2 bg-slate-700/30 rounded"
+                  className="flex items-center justify-between p-2 bg-pink-50/80 rounded"
                 >
                   <div className="flex items-center gap-2">
-                    <SIcon size={14} className="text-slate-400" />
-                    <span className="text-xs text-slate-300">{s.name}</span>
+                    <SIcon size={14} className="text-gray-500" />
+                    <span className="text-xs text-gray-600">{s.name}</span>
                   </div>
                   <Badge
                     variant={
@@ -182,15 +182,15 @@ export default function WorkflowPage() {
         </div>
 
         {/* Schedule Configuration */}
-        <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
-          <h3 className="text-sm font-semibold text-white mb-3">
+        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+          <h3 className="text-sm font-semibold text-gray-900 mb-3">
             Schedule Configuration
           </h3>
           <div className="space-y-3">
             {SCHEDULE_CONFIGS.map((cfg) => (
-              <div key={cfg.name} className="p-3 bg-slate-700/30 rounded-lg">
+              <div key={cfg.name} className="p-3 bg-pink-50/80 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-white font-medium">
+                  <span className="text-xs text-gray-900 font-medium">
                     {cfg.name}
                   </span>
                   <Badge
@@ -199,9 +199,9 @@ export default function WorkflowPage() {
                     {cfg.status}
                   </Badge>
                 </div>
-                <div className="text-[10px] text-slate-400">{cfg.desc}</div>
+                <div className="text-[10px] text-gray-500">{cfg.desc}</div>
                 {cfg.note && (
-                  <div className="text-[10px] text-slate-500 mt-0.5">
+                  <div className="text-[10px] text-gray-400 mt-0.5">
                     {cfg.note}
                   </div>
                 )}

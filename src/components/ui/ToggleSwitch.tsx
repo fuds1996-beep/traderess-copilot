@@ -4,7 +4,7 @@ import { useState } from "react";
 
 export default function ToggleSwitch({
   defaultOn = false,
-  activeColor = "bg-indigo-600",
+  activeColor = "bg-pink-500",
 }: {
   defaultOn?: boolean;
   activeColor?: string;
@@ -18,11 +18,11 @@ export default function ToggleSwitch({
       aria-checked={on}
       onClick={() => setOn(!on)}
       className={`w-8 h-4 rounded-full relative cursor-pointer transition-colors ${
-        on ? activeColor : "bg-slate-600"
+        on ? activeColor : "bg-gray-200"
       }`}
     >
       <div
-        className={`w-3 h-3 rounded-full bg-white absolute top-0.5 transition-all ${
+        className={`w-3 h-3 rounded-full bg-white absolute top-0.5 transition-all shadow-sm ${
           on ? "right-0.5" : "left-0.5"
         }`}
       />

@@ -5,7 +5,7 @@ export default function StatCard({
   label,
   value,
   sub,
-  color = "text-indigo-400",
+  color = "text-pink-500",
 }: {
   icon: LucideIcon;
   label: string;
@@ -14,15 +14,15 @@ export default function StatCard({
   color?: string;
 }) {
   return (
-    <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
+    <div className="glass rounded-2xl p-4">
       <div className="flex items-center gap-2 mb-2">
         <Icon size={16} className={color} />
-        <span className="text-xs text-slate-400 uppercase tracking-wide">
+        <span className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">
           {label}
         </span>
       </div>
-      <div className="text-2xl font-bold text-white">{value}</div>
-      {sub && <div className="text-xs text-slate-500 mt-1">{sub}</div>}
+      <div className="text-2xl font-bold text-gray-900">{value}</div>
+      {sub && <div className="text-[11px] text-gray-400 mt-1">{sub}</div>}
     </div>
   );
 }

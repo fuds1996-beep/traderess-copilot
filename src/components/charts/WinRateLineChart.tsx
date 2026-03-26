@@ -19,23 +19,23 @@ export default function WinRateLineChart({
   return (
     <ResponsiveContainer width="100%" height={220}>
       <LineChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(244,114,182,0.15)" />
         <XAxis
           dataKey="week_label"
-          tick={{ fontSize: 10, fill: "#94a3b8" }}
+          tick={{ fontSize: 10, fill: "#9ca3af" }}
           angle={-20}
           textAnchor="end"
           height={50}
         />
         <YAxis
-          tick={{ fontSize: 11, fill: "#94a3b8" }}
+          tick={{ fontSize: 11, fill: "#9ca3af" }}
           domain={[0, 100]}
           tickFormatter={(v: number) => `${v}%`}
         />
         <Tooltip
           contentStyle={{
-            background: "#1e293b",
-            border: "1px solid #334155",
+            background: "rgba(255,255,255,0.95)",
+            border: "1px solid rgba(244,114,182,0.2)",
             borderRadius: 8,
             fontSize: 12,
           }}
@@ -55,9 +55,9 @@ export default function WinRateLineChart({
         <Line
           type="monotone"
           dataKey="win_rate"
-          stroke="#6366f1"
+          stroke="#ec4899"
           strokeWidth={2}
-          dot={{ fill: "#6366f1", r: 4 }}
+          dot={{ fill: "#ec4899", r: 4 }}
         />
       </LineChart>
     </ResponsiveContainer>

@@ -34,17 +34,17 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-pink-50/0 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         {/* Branding */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 rounded-xl bg-indigo-600 flex items-center justify-center mb-4">
-            <Zap size={24} className="text-white" />
+          <div className="w-12 h-12 rounded-xl bg-pink-500 flex items-center justify-center mb-4">
+            <Zap size={24} className="text-gray-900" />
           </div>
-          <h1 className="text-xl font-bold text-white tracking-tight">
+          <h1 className="text-xl font-bold text-gray-900 tracking-tight">
             Traderess Copilot
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-gray-500 mt-1">
             Sign in to your account
           </p>
         </div>
@@ -60,14 +60,14 @@ export default function LoginPage() {
           <div>
             <label
               htmlFor="email"
-              className="block text-xs text-slate-400 mb-1.5"
+              className="block text-xs text-gray-500 mb-1.5"
             >
               Email
             </label>
             <div className="relative">
               <Mail
                 size={14}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
               />
               <input
                 id="email"
@@ -76,7 +76,7 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 placeholder="you@example.com"
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-9 pr-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                className="w-full bg-white/50 border border-pink-200/40 rounded-lg pl-9 pr-3 py-2.5 text-sm text-gray-900 placeholder-slate-500 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-indigo-500 transition-colors"
               />
             </div>
           </div>
@@ -84,14 +84,14 @@ export default function LoginPage() {
           <div>
             <label
               htmlFor="password"
-              className="block text-xs text-slate-400 mb-1.5"
+              className="block text-xs text-gray-500 mb-1.5"
             >
               Password
             </label>
             <div className="relative">
               <Lock
                 size={14}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
               />
               <input
                 id="password"
@@ -100,7 +100,7 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 placeholder="••••••••"
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-9 pr-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                className="w-full bg-white/50 border border-pink-200/40 rounded-lg pl-9 pr-3 py-2.5 text-sm text-gray-900 placeholder-slate-500 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-indigo-500 transition-colors"
               />
             </div>
           </div>
@@ -108,7 +108,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg py-2.5 transition-colors"
+            className="w-full flex items-center justify-center gap-2 bg-pink-500 hover:bg-pink-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg py-2.5 transition-colors"
           >
             {loading ? (
               <Loader2 size={16} className="animate-spin" />
@@ -119,11 +119,11 @@ export default function LoginPage() {
         </form>
 
         {/* Register link */}
-        <p className="mt-6 text-center text-xs text-slate-500">
+        <p className="mt-6 text-center text-xs text-gray-400">
           Don&apos;t have an account?{" "}
           <Link
             href="/register"
-            className="text-indigo-400 hover:text-indigo-300 transition-colors"
+            className="text-pink-500 hover:text-pink-400 transition-colors"
           >
             Create one
           </Link>

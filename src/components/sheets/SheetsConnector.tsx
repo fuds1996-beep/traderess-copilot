@@ -105,22 +105,22 @@ export default function SheetsConnector() {
     <div className="space-y-4">
       {/* URL Input */}
       <div>
-        <label className="block text-xs text-slate-400 mb-1.5">Google Sheet URL or ID</label>
+        <label className="block text-xs text-gray-500 mb-1.5">Google Sheet URL or ID</label>
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <Link2 size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+            <Link2 size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               value={sheetUrl}
               onChange={(e) => { setSheetUrl(e.target.value); reset(); }}
               placeholder="https://docs.google.com/spreadsheets/d/..."
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-9 pr-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+              className="w-full bg-white/60 border border-pink-200/40 rounded-lg pl-9 pr-3 py-2.5 text-sm text-gray-900 placeholder-slate-500 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-indigo-500 transition-colors"
             />
           </div>
           <button
             onClick={handlePreview}
             disabled={loading || !sheetUrl.trim()}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 text-white text-sm rounded-lg transition-colors shrink-0"
+            className="flex items-center gap-2 px-4 py-2 bg-pink-100/60 hover:bg-slate-600 disabled:opacity-40 text-gray-900 text-sm rounded-lg transition-colors shrink-0"
           >
             {loading ? <Loader2 size={14} className="animate-spin" /> : <FileSpreadsheet size={14} />}
             Preview
@@ -131,33 +131,33 @@ export default function SheetsConnector() {
       {/* Options row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
-          <label className="block text-xs text-slate-400 mb-1.5">Sheet Name / Range</label>
+          <label className="block text-xs text-gray-500 mb-1.5">Sheet Name / Range</label>
           <input
             type="text"
             value={range}
             onChange={(e) => setRange(e.target.value)}
             placeholder="March 2-6"
-            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+            className="w-full bg-white/60 border border-pink-200/40 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-slate-500 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-indigo-500 transition-colors"
           />
         </div>
         <div>
-          <label className="block text-xs text-slate-400 mb-1.5">Week Start Date</label>
+          <label className="block text-xs text-gray-500 mb-1.5">Week Start Date</label>
           <input
             type="date"
             value={weekStart}
             onChange={(e) => setWeekStart(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+            className="w-full bg-white/60 border border-pink-200/40 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-indigo-500 transition-colors"
           />
         </div>
         <div>
-          <label className="block text-xs text-slate-400 mb-1.5">Sync Mode</label>
+          <label className="block text-xs text-gray-500 mb-1.5">Sync Mode</label>
           <div className="flex gap-1">
             <button
               onClick={() => setSyncMode("comprehensive")}
               className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs rounded-lg border transition-colors ${
                 syncMode === "comprehensive"
-                  ? "bg-indigo-600/20 border-indigo-500 text-indigo-400"
-                  : "bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-600"
+                  ? "bg-pink-500/10 border-pink-400 text-pink-500"
+                  : "bg-white/60 border-pink-200/40 text-gray-500 hover:border-pink-200/50"
               }`}
             >
               <Zap size={12} /> Full Sync
@@ -166,8 +166,8 @@ export default function SheetsConnector() {
               onClick={() => setSyncMode("trades_only")}
               className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs rounded-lg border transition-colors ${
                 syncMode === "trades_only"
-                  ? "bg-indigo-600/20 border-indigo-500 text-indigo-400"
-                  : "bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-600"
+                  ? "bg-pink-500/10 border-pink-400 text-pink-500"
+                  : "bg-white/60 border-pink-200/40 text-gray-500 hover:border-pink-200/50"
               }`}
             >
               <Sparkles size={12} /> Trades Only
@@ -186,26 +186,26 @@ export default function SheetsConnector() {
 
       {/* Preview table */}
       {preview && (
-        <div className="bg-slate-900 border border-slate-700 rounded-lg overflow-hidden">
-          <div className="flex items-center justify-between px-3 py-2 border-b border-slate-700">
-            <span className="text-xs text-slate-400">Data preview (auto-detected headers)</span>
+        <div className="bg-white/60 border border-pink-200/40 rounded-lg overflow-hidden">
+          <div className="flex items-center justify-between px-3 py-2 border-b border-pink-200/40">
+            <span className="text-xs text-gray-500">Data preview (auto-detected headers)</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="border-b border-slate-700">
+                <tr className="border-b border-pink-200/40">
                   {preview[0]?.map((h, i) => (
-                    <th key={i} className="text-left py-1.5 px-2 text-slate-400 font-medium whitespace-nowrap">
-                      {h || <span className="text-slate-600">—</span>}
+                    <th key={i} className="text-left py-1.5 px-2 text-gray-500 font-medium whitespace-nowrap">
+                      {h || <span className="text-gray-300">—</span>}
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {preview.slice(1).map((row, ri) => (
-                  <tr key={ri} className="border-b border-slate-800 last:border-0">
+                  <tr key={ri} className="border-b border-pink-200/30 last:border-0">
                     {row.map((cell, ci) => (
-                      <td key={ci} className="py-1.5 px-2 text-slate-300 truncate max-w-[120px]">
+                      <td key={ci} className="py-1.5 px-2 text-gray-600 truncate max-w-[120px]">
                         {cell || <span className="text-slate-700">—</span>}
                       </td>
                     ))}
@@ -216,10 +216,10 @@ export default function SheetsConnector() {
           </div>
 
           {/* Sync button */}
-          <div className="px-3 py-3 border-t border-slate-700 bg-slate-800/50">
+          <div className="px-3 py-3 border-t border-pink-200/40 bg-white/40">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs text-slate-400">
-                <Brain size={14} className="text-indigo-400" />
+              <div className="flex items-center gap-2 text-xs text-gray-500">
+                <Brain size={14} className="text-pink-500" />
                 <span>
                   {syncMode === "comprehensive"
                     ? "AI will extract trades, journals, chart time, balances, goals & more"
@@ -229,7 +229,7 @@ export default function SheetsConnector() {
               <button
                 onClick={handleSync}
                 disabled={syncing}
-                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm rounded-lg transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white text-sm rounded-lg transition-colors"
               >
                 {syncing ? (
                   <>
@@ -254,27 +254,27 @@ export default function SheetsConnector() {
           <div className="flex items-center gap-2">
             <Check size={14} className="text-emerald-400 shrink-0" />
             <p className="text-sm text-emerald-400 font-medium">Sync complete</p>
-            <span className={`text-[10px] px-2 py-0.5 rounded-full bg-slate-800 ${confidenceColors[syncResult.confidence]}`}>
+            <span className={`text-[10px] px-2 py-0.5 rounded-full bg-white/50 ${confidenceColors[syncResult.confidence]}`}>
               {syncResult.confidence} confidence
             </span>
           </div>
           {typeof syncResult.synced === "object" && (
             <div className="flex flex-wrap gap-2">
               {Object.entries(syncResult.synced).map(([key, val]) => (
-                <span key={key} className="text-[10px] px-2 py-0.5 bg-slate-800 rounded text-slate-300">
+                <span key={key} className="text-[10px] px-2 py-0.5 bg-white/50 rounded text-gray-600">
                   {val} {key.replace("_", " ")}
                 </span>
               ))}
             </div>
           )}
           {syncResult.message && (
-            <p className="text-xs text-slate-400">{syncResult.message}</p>
+            <p className="text-xs text-gray-500">{syncResult.message}</p>
           )}
         </div>
       )}
 
       {/* Help text */}
-      <div className="text-[10px] text-slate-600 space-y-1">
+      <div className="text-[10px] text-gray-300 space-y-1">
         <p>Your Google Sheet must be shared with &quot;Anyone with the link&quot; (Viewer access).</p>
         <p>
           <strong>Full Sync</strong> extracts trades, daily journals (emotions, market mood, summaries), chart time tracking, account balances, missed trades, goals, and weekly summaries.

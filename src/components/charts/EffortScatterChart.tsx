@@ -19,28 +19,28 @@ export default function EffortScatterChart({
   return (
     <ResponsiveContainer width="100%" height={220}>
       <ScatterChart>
-        <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(244,114,182,0.15)" />
         <XAxis
           dataKey="effort"
           type="number"
           domain={[0, 5]}
           ticks={[1, 2, 3, 4, 5]}
-          tick={{ fontSize: 11, fill: "#94a3b8" }}
+          tick={{ fontSize: 11, fill: "#9ca3af" }}
           name="Effort"
-          label={{ value: "Effort Rating", position: "insideBottom", offset: -5, fill: "#64748b", fontSize: 10 }}
+          label={{ value: "Effort Rating", position: "insideBottom", offset: -5, fill: "#d1d5db", fontSize: 10 }}
         />
         <YAxis
           dataKey="pips"
-          tick={{ fontSize: 11, fill: "#94a3b8" }}
+          tick={{ fontSize: 11, fill: "#9ca3af" }}
           name="Pips"
-          label={{ value: "Pips", angle: -90, position: "insideLeft", fill: "#64748b", fontSize: 10 }}
+          label={{ value: "Pips", angle: -90, position: "insideLeft", fill: "#d1d5db", fontSize: 10 }}
         />
-        <ReferenceLine y={0} stroke="#475569" />
+        <ReferenceLine y={0} stroke="rgba(244,114,182,0.2)" />
         <Tooltip
-          contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 8, fontSize: 12 }}
+          contentStyle={{ background: "rgba(255,255,255,0.95)", border: "1px solid rgba(244,114,182,0.2)", borderRadius: 8, fontSize: 12 }}
           formatter={(value, name) => [value, name]}
         />
-        <Scatter data={data} fill="#6366f1" />
+        <Scatter data={data} fill="#ec4899" />
       </ScatterChart>
     </ResponsiveContainer>
   );

@@ -12,7 +12,7 @@ import {
 } from "recharts";
 import type { AccountBalance } from "@/lib/types";
 
-const ACCOUNT_COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
+const ACCOUNT_COLORS = ["#ec4899", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
 
 export default function AccountBalanceLineChart({
   byAccount,
@@ -42,14 +42,14 @@ export default function AccountBalanceLineChart({
   return (
     <ResponsiveContainer width="100%" height={250}>
       <LineChart data={chartData}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-        <XAxis dataKey="week" tick={{ fontSize: 11, fill: "#94a3b8" }} />
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(244,114,182,0.15)" />
+        <XAxis dataKey="week" tick={{ fontSize: 11, fill: "#9ca3af" }} />
         <YAxis
-          tick={{ fontSize: 11, fill: "#94a3b8" }}
+          tick={{ fontSize: 11, fill: "#9ca3af" }}
           tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`}
         />
         <Tooltip
-          contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 8, fontSize: 12 }}
+          contentStyle={{ background: "rgba(255,255,255,0.95)", border: "1px solid rgba(244,114,182,0.2)", borderRadius: 8, fontSize: 12 }}
           formatter={(value) => [`$${Number(value).toLocaleString()}`, ""]}
         />
         <Legend wrapperStyle={{ fontSize: 11 }} />

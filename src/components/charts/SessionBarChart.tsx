@@ -19,25 +19,25 @@ export default function SessionBarChart({
   return (
     <ResponsiveContainer width="100%" height={200}>
       <BarChart data={data} layout="vertical">
-        <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-        <XAxis type="number" tick={{ fontSize: 11, fill: "#94a3b8" }} />
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(244,114,182,0.15)" />
+        <XAxis type="number" tick={{ fontSize: 11, fill: "#9ca3af" }} />
         <YAxis
           dataKey="session"
           type="category"
-          tick={{ fontSize: 11, fill: "#94a3b8" }}
+          tick={{ fontSize: 11, fill: "#9ca3af" }}
           width={90}
         />
         <Tooltip
           contentStyle={{
-            background: "#1e293b",
-            border: "1px solid #334155",
+            background: "rgba(255,255,255,0.95)",
+            border: "1px solid rgba(244,114,182,0.2)",
             borderRadius: 8,
             fontSize: 12,
           }}
         />
         <Bar dataKey="pips" radius={[0, 4, 4, 0]}>
           {data.map((d, i) => (
-            <Cell key={i} fill={d.pips >= 0 ? "#6366f1" : "#ef4444"} />
+            <Cell key={i} fill={d.pips >= 0 ? "#ec4899" : "#ef4444"} />
           ))}
         </Bar>
       </BarChart>

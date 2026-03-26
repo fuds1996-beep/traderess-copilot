@@ -26,15 +26,15 @@ export default function ChartTimeBarChart({
   return (
     <ResponsiveContainer width="100%" height={200}>
       <BarChart data={chartData}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-        <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#94a3b8" }} />
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(244,114,182,0.15)" />
+        <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#9ca3af" }} />
         <YAxis
-          tick={{ fontSize: 11, fill: "#94a3b8" }}
+          tick={{ fontSize: 11, fill: "#9ca3af" }}
           tickFormatter={(v: number) => `${v}m`}
         />
         <ReferenceLine y={60} stroke="#f59e0b" strokeDasharray="5 5" strokeWidth={1} label={{ value: "60m target", position: "insideTopRight", fill: "#f59e0b", fontSize: 10 }} />
         <Tooltip
-          contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 8, fontSize: 12 }}
+          contentStyle={{ background: "rgba(255,255,255,0.95)", border: "1px solid rgba(244,114,182,0.2)", borderRadius: 8, fontSize: 12 }}
           formatter={(value) => [`${value} min`, "Chart Time"]}
         />
         <Bar dataKey="minutes" fill="#8b5cf6" radius={[4, 4, 0, 0]} />

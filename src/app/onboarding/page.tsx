@@ -175,16 +175,16 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col">
+    <div className="min-h-screen bg-pink-50/0 flex flex-col">
       {/* Header */}
-      <div className="border-b border-slate-800 px-6 py-4">
+      <div className="border-b border-pink-200/30 px-6 py-4">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
-            <Zap size={16} className="text-white" />
+          <div className="w-8 h-8 rounded-lg bg-pink-500 flex items-center justify-center">
+            <Zap size={16} className="text-gray-900" />
           </div>
           <div>
-            <div className="text-sm font-bold text-white">Traderess Copilot</div>
-            <div className="text-[10px] text-slate-500">Setup Wizard</div>
+            <div className="text-sm font-bold text-gray-900">Traderess Copilot</div>
+            <div className="text-[10px] text-gray-400">Setup Wizard</div>
           </div>
         </div>
       </div>
@@ -199,8 +199,8 @@ export default function OnboardingPage() {
                   i < step
                     ? "bg-emerald-600 text-white"
                     : i === step
-                      ? "bg-indigo-600 text-white"
-                      : "bg-slate-800 text-slate-500 border border-slate-700"
+                      ? "bg-pink-500 text-white"
+                      : "bg-white/50 text-gray-400 border border-pink-200/40"
                 }`}
               >
                 {i < step ? <Check size={14} /> : i + 1}
@@ -215,14 +215,14 @@ export default function OnboardingPage() {
             </div>
           ))}
         </div>
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-gray-400">
           Step {step + 1} of {STEPS.length} — {STEPS[step].label}
         </p>
       </div>
 
       {/* Step content */}
       <div className="flex-1 max-w-2xl mx-auto w-full px-6 pb-8">
-        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+        <div className="bg-white/40 border border-pink-200/40 rounded-xl p-6">
           {step === 0 && <Step1 form={form} update={update} />}
           {step === 1 && <Step2 form={form} update={update} />}
           {step === 2 && <Step3 form={form} update={update} />}
@@ -235,12 +235,12 @@ export default function OnboardingPage() {
           )}
 
           {/* Navigation */}
-          <div className="flex items-center justify-between mt-8 pt-4 border-t border-slate-700">
+          <div className="flex items-center justify-between mt-8 pt-4 border-t border-pink-200/40">
             <div>
               {step > 0 && (
                 <button
                   onClick={prev}
-                  className="flex items-center gap-1 px-3 py-2 text-sm text-slate-400 hover:text-white transition-colors"
+                  className="flex items-center gap-1 px-3 py-2 text-sm text-gray-500 hover:text-gray-900 transition-colors"
                 >
                   <ChevronLeft size={14} /> Back
                 </button>
@@ -252,14 +252,14 @@ export default function OnboardingPage() {
                   router.push("/dashboard");
                   router.refresh();
                 }}
-                className="px-3 py-2 text-xs text-slate-500 hover:text-slate-300 transition-colors"
+                className="px-3 py-2 text-xs text-gray-400 hover:text-gray-600 transition-colors"
               >
                 Skip for now
               </button>
               {step < STEPS.length - 1 ? (
                 <button
                   onClick={next}
-                  className="flex items-center gap-1 px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm rounded-lg transition-colors"
+                  className="flex items-center gap-1 px-5 py-2 bg-pink-500 hover:bg-pink-600 text-white text-sm rounded-lg transition-colors"
                 >
                   Continue <ChevronRight size={14} />
                 </button>
@@ -267,7 +267,7 @@ export default function OnboardingPage() {
                 <button
                   onClick={finish}
                   disabled={saving}
-                  className="flex items-center gap-2 px-5 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-5 py-2 bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white text-sm rounded-lg transition-colors"
                 >
                   {saving ? (
                     <Loader2 size={14} className="animate-spin" />
@@ -289,7 +289,7 @@ export default function OnboardingPage() {
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
-    <label className="block text-xs text-slate-400 mb-1.5">{children}</label>
+    <label className="block text-xs text-gray-500 mb-1.5">{children}</label>
   );
 }
 
@@ -310,7 +310,7 @@ function TextInput({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+      className="w-full bg-white/60 border border-pink-200/40 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-slate-500 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-indigo-500 transition-colors"
     />
   );
 }
@@ -328,7 +328,7 @@ function Select({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+      className="w-full bg-white/60 border border-pink-200/40 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-indigo-500 transition-colors"
     >
       {options.map((o) => (
         <option key={o} value={o}>
@@ -351,10 +351,10 @@ function Step1({
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-lg font-bold text-white mb-1">
+        <h2 className="text-lg font-bold text-gray-900 mb-1">
           Tell us about yourself
         </h2>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-gray-500">
           We&apos;ll use this to personalize your copilot experience.
         </p>
       </div>
@@ -377,14 +377,14 @@ function Step1({
               onClick={() => update("experience", lvl.value)}
               className={`p-3 rounded-lg border text-left transition-colors ${
                 form.experience === lvl.value
-                  ? "bg-indigo-600/20 border-indigo-500 text-indigo-400"
-                  : "bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-600"
+                  ? "bg-pink-500/10 border-pink-400 text-pink-500"
+                  : "bg-white/60 border-pink-200/40 text-gray-500 hover:border-pink-200/50"
               }`}
             >
-              <div className="text-xs font-medium text-white">
+              <div className="text-xs font-medium text-gray-900">
                 {lvl.label}
               </div>
-              <div className="text-[10px] text-slate-500">{lvl.desc}</div>
+              <div className="text-[10px] text-gray-400">{lvl.desc}</div>
             </button>
           ))}
         </div>
@@ -414,8 +414,8 @@ function Step2({
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-lg font-bold text-white mb-1">Your trading plan</h2>
-        <p className="text-sm text-slate-400">
+        <h2 className="text-lg font-bold text-gray-900 mb-1">Your trading plan</h2>
+        <p className="text-sm text-gray-500">
           Tell us what and how you trade so we can tailor insights.
         </p>
       </div>
@@ -493,10 +493,10 @@ function Step3({
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-lg font-bold text-white mb-1">
+        <h2 className="text-lg font-bold text-gray-900 mb-1">
           Upload your data
         </h2>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-gray-500">
           Paste your trading journal or upload a CSV. This is optional — you can
           add data later.
         </p>
@@ -509,17 +509,17 @@ function Step3({
           onChange={(e) => update("journal_data", e.target.value)}
           rows={8}
           placeholder={"Date, Pair, Direction, Entry, SL, TP, Result, Pips, Notes\nMar 10, EUR/USD, Long, 1.0842, 1.0822, 1.0882, Win, 40, Clean level bounce"}
-          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors font-mono resize-none"
+          className="w-full bg-white/60 border border-pink-200/40 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-slate-500 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-indigo-500 transition-colors font-mono resize-none"
         />
       </div>
 
-      <div className="text-center text-xs text-slate-500 my-2">— or —</div>
+      <div className="text-center text-xs text-gray-400 my-2">— or —</div>
 
       <div>
         <Label>Upload CSV file</Label>
-        <label className="flex flex-col items-center justify-center w-full h-24 bg-slate-900 border-2 border-dashed border-slate-700 rounded-lg cursor-pointer hover:border-indigo-500/50 transition-colors">
-          <Upload size={20} className="text-slate-500 mb-1" />
-          <span className="text-xs text-slate-400">
+        <label className="flex flex-col items-center justify-center w-full h-24 bg-white/60 border-2 border-dashed border-pink-200/40 rounded-lg cursor-pointer hover:border-pink-400/50 transition-colors">
+          <Upload size={20} className="text-gray-400 mb-1" />
+          <span className="text-xs text-gray-500">
             Click to upload CSV
           </span>
           <input
@@ -571,8 +571,8 @@ function Step4({
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-lg font-bold text-white mb-1">Your goals</h2>
-        <p className="text-sm text-slate-400">
+        <h2 className="text-lg font-bold text-gray-900 mb-1">Your goals</h2>
+        <p className="text-sm text-gray-500">
           Set targets so your copilot can track progress and keep you
           accountable.
         </p>
@@ -596,12 +596,12 @@ function Step4({
                 value={acc.name}
                 onChange={(e) => updateAccount(i, "name", e.target.value)}
                 placeholder="e.g. FTMO 10K"
-                className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                className="flex-1 bg-white/60 border border-pink-200/40 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-slate-500 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-indigo-500 transition-colors"
               />
               <select
                 value={acc.status}
                 onChange={(e) => updateAccount(i, "status", e.target.value)}
-                className="bg-slate-900 border border-slate-700 rounded-lg px-2 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                className="bg-white/60 border border-pink-200/40 rounded-lg px-2 py-2 text-sm text-gray-900 focus:outline-none focus:border-pink-400 transition-colors"
               >
                 <option>Challenge</option>
                 <option>Verification</option>
@@ -610,7 +610,7 @@ function Step4({
               {form.prop_accounts.length > 1 && (
                 <button
                   onClick={() => removeAccount(i)}
-                  className="text-slate-500 hover:text-red-400 text-xs px-2 py-2 transition-colors"
+                  className="text-gray-400 hover:text-red-400 text-xs px-2 py-2 transition-colors"
                 >
                   ✕
                 </button>
@@ -619,7 +619,7 @@ function Step4({
           ))}
           <button
             onClick={addAccount}
-            className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+            className="text-xs text-pink-500 hover:text-pink-400 transition-colors"
           >
             + Add another account
           </button>
@@ -633,7 +633,7 @@ function Step4({
           onChange={(e) => update("challenges", e.target.value)}
           rows={3}
           placeholder="e.g. Overtrading during news events, managing multiple accounts, patience with entries..."
-          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors resize-none"
+          className="w-full bg-white/60 border border-pink-200/40 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-slate-500 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-indigo-500 transition-colors resize-none"
         />
       </div>
     </div>

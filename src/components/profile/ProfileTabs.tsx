@@ -21,15 +21,15 @@ export default function ProfileTabs({
 
   return (
     <>
-      <div className="flex gap-2 border-b border-slate-700 pb-0">
+      <div className="flex gap-2 border-b border-pink-200/40 pb-0">
         {TABS.map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
               tab === t
-                ? "border-indigo-500 text-indigo-400"
-                : "border-transparent text-slate-400 hover:text-slate-200"
+                ? "border-pink-400 text-pink-500"
+                : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
             {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -49,16 +49,16 @@ export default function ProfileTabs({
 function OverviewTab({ profile }: { profile: TraderProfile }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
+      <div className="glass rounded-2xl p-5 border border-pink-200/40">
         <div className="flex items-center gap-2 mb-4">
           <CheckCircle size={16} className="text-emerald-400" />
-          <h3 className="text-sm font-semibold text-white">Strengths</h3>
+          <h3 className="text-sm font-semibold text-gray-900">Strengths</h3>
         </div>
         <div className="space-y-3">
           {profile.strengths.map((s, i) => (
             <div key={i}>
               <div className="flex justify-between text-xs mb-1">
-                <span className="text-slate-300">{s.label}</span>
+                <span className="text-gray-600">{s.label}</span>
                 <span className="text-emerald-400">{s.score}%</span>
               </div>
               <ProgressBar value={s.score} color="bg-emerald-500" />
@@ -67,16 +67,16 @@ function OverviewTab({ profile }: { profile: TraderProfile }) {
         </div>
       </div>
 
-      <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
+      <div className="glass rounded-2xl p-5 border border-pink-200/40">
         <div className="flex items-center gap-2 mb-4">
           <AlertTriangle size={16} className="text-amber-400" />
-          <h3 className="text-sm font-semibold text-white">Weaknesses</h3>
+          <h3 className="text-sm font-semibold text-gray-900">Weaknesses</h3>
         </div>
         <div className="space-y-3">
           {profile.weaknesses.map((w, i) => (
             <div key={i}>
               <div className="flex justify-between text-xs mb-1">
-                <span className="text-slate-300">{w.label}</span>
+                <span className="text-gray-600">{w.label}</span>
                 <span className="text-red-400">{w.score}%</span>
               </div>
               <ProgressBar value={w.score} color="bg-red-500" />
@@ -85,8 +85,8 @@ function OverviewTab({ profile }: { profile: TraderProfile }) {
         </div>
       </div>
 
-      <div className="lg:col-span-2 bg-slate-800 rounded-xl p-5 border border-slate-700">
-        <h3 className="text-sm font-semibold text-white mb-4">
+      <div className="lg:col-span-2 glass rounded-2xl p-5 border border-pink-200/40">
+        <h3 className="text-sm font-semibold text-gray-900 mb-4">
           Trading Skill Radar
         </h3>
         <div className="flex justify-center">
@@ -100,8 +100,8 @@ function OverviewTab({ profile }: { profile: TraderProfile }) {
 function PsychologyTab({ profile }: { profile: TraderProfile }) {
   return (
     <div className="space-y-4">
-      <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
-        <h3 className="text-sm font-semibold text-white mb-3">
+      <div className="glass rounded-2xl p-5 border border-pink-200/40">
+        <h3 className="text-sm font-semibold text-gray-900 mb-3">
           SPACE Method Assessment
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
@@ -121,10 +121,10 @@ function PsychologyTab({ profile }: { profile: TraderProfile }) {
               >
                 {s.letter}
               </div>
-              <div className="text-xs font-medium text-white mb-1">
+              <div className="text-xs font-medium text-gray-900 mb-1">
                 {s.word}
               </div>
-              <div className="text-[10px] text-slate-400 leading-relaxed">
+              <div className="text-[10px] text-gray-500 leading-relaxed">
                 {s.note}
               </div>
             </div>
@@ -132,15 +132,15 @@ function PsychologyTab({ profile }: { profile: TraderProfile }) {
         </div>
       </div>
 
-      <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
-        <h3 className="text-sm font-semibold text-white mb-3">
+      <div className="glass rounded-2xl p-5 border border-pink-200/40">
+        <h3 className="text-sm font-semibold text-gray-900 mb-3">
           Behavioural Pattern Matrix
         </h3>
         <div className="space-y-2">
           {profile.behavioural_patterns.map((p) => (
             <div
               key={p.pattern}
-              className="flex items-start gap-4 p-3 bg-slate-700/30 rounded-lg"
+              className="flex items-start gap-4 p-3 bg-pink-50/80 rounded-lg"
             >
               <AlertCircle
                 size={16}
@@ -150,7 +150,7 @@ function PsychologyTab({ profile }: { profile: TraderProfile }) {
               />
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-white">
+                  <span className="text-sm font-medium text-gray-900">
                     {p.pattern}
                   </span>
                   <Badge
@@ -159,10 +159,10 @@ function PsychologyTab({ profile }: { profile: TraderProfile }) {
                     {p.severity}
                   </Badge>
                 </div>
-                <div className="text-xs text-slate-400 mt-0.5">
+                <div className="text-xs text-gray-500 mt-0.5">
                   Frequency: {p.frequency}
                 </div>
-                <div className="text-xs text-slate-500 mt-0.5">
+                <div className="text-xs text-gray-400 mt-0.5">
                   Trigger: {p.trigger}
                 </div>
               </div>
@@ -183,18 +183,18 @@ function PlanTab({
 }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
-        <h3 className="text-sm font-semibold text-white mb-3">
+      <div className="glass rounded-2xl p-5 border border-pink-200/40">
+        <h3 className="text-sm font-semibold text-gray-900 mb-3">
           Trading Plan Summary
         </h3>
         <div className="space-y-3 text-sm">
           {profile.trading_plan.map((r) => (
             <div
               key={r.label}
-              className="flex justify-between py-1.5 border-b border-slate-700/50 last:border-0"
+              className="flex justify-between py-1.5 border-b border-pink-200/30 last:border-0"
             >
-              <span className="text-slate-400">{r.label}</span>
-              <span className="text-white font-medium text-right">
+              <span className="text-gray-500">{r.label}</span>
+              <span className="text-gray-900 font-medium text-right">
                 {r.value}
               </span>
             </div>
@@ -202,15 +202,15 @@ function PlanTab({
         </div>
       </div>
 
-      <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
-        <h3 className="text-sm font-semibold text-white mb-3">
+      <div className="glass rounded-2xl p-5 border border-pink-200/40">
+        <h3 className="text-sm font-semibold text-gray-900 mb-3">
           Prop Firm Accounts
         </h3>
         <div className="space-y-3">
           {propAccounts.map((a) => (
-            <div key={a.id} className="p-3 bg-slate-700/30 rounded-lg">
+            <div key={a.id} className="p-3 bg-pink-50/80 rounded-lg">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-white">
+                <span className="text-sm font-medium text-gray-900">
                   {a.account_name}
                 </span>
                 <div className="flex items-center gap-2">
@@ -221,7 +221,7 @@ function PlanTab({
                 </div>
               </div>
               <ProgressBar value={a.progress} color="bg-indigo-500" />
-              <span className="text-[10px] text-slate-500 mt-1 block">
+              <span className="text-[10px] text-gray-400 mt-1 block">
                 {a.progress}% to target
               </span>
             </div>

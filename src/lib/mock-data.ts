@@ -118,9 +118,9 @@ export const ARTICLES_DXY = [
 
 export const WEEK_REVIEW_STATS = [
   { value: "80%", label: "Win Rate", color: "text-emerald-400" },
-  { value: "5", label: "Trades Taken", color: "text-white" },
+  { value: "5", label: "Trades Taken", color: "text-gray-900" },
   { value: "+$280", label: "Net P/L", color: "text-emerald-400" },
-  { value: "2.4R", label: "R-Value", color: "text-indigo-400" },
+  { value: "2.4R", label: "R-Value", color: "text-pink-500" },
 ];
 
 export const DAILY_RISK_RATINGS = [

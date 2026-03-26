@@ -33,15 +33,15 @@ export default function WinLossPieChart({
           </Pie>
           <Tooltip
             contentStyle={{
-              background: "#1e293b",
-              border: "1px solid #334155",
+              background: "rgba(255,255,255,0.95)",
+              border: "1px solid rgba(244,114,182,0.2)",
               borderRadius: 8,
               fontSize: 12,
             }}
           />
         </PieChart>
       </ResponsiveContainer>
-      <div className="flex justify-center gap-4 text-xs text-slate-400">
+      <div className="flex justify-center gap-4 text-xs text-gray-500">
         {data.map((d, i) => (
           <span key={d.name} className="flex items-center gap-1">
             <span
