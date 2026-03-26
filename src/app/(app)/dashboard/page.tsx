@@ -18,6 +18,7 @@ import PnlAreaChart from "@/components/charts/PnlAreaChart";
 import WinLossPieChart from "@/components/charts/WinLossPieChart";
 import { usePerformance } from "@/hooks/use-performance";
 import { useBriefing } from "@/hooks/use-briefing";
+import { useTraderProfile } from "@/hooks/use-trader-profile";
 
 const QUICK_ACTIONS = [
   { icon: Newspaper, label: "Run Daily Briefing", desc: "Fetch latest fundamentals" },
@@ -29,8 +30,9 @@ const QUICK_ACTIONS = [
 export default function DashboardPage() {
   const { stats, hasData, loading: perfLoading } = usePerformance();
   const { briefing, loading: briefLoading } = useBriefing();
+  const { propAccounts, loading: profileLoading } = useTraderProfile();
 
-  if (perfLoading || briefLoading) {
+  if (perfLoading || briefLoading || profileLoading) {
     return (
       <div className="space-y-6 animate-pulse">
         <div className="h-8 bg-slate-800 rounded w-48" />
@@ -119,7 +121,7 @@ export default function DashboardPage() {
         <StatCard
           icon={Target}
           label="Accounts Active"
-          value="—"
+          value={propAccounts.length || "—"}
           color="text-purple-400"
         />
       </div>

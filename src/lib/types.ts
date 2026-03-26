@@ -134,4 +134,6 @@ export interface DashboardStats {
   avgWinRate: string;
   cumPnl: { week: string; pnl: number }[];
   winLossData: { name: string; value: number }[];
+  sessionData?: { session: string; trades: number; winRate: number; pips: number }[];
+  dayData?: { day: string; trades: number; winRate: number }[];
 }

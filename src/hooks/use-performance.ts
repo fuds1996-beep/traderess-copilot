@@ -1,7 +1,8 @@
 "use client";
 
-import { useSupabaseQuery } from "./use-supabase-query";
-import type { WeeklyPerformance, DashboardStats } from "@/lib/types";
+import { useState, useEffect, useCallback } from "react";
+import { createClient } from "@/lib/supabase/client";
+import type { Trade, WeeklyPerformance, DashboardStats } from "@/lib/types";
 
 const EMPTY_STATS: DashboardStats = {
   totalPnl: 0,
@@ -15,7 +16,102 @@ const EMPTY_STATS: DashboardStats = {
   ],
 };
 
-function computeStats(weeks: WeeklyPerformance[]): DashboardStats {
+/**
+ * Compute dashboard stats from raw trades when no weekly aggregates exist.
+ * Groups trades by ISO week and builds the same structure.
+ */
+function statsFromTrades(trades: Trade[]): DashboardStats {
+  if (trades.length === 0) return EMPTY_STATS;
+
+  const totalPnl = trades.reduce((s, t) => {
+    const dollarVal = parseFloat((t.dollar_result || "").replace(/[^0-9.\-]/g, ""));
+    return s + (isNaN(dollarVal) ? 0 : dollarVal);
+  }, 0);
+
+  const totalTrades = trades.length;
+
+  const wins = trades.filter((t) => t.result === "Win").length;
+  const losses = trades.filter((t) => t.result === "Loss").length;
+  const be = trades.filter((t) => t.result === "BE").length;
+
+  const avgWinRate = totalTrades > 0 ? ((wins / totalTrades) * 100).toFixed(1) : "0";
+
+  // Group by trade_date to build a cumulative P/L curve
+  const byDate = new Map<string, number>();
+  for (const t of trades) {
+    const date = t.trade_date || "unknown";
+    const dollarVal = parseFloat((t.dollar_result || "").replace(/[^0-9.\-]/g, ""));
+    byDate.set(date, (byDate.get(date) || 0) + (isNaN(dollarVal) ? 0 : dollarVal));
+  }
+
+  const sortedDates = [...byDate.entries()].sort(([a], [b]) => a.localeCompare(b));
+  let cumulative = 0;
+  const cumPnl = sortedDates.map(([date, pnl]) => {
+    cumulative += pnl;
+    return { week: date, pnl: Math.round(cumulative * 100) / 100 };
+  });
+
+  // Session breakdown from trades
+  const sessionMap = new Map<string, { trades: number; wins: number; pips: number }>();
+  for (const t of trades) {
+    const s = t.session || "Other";
+    const existing = sessionMap.get(s) || { trades: 0, wins: 0, pips: 0 };
+    existing.trades++;
+    if (t.result === "Win") existing.wins++;
+    existing.pips += t.overall_pips || t.pips || 0;
+    sessionMap.set(s, existing);
+  }
+  const sessionData = [...sessionMap.entries()].map(([session, d]) => ({
+    session,
+    trades: d.trades,
+    winRate: d.trades > 0 ? Math.round((d.wins / d.trades) * 100) : 0,
+    pips: Math.round(d.pips * 10) / 10,
+  }));
+
+  // Day of week breakdown
+  const dayMap = new Map<string, { trades: number; wins: number }>();
+  for (const t of trades) {
+    const dayName = t.day || getDayName(t.trade_date);
+    if (!dayName) continue;
+    const existing = dayMap.get(dayName) || { trades: 0, wins: 0 };
+    existing.trades++;
+    if (t.result === "Win") existing.wins++;
+    dayMap.set(dayName, existing);
+  }
+  const dayOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+  const dayData = dayOrder
+    .filter((d) => dayMap.has(d))
+    .map((d) => {
+      const v = dayMap.get(d)!;
+      return { day: d.slice(0, 3), trades: v.trades, winRate: v.trades > 0 ? Math.round((v.wins / v.trades) * 100) : 0 };
+    });
+
+  return {
+    totalPnl: Math.round(totalPnl * 100) / 100,
+    totalTrades,
+    avgWinRate,
+    cumPnl,
+    winLossData: [
+      { name: "Wins", value: wins },
+      { name: "Losses", value: losses },
+      { name: "BE", value: be },
+    ],
+    sessionData,
+    dayData,
+  };
+}
+
+function getDayName(dateStr: string): string {
+  if (!dateStr) return "";
+  try {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("en-US", { weekday: "long" });
+  } catch {
+    return "";
+  }
+}
+
+function computeWeeklyStats(weeks: WeeklyPerformance[]): DashboardStats {
   if (weeks.length === 0) return EMPTY_STATS;
 
   const totalPnl = weeks.reduce((s, w) => s + w.pnl, 0);
@@ -36,36 +132,76 @@ function computeStats(weeks: WeeklyPerformance[]): DashboardStats {
   const totalLosses = weeks.reduce((s, w) => s + w.losses, 0);
   const totalBE = weeks.reduce((s, w) => s + w.breakeven, 0);
 
-  const winLossData = [
-    { name: "Wins", value: totalWins },
-    { name: "Losses", value: totalLosses },
-    { name: "BE", value: totalBE },
-  ];
-
-  return { totalPnl, totalTrades, avgWinRate, cumPnl, winLossData };
+  return {
+    totalPnl,
+    totalTrades,
+    avgWinRate,
+    cumPnl,
+    winLossData: [
+      { name: "Wins", value: totalWins },
+      { name: "Losses", value: totalLosses },
+      { name: "BE", value: totalBE },
+    ],
+  };
 }
 
 export function usePerformance() {
-  const { data: weeks, loading } = useSupabaseQuery<WeeklyPerformance[]>(
-    async (supabase) => {
+  const [weeks, setWeeks] = useState<WeeklyPerformance[]>([]);
+  const [trades, setTrades] = useState<Trade[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetch = useCallback(async () => {
+    try {
+      const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return { data: null, error: null };
-      const { data, error } = await supabase
-        .from("trading_performance")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("week_start");
-      return { data: data as WeeklyPerformance[] | null, error };
-    },
-    [],
-  );
+      if (!user) { setLoading(false); return; }
 
-  const stats = computeStats(weeks);
-  const hasData = weeks.length > 0;
+      // Fetch both in parallel
+      const [weekRes, tradeRes] = await Promise.all([
+        supabase
+          .from("trading_performance")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("week_start"),
+        supabase
+          .from("trade_log")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("trade_date", { ascending: true }),
+      ]);
 
-  const latest = weeks[weeks.length - 1];
-  const sessionData = latest?.session_data?.length > 0 ? latest.session_data : [];
-  const dayData = latest?.day_data?.length > 0 ? latest.day_data : [];
+      setWeeks((weekRes.data as WeeklyPerformance[]) || []);
+      setTrades((tradeRes.data as Trade[]) || []);
+    } catch {
+      // Silently handle errors
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetch(); }, [fetch]);
+
+  // Prefer weekly aggregates if they exist, otherwise compute from trades
+  const hasWeeklyData = weeks.length > 0;
+  const hasTradeData = trades.length > 0;
+  const hasData = hasWeeklyData || hasTradeData;
+
+  const stats = hasWeeklyData
+    ? computeWeeklyStats(weeks)
+    : statsFromTrades(trades);
+
+  // Session and day data
+  const tradeStats = statsFromTrades(trades);
+  const sessionData = hasWeeklyData
+    ? (weeks[weeks.length - 1]?.session_data?.length > 0
+        ? weeks[weeks.length - 1].session_data
+        : tradeStats.sessionData || [])
+    : tradeStats.sessionData || [];
+  const dayData = hasWeeklyData
+    ? (weeks[weeks.length - 1]?.day_data?.length > 0
+        ? weeks[weeks.length - 1].day_data
+        : tradeStats.dayData || [])
+    : tradeStats.dayData || [];
 
   return { weeks, stats, sessionData, dayData, loading, hasData };
 }
