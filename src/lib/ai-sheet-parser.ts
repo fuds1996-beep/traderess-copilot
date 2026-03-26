@@ -57,15 +57,15 @@ export async function parseSheetWithAI(
 
   const client = new Anthropic({ apiKey });
 
-  // Send a reasonable chunk — first 80 rows to capture headers + all trades
-  const sampleRows = rows.slice(0, 80);
+  // Send all rows — we need full evaluations, not truncated summaries
+  const sampleRows = rows.slice(0, 150);
   const sheetText = sampleRows
     .map((row, i) => `Row ${i}: ${row.join(" | ")}`)
     .join("\n");
 
   const response = await client.messages.create({
     model: "claude-sonnet-4-20250514",
-    max_tokens: 8192,
+    max_tokens: 16384,
     messages: [
       {
         role: "user",
@@ -111,8 +111,8 @@ Your job: extract ONLY the actual trade entries. Each trade must have ALL of the
 - after_picture: URL to after screenshot (empty string if not found)
 - trade_quality: e.g. "⭐⭐⭐" or "3/5" (empty string if not found)
 - forecasted: e.g. "Trade was not forecasted", "Yes" (empty string if not found)
-- trade_evaluation: brief evaluation text (max 300 chars, empty string if not found)
-- notes: any additional notes (empty string if not found)
+- trade_evaluation: the FULL trade evaluation/journal text — preserve every word, do NOT summarize or truncate. This is critical for pattern analysis. Empty string if not found.
+- notes: the FULL notes text — preserve every word. Empty string if not found.
 
 Respond with ONLY valid JSON in this exact format, no other text:
 {
@@ -176,8 +176,8 @@ ${sheetText}`,
       after_picture: t.after_picture || "",
       trade_quality: t.trade_quality || "",
       forecasted: t.forecasted || "",
-      trade_evaluation: (t.trade_evaluation || "").slice(0, 500),
-      notes: (t.notes || "").slice(0, 500),
+      trade_evaluation: t.trade_evaluation || "",
+      notes: t.notes || "",
     }));
 
   return parsed;
