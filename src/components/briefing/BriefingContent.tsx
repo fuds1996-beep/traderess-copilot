@@ -26,7 +26,7 @@ export default function BriefingContent() {
   if (loading) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="h-8 bg-white/50 rounded w-48" />
+        <div className="h-8 bg-pink-100/50 rounded w-48" />
         <div className="glass rounded-2xl h-48 border border-pink-200/40" />
         <div className="glass rounded-2xl h-64 border border-pink-200/40" />
       </div>
@@ -40,12 +40,31 @@ export default function BriefingContent() {
           <h1 className="text-2xl font-bold text-gray-900">Weekly Briefing</h1>
           <p className="text-sm text-gray-500 mt-1">Fundamental analysis, economic calendar, and market sentiment</p>
         </div>
-        <div className="glass rounded-2xl border border-pink-200/40">
-          <EmptyState
-            icon={Newspaper}
-            title="No briefing generated yet"
-            description="Weekly briefings are generated from your trading data and market analysis. Connect your Google Sheet and run the copilot workflow to generate your first briefing."
-          />
+        <div className="glass rounded-2xl p-8 border border-pink-200/40">
+          <div className="max-w-lg mx-auto text-center">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-pink-500/20">
+              <Newspaper size={28} className="text-white" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Briefing Yet</h3>
+            <p className="text-sm text-gray-500 mb-6">
+              Your weekly briefing will include economic calendar events, EUR/USD &amp; DXY market analysis,
+              copilot guidance with no-trade zones, daily risk ratings, and a pre-session checklist.
+            </p>
+            <div className="flex justify-center gap-8 text-xs text-gray-400 mb-6">
+              <div className="flex flex-col items-center gap-1.5">
+                <span className="w-7 h-7 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center text-xs font-bold">1</span>
+                Connect Sheet
+              </div>
+              <div className="flex flex-col items-center gap-1.5">
+                <span className="w-7 h-7 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center text-xs font-bold">2</span>
+                Run Workflow
+              </div>
+              <div className="flex flex-col items-center gap-1.5">
+                <span className="w-7 h-7 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center text-xs font-bold">3</span>
+                Briefing Ready
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );

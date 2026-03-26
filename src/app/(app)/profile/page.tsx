@@ -1,6 +1,7 @@
 "use client";
 
-import { User, Upload } from "lucide-react";
+import { User, Upload, FileSpreadsheet, ArrowRight } from "lucide-react";
+import { ProfileSkeleton } from "@/components/ui/Skeleton";
 import Badge from "@/components/ui/Badge";
 import EmptyState from "@/components/ui/EmptyState";
 import ProfileTabs from "@/components/profile/ProfileTabs";
@@ -12,15 +13,7 @@ export default function ProfilePage() {
   const { profile, propAccounts, loading, hasData, refresh } = useTraderProfile();
   const [showUploader, setShowUploader] = useState(false);
 
-  if (loading) {
-    return (
-      <div className="space-y-6 animate-pulse">
-        <div className="h-8 bg-white/50 rounded w-48" />
-        <div className="glass rounded-2xl h-32 border border-pink-200/40" />
-        <div className="glass rounded-2xl h-64 border border-pink-200/40" />
-      </div>
-    );
-  }
+  if (loading) return <ProfileSkeleton />;
 
   if (!hasData) {
     return (
@@ -29,16 +22,31 @@ export default function ProfilePage() {
           <h1 className="text-2xl font-bold text-gray-900">Trader Profile</h1>
           <p className="text-sm text-gray-500 mt-1">Your comprehensive trading identity</p>
         </div>
-        <div className="glass rounded-2xl border border-pink-200/40">
-          <EmptyState
-            icon={User}
-            title="Profile not set up yet"
-            description="Upload your Trader Profile CSV to build your psychology profile with strengths, weaknesses, fears, successes, and more."
-            showConnect={false}
-          />
-          <div className="px-6 pb-6">
-            <ProfileUploader onSuccess={refresh} />
+        <div className="glass rounded-2xl p-8 border border-pink-200/40">
+          <div className="max-w-md mx-auto text-center mb-6">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-pink-500/20">
+              <User size={28} className="text-white" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Build Your Trader Profile</h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Upload your Trader Profile CSV to create a comprehensive psychology profile with strengths, weaknesses, fears, successes, hobbies, and goals.
+            </p>
+            <div className="flex justify-center gap-6 text-xs text-gray-400 mb-6">
+              <div className="flex flex-col items-center gap-1">
+                <span className="w-6 h-6 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center text-[10px] font-bold">1</span>
+                Upload CSV
+              </div>
+              <div className="flex flex-col items-center gap-1">
+                <span className="w-6 h-6 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center text-[10px] font-bold">2</span>
+                AI extracts data
+              </div>
+              <div className="flex flex-col items-center gap-1">
+                <span className="w-6 h-6 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center text-[10px] font-bold">3</span>
+                Profile ready
+              </div>
+            </div>
           </div>
+          <ProfileUploader onSuccess={refresh} />
         </div>
       </div>
     );

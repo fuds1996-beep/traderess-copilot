@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { BarChart3 } from "lucide-react";
+import { PerformanceSkeleton } from "@/components/ui/Skeleton";
 import WeeklyPnlBarChart from "@/components/charts/WeeklyPnlBarChart";
 import WinRateLineChart from "@/components/charts/WinRateLineChart";
 import SessionBarChart from "@/components/charts/SessionBarChart";
@@ -142,17 +143,7 @@ export default function PerformancePage() {
     [trades, periodView],
   );
 
-  if (loading) {
-    return (
-      <div className="space-y-6 animate-pulse">
-        <div className="h-8 bg-white/50 rounded w-56" />
-        <div className="grid grid-cols-2 gap-4">
-          <div className="glass rounded-2xl h-64 border border-pink-200/40" />
-          <div className="glass rounded-2xl h-64 border border-pink-200/40" />
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <PerformanceSkeleton />;
 
   const chartPeriodLabel = periodView === "all" ? "Monthly" : PERIOD_LABELS[periodView];
 

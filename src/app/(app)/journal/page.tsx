@@ -18,6 +18,7 @@ import {
   Trash2,
   Calendar,
 } from "lucide-react";
+import { JournalSkeleton } from "@/components/ui/Skeleton";
 import EmptyState from "@/components/ui/EmptyState";
 import EmotionTimelineChart from "@/components/charts/EmotionTimelineChart";
 import EffortScatterChart from "@/components/charts/EffortScatterChart";
@@ -161,14 +162,7 @@ export default function JournalPage() {
 
   // ── Render ────────────────────────────────────────────────────────────────
 
-  if (jLoading || tLoading) {
-    return (
-      <div className="space-y-6 animate-pulse">
-        <div className="h-8 bg-white/50 rounded w-56" />
-        <div className="glass rounded-2xl h-64 border border-pink-200/40" />
-      </div>
-    );
-  }
+  if (jLoading || tLoading) return <JournalSkeleton />;
 
   if (journals.length === 0 && !addingNew) {
     return (

@@ -12,6 +12,7 @@ import {
   AlertTriangle,
   TrendingUp,
 } from "lucide-react";
+import { DisciplineSkeleton } from "@/components/ui/Skeleton";
 import EmptyState from "@/components/ui/EmptyState";
 import Badge from "@/components/ui/Badge";
 import ProgressBar from "@/components/ui/ProgressBar";
@@ -50,16 +51,7 @@ export default function DisciplinePage() {
 
   const loading = tL || jL || cL || mL || gL;
 
-  if (loading) {
-    return (
-      <div className="space-y-6 animate-pulse">
-        <div className="h-8 bg-white/50 rounded w-40" />
-        <div className="grid grid-cols-3 gap-4">
-          {[...Array(3)].map((_, i) => <div key={i} className="glass rounded-2xl h-24 border border-pink-200/40" />)}
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <DisciplineSkeleton />;
 
   const hasAnyData = journals.length > 0 || chartTimeEntries.length > 0 || missedTrades.length > 0 || (goals !== null);
 

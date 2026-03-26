@@ -21,6 +21,7 @@ import {
 import StatCard from "@/components/ui/StatCard";
 import Badge from "@/components/ui/Badge";
 import EmptyState from "@/components/ui/EmptyState";
+import { DashboardSkeleton } from "@/components/ui/Skeleton";
 import PnlAreaChart from "@/components/charts/PnlAreaChart";
 import WinLossPieChart from "@/components/charts/WinLossPieChart";
 import AccountBalanceLineChart from "@/components/charts/AccountBalanceLineChart";
@@ -135,22 +136,7 @@ export default function DashboardPage() {
   const firstName = profile.full_name?.split(" ")[0] || "";
   const GreetingIcon = greeting.icon;
 
-  if (loading) {
-    return (
-      <div className="space-y-6 animate-pulse">
-        <div className="h-12 bg-white/50 rounded w-64" />
-        <div className="grid grid-cols-6 gap-4">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="glass rounded-2xl h-28 border border-pink-200/40" />
-          ))}
-        </div>
-        <div className="grid grid-cols-3 gap-4">
-          <div className="col-span-2 glass rounded-2xl h-64 border border-pink-200/40" />
-          <div className="glass rounded-2xl h-64 border border-pink-200/40" />
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <DashboardSkeleton />;
 
   if (!hasData) {
     return (
