@@ -3,6 +3,42 @@
 export type Sentiment = "bullish" | "bearish" | "neutral";
 
 // trader_profiles
+export interface ProfileWeakness {
+  name: string;
+  real_life_example: string;
+  affects_learning: string;
+  affects_planning: string;
+  affects_execution: string;
+  affects_results: string;
+  affects_evaluation: string;
+}
+
+export interface ProfileStrength {
+  name: string;
+  real_life_example: string;
+  affects_learning: string;
+  affects_planning: string;
+  affects_execution: string;
+  affects_results: string;
+  affects_evaluation: string;
+}
+
+export interface ProfileSuccess {
+  title: string;
+  description: string;
+  how_benefited: string;
+  how_achieved: string;
+  time_taken: string;
+}
+
+export interface ProfileFear {
+  title: string;
+  description: string;
+  how_affected: string;
+  how_overcome: string;
+  plan_to_overcome: string;
+}
+
 export interface TraderProfile {
   id: string;
   full_name: string;
@@ -15,12 +51,24 @@ export interface TraderProfile {
   confluence_pair: string;
   session_focus: string;
   risk_model: string;
+  // Simple scored lists (from weekly tracker)
   strengths: { label: string; score: number }[];
   weaknesses: { label: string; score: number }[];
   radar_scores: { trait: string; value: number; fullMark: number }[];
   space_method: { letter: string; word: string; status: "good" | "warning"; note: string }[];
   behavioural_patterns: { pattern: string; frequency: string; trigger: string; severity: "high" | "medium" }[];
   trading_plan: { label: string; value: string }[];
+  // Deep psychology data (from profile tracker)
+  detailed_weaknesses: ProfileWeakness[];
+  detailed_strengths: ProfileStrength[];
+  successes: ProfileSuccess[];
+  fears: ProfileFear[];
+  hobbies: string[];
+  expectations: string[];
+  experience: Record<string, string>;
+  trader_type: string;
+  availability: { slot1: string; slot2: string; slot3: string };
+  responsibilities: string;
 }
 
 // trading_performance
