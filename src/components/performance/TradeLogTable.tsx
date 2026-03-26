@@ -83,6 +83,7 @@ export default function TradeLogTable({
 }: {
   trades: Trade[];
   onRefresh: () => void;
+  compact?: boolean;
 }) {
   // Filters
   const [accountFilter, setAccountFilter] = useState<string>("all");
