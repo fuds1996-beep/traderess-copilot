@@ -4,15 +4,18 @@ import WeeklyPnlBarChart from "@/components/charts/WeeklyPnlBarChart";
 import WinRateLineChart from "@/components/charts/WinRateLineChart";
 import SessionBarChart from "@/components/charts/SessionBarChart";
 import DayOfWeekBarChart from "@/components/charts/DayOfWeekBarChart";
+import AccountBalanceLineChart from "@/components/charts/AccountBalanceLineChart";
 import TradeLogTable from "@/components/performance/TradeLogTable";
 import { usePerformance } from "@/hooks/use-performance";
 import { useTrades } from "@/hooks/use-trades";
+import { useAccountBalances } from "@/hooks/use-account-balances";
 
 export default function PerformancePage() {
   const { weeks, sessionData, dayData, loading: perfLoading, hasData: hasPerfData } = usePerformance();
   const { trades, loading: tradesLoading, refresh: refreshTrades } = useTrades();
+  const { byAccount, accountNames, hasData: hasBalances, loading: balLoading } = useAccountBalances();
 
-  if (perfLoading || tradesLoading) {
+  if (perfLoading || tradesLoading || balLoading) {
     return (
       <div className="space-y-6 animate-pulse">
         <div className="h-8 bg-slate-800 rounded w-56" />
@@ -62,6 +65,14 @@ export default function PerformancePage() {
             </div>
           )}
         </>
+      )}
+
+      {/* Account Balances */}
+      {hasBalances && (
+        <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
+          <h3 className="text-sm font-semibold text-white mb-4">Account Balances Over Time</h3>
+          <AccountBalanceLineChart byAccount={byAccount} accountNames={accountNames} />
+        </div>
       )}
 
       {/* Trade Log — always show so user can add trades manually */}
