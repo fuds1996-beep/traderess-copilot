@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   DollarSign,
   Hash,
@@ -12,6 +13,10 @@ import {
   LayoutDashboard,
   Clock,
   Shield,
+  Sparkles,
+  Sun,
+  Sunset,
+  Moon,
 } from "lucide-react";
 import StatCard from "@/components/ui/StatCard";
 import Badge from "@/components/ui/Badge";
@@ -28,6 +33,8 @@ import { useJournals } from "@/hooks/use-journals";
 import { useTrades } from "@/hooks/use-trades";
 import { useDiscipline } from "@/hooks/use-discipline";
 import { useMissedTrades } from "@/hooks/use-missed-trades";
+import { computeInsights } from "@/lib/compute-insights";
+import type { Trade } from "@/lib/types";
 
 const QUICK_ACTIONS = [
   { icon: Newspaper, label: "Run Daily Briefing", desc: "Fetch latest fundamentals" },
@@ -36,10 +43,70 @@ const QUICK_ACTIONS = [
   { icon: Target, label: "Weekly Plan", desc: "Map the week ahead" },
 ];
 
+function getGreeting(): { text: string; icon: typeof Sun } {
+  const h = new Date().getHours();
+  if (h < 12) return { text: "Good morning", icon: Sun };
+  if (h < 18) return { text: "Good afternoon", icon: Sunset };
+  return { text: "Good evening", icon: Moon };
+}
+
+function formatToday(): string {
+  return new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+/** Group trades by ISO week and compute weekly values for sparklines + trends */
+function computeWeeklyHistory(trades: Trade[]) {
+  const weekMap = new Map<string, { pnl: number; trades: number; wins: number; total: number }>();
+
+  for (const t of trades) {
+    const ws = getWeekStart(t.trade_date);
+    const d = weekMap.get(ws) || { pnl: 0, trades: 0, wins: 0, total: 0 };
+    d.trades++;
+    d.total++;
+    if (t.result === "Win") d.wins++;
+    const dollarVal = parseFloat((t.dollar_result || "").replace(/[^0-9.\-]/g, ""));
+    d.pnl += isNaN(dollarVal) ? 0 : dollarVal;
+    weekMap.set(ws, d);
+  }
+
+  const sorted = [...weekMap.entries()].sort(([a], [b]) => a.localeCompare(b));
+  return sorted.map(([, d]) => ({
+    pnl: Math.round(d.pnl),
+    trades: d.trades,
+    winRate: d.total > 0 ? Math.round((d.wins / d.total) * 100) : 0,
+  }));
+}
+
+function getWeekStart(dateStr: string): string {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  const mon = new Date(d);
+  mon.setDate(diff);
+  return mon.toISOString().split("T")[0];
+}
+
+const INSIGHT_STYLES = {
+  positive: "bg-emerald-50/60 border-emerald-200/40",
+  neutral: "bg-amber-50/60 border-amber-200/40",
+  warning: "bg-red-50/60 border-red-200/40",
+};
+const INSIGHT_ICON_COLORS = {
+  positive: "text-emerald-500",
+  neutral: "text-amber-500",
+  warning: "text-red-500",
+};
+
 export default function DashboardPage() {
   const { stats, hasData, loading: perfLoading } = usePerformance();
   const { briefing, loading: briefLoading } = useBriefing();
-  const { propAccounts, loading: profileLoading } = useTraderProfile();
+  const { profile, propAccounts, loading: profileLoading } = useTraderProfile();
   const { totalHours, loading: ctLoading } = useChartTime();
   const { byAccount, accountNames, hasData: hasBalances, loading: balLoading } = useAccountBalances();
   const { journals, loading: jLoading } = useJournals();
@@ -47,15 +114,34 @@ export default function DashboardPage() {
   const { trades: missedTrades } = useMissedTrades();
   const { scores } = useDiscipline(trades, journals, [], missedTrades);
 
+  const insights = useMemo(() => computeInsights(trades), [trades]);
+  const weeklyHistory = useMemo(() => computeWeeklyHistory(trades), [trades]);
+
   const loading = perfLoading || briefLoading || profileLoading || ctLoading || balLoading || jLoading || tLoading;
+
+  // Compute trends: compare last week vs previous week
+  const trends = useMemo(() => {
+    if (weeklyHistory.length < 2) return null;
+    const curr = weeklyHistory[weeklyHistory.length - 1];
+    const prev = weeklyHistory[weeklyHistory.length - 2];
+    return {
+      pnl: { delta: `$${Math.abs(curr.pnl - prev.pnl)}`, positive: curr.pnl >= prev.pnl },
+      trades: { delta: `${Math.abs(curr.trades - prev.trades)}`, positive: curr.trades >= prev.trades },
+      winRate: { delta: `${Math.abs(curr.winRate - prev.winRate)}%`, positive: curr.winRate >= prev.winRate },
+    };
+  }, [weeklyHistory]);
+
+  const greeting = getGreeting();
+  const firstName = profile.full_name?.split(" ")[0] || "";
+  const GreetingIcon = greeting.icon;
 
   if (loading) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="h-8 bg-white/50 rounded w-48" />
+        <div className="h-12 bg-white/50 rounded w-64" />
         <div className="grid grid-cols-6 gap-4">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="glass rounded-2xl h-24 border border-pink-200/40" />
+            <div key={i} className="glass rounded-2xl h-28 border border-pink-200/40" />
           ))}
         </div>
         <div className="grid grid-cols-3 gap-4">
@@ -70,8 +156,13 @@ export default function DashboardPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-1">Your trading copilot overview</p>
+          <div className="flex items-center gap-2 mb-1">
+            <GreetingIcon size={20} className="text-amber-400" />
+            <h1 className="text-2xl font-bold text-gray-900">
+              {greeting.text}{firstName ? `, ${firstName}` : ""}
+            </h1>
+          </div>
+          <p className="text-sm text-gray-500">{formatToday()}</p>
         </div>
         <div className="glass rounded-2xl border border-pink-200/40">
           <EmptyState
@@ -98,43 +189,64 @@ export default function DashboardPage() {
 
   const highImpactEvents = briefing?.calendar_events?.filter((e) => e.impact === "high") || [];
 
+  // Sparkline data (last 4 weeks)
+  const last4 = weeklyHistory.slice(-4);
+  const pnlSparkline = last4.map((w) => w.pnl);
+  const tradeSparkline = last4.map((w) => w.trades);
+  const wrSparkline = last4.map((w) => w.winRate);
+
   return (
     <div className="space-y-6">
+      {/* Personalized Greeting */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-1">Your trading copilot overview</p>
+          <div className="flex items-center gap-2 mb-1">
+            <GreetingIcon size={20} className="text-amber-400" />
+            <h1 className="text-2xl font-bold text-gray-900">
+              {greeting.text}{firstName ? `, ${firstName}` : ""}
+            </h1>
+          </div>
+          <p className="text-sm text-gray-500">{formatToday()}</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white text-sm rounded-lg hover:bg-pink-600 transition-colors">
+        <button className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white text-sm rounded-xl hover:bg-pink-600 transition-colors shadow-md shadow-pink-500/20">
           <Play size={14} /> Run Briefing
         </button>
       </div>
 
-      {/* Stat Cards — 6 columns */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+      {/* Stat Cards — 6 columns with trends + sparklines */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <StatCard
           icon={DollarSign}
           label="Cumulative P/L"
           value={`$${stats.totalPnl.toLocaleString()}`}
-          color="text-emerald-400"
+          color="text-emerald-500"
+          trend={trends?.pnl}
+          sparkline={pnlSparkline}
         />
         <StatCard
           icon={Hash}
           label="Total Trades"
           value={stats.totalTrades}
-          color="text-blue-400"
+          color="text-blue-500"
+          trend={trends?.trades}
+          sparkline={tradeSparkline}
         />
         <StatCard
           icon={Percent}
           label="Win Rate"
           value={`${stats.avgWinRate}%`}
-          color="text-amber-400"
+          color="text-amber-500"
+          trend={trends?.winRate}
+          sparkline={wrSparkline}
         />
         <StatCard
           icon={Target}
           label="Accounts"
           value={accountNames.length || propAccounts.length || "—"}
-          color="text-purple-400"
+          color="text-purple-500"
+          id="accounts-card"
+          onClick={hasBalances ? () => document.getElementById("account-balances")?.scrollIntoView({ behavior: "smooth" }) : undefined}
+          sub={hasBalances ? "Click to view" : undefined}
         />
         <StatCard
           icon={Clock}
@@ -146,9 +258,34 @@ export default function DashboardPage() {
           icon={Shield}
           label="Discipline"
           value={scores.overall > 0 ? scores.overall : "—"}
-          color={scores.overall >= 80 ? "text-emerald-400" : scores.overall >= 60 ? "text-amber-400" : "text-gray-500"}
+          color={scores.overall >= 80 ? "text-emerald-500" : scores.overall >= 60 ? "text-amber-500" : "text-gray-400"}
         />
       </div>
+
+      {/* AI Insights */}
+      {insights.length > 0 && (
+        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles size={16} className="text-pink-500" />
+            <h3 className="text-sm font-semibold text-gray-900">AI Insights</h3>
+            <span className="text-[10px] text-gray-400">Computed from your trade data</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {insights.map((insight, i) => (
+              <div
+                key={i}
+                className={`p-4 rounded-xl border ${INSIGHT_STYLES[insight.variant]}`}
+              >
+                <div className="flex items-center gap-2 mb-1.5">
+                  <insight.icon size={14} className={INSIGHT_ICON_COLORS[insight.variant]} />
+                  <span className="text-xs font-semibold text-gray-900">{insight.headline}</span>
+                </div>
+                <p className="text-[11px] text-gray-600 leading-relaxed">{insight.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -172,7 +309,7 @@ export default function DashboardPage() {
 
       {/* Account Balances */}
       {hasBalances && (
-        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+        <div id="account-balances" className="glass rounded-2xl p-5 border border-pink-200/40">
           <h3 className="text-sm font-semibold text-gray-900 mb-4">Account Balances</h3>
           <AccountBalanceLineChart byAccount={byAccount} accountNames={accountNames} />
         </div>
@@ -206,7 +343,7 @@ export default function DashboardPage() {
           <h3 className="text-sm font-semibold text-gray-900 mb-3">Copilot Quick Actions</h3>
           <div className="grid grid-cols-2 gap-2">
             {QUICK_ACTIONS.map((a) => (
-              <button key={a.label} className="flex flex-col items-start p-3 bg-pink-50/60 rounded-lg hover:bg-pink-100/60 transition-colors text-left">
+              <button key={a.label} className="flex flex-col items-start p-3 bg-pink-50/60 rounded-xl hover:bg-pink-100/60 transition-colors text-left">
                 <a.icon size={16} className="text-pink-500 mb-1.5" />
                 <span className="text-xs font-medium text-gray-900">{a.label}</span>
                 <span className="text-[10px] text-gray-400">{a.desc}</span>
