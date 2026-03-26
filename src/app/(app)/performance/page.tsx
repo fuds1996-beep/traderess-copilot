@@ -1,7 +1,5 @@
 "use client";
 
-import { TrendingUp } from "lucide-react";
-import EmptyState from "@/components/ui/EmptyState";
 import WeeklyPnlBarChart from "@/components/charts/WeeklyPnlBarChart";
 import WinRateLineChart from "@/components/charts/WinRateLineChart";
 import SessionBarChart from "@/components/charts/SessionBarChart";
@@ -12,7 +10,7 @@ import { useTrades } from "@/hooks/use-trades";
 
 export default function PerformancePage() {
   const { weeks, sessionData, dayData, loading: perfLoading, hasData: hasPerfData } = usePerformance();
-  const { trades, loading: tradesLoading, hasData: hasTradeData } = useTrades();
+  const { trades, loading: tradesLoading, refresh: refreshTrades } = useTrades();
 
   if (perfLoading || tradesLoading) {
     return (
@@ -21,24 +19,6 @@ export default function PerformancePage() {
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-slate-800 rounded-xl h-64 border border-slate-700" />
           <div className="bg-slate-800 rounded-xl h-64 border border-slate-700" />
-        </div>
-      </div>
-    );
-  }
-
-  if (!hasPerfData && !hasTradeData) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Performance Analytics</h1>
-          <p className="text-sm text-slate-400 mt-1">Detailed breakdown of your trading metrics</p>
-        </div>
-        <div className="bg-slate-800 rounded-xl border border-slate-700">
-          <EmptyState
-            icon={TrendingUp}
-            title="No performance data yet"
-            description="Connect your Google Sheet trading tracker to see weekly P/L charts, win rate trends, session breakdowns, and your full trade log."
-          />
         </div>
       </div>
     );
@@ -84,13 +64,11 @@ export default function PerformancePage() {
         </>
       )}
 
-      {/* Trade Log */}
-      {hasTradeData && (
-        <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
-          <h3 className="text-sm font-semibold text-white mb-4">Recent Trade Log</h3>
-          <TradeLogTable trades={trades} />
-        </div>
-      )}
+      {/* Trade Log — always show so user can add trades manually */}
+      <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
+        <h3 className="text-sm font-semibold text-white mb-4">Trade Log</h3>
+        <TradeLogTable trades={trades} onRefresh={refreshTrades} />
+      </div>
     </div>
   );
 }

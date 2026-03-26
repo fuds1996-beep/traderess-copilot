@@ -41,20 +41,43 @@ export interface WeeklyPerformance {
   day_data: { day: string; trades: number; winRate: number }[];
 }
 
-// trade_log
+// trade_log — matches the student's full trading tracker
 export interface Trade {
   id: string;
   user_id: string;
+  account_name: string;
+  day: string;
   trade_date: string;
+  scenario: string;
   pair: string;
-  direction: "Long" | "Short";
+  session: string;
+  time_of_entry: string;
+  time_of_exit: string;
   entry_price: number;
   sl_price: number;
   tp_price: number;
+  entry_strategy: string;
+  sl_strategy: string;
+  tp_strategy: string;
+  direction: "Long" | "Short";
+  entry_conf_1: string;
+  entry_conf_2: string;
+  entry_conf_3: string;
+  fundamental_check: boolean;
+  event_within_2h: boolean;
+  safe_window: boolean;
   result: "Win" | "Loss" | "BE";
+  overall_pips: number;
   pips: number;
+  rs_gained: number;
   risk_reward: string;
-  session: string;
+  dollar_result: string;
+  percent_risked: string;
+  before_picture: string;
+  after_picture: string;
+  trade_quality: string;
+  forecasted: string;
+  trade_evaluation: string;
   notes: string;
 }
 

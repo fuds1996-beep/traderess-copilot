@@ -1,16 +1,39 @@
 import Anthropic from "@anthropic-ai/sdk";
 
 export interface ParsedTrade {
+  account_name: string;
+  day: string;
   trade_date: string;
+  scenario: string;
   pair: string;
-  direction: "Long" | "Short";
+  session: string;
+  time_of_entry: string;
+  time_of_exit: string;
   entry_price: number;
   sl_price: number;
   tp_price: number;
+  entry_strategy: string;
+  sl_strategy: string;
+  tp_strategy: string;
+  direction: "Long" | "Short";
+  entry_conf_1: string;
+  entry_conf_2: string;
+  entry_conf_3: string;
+  fundamental_check: boolean;
+  event_within_2h: boolean;
+  safe_window: boolean;
   result: "Win" | "Loss" | "BE";
+  overall_pips: number;
   pips: number;
+  rs_gained: number;
   risk_reward: string;
-  session: string;
+  dollar_result: string;
+  percent_risked: string;
+  before_picture: string;
+  after_picture: string;
+  trade_quality: string;
+  forecasted: string;
+  trade_evaluation: string;
   notes: string;
 }
 
@@ -34,16 +57,15 @@ export async function parseSheetWithAI(
 
   const client = new Anthropic({ apiKey });
 
-  // Send a reasonable chunk — first 60 rows should capture headers + trades
-  // but cap the total text size to avoid huge token usage
-  const sampleRows = rows.slice(0, 60);
+  // Send a reasonable chunk — first 80 rows to capture headers + all trades
+  const sampleRows = rows.slice(0, 80);
   const sheetText = sampleRows
     .map((row, i) => `Row ${i}: ${row.join(" | ")}`)
     .join("\n");
 
   const response = await client.messages.create({
     model: "claude-sonnet-4-20250514",
-    max_tokens: 4096,
+    max_tokens: 8192,
     messages: [
       {
         role: "user",
@@ -51,22 +73,46 @@ export async function parseSheetWithAI(
 - Decorative rows, merged cells, account labels, motivational quotes
 - Headers that are NOT on row 0 — they could be anywhere
 - Multiple account sections (10K, 50K, etc.) with trades under each
-- Non-standard column names (e.g. "Major Pair" instead of "Pair", "Outcome" instead of "Result")
+- Non-standard column names
 - Dates in various formats (23/3/26, Mar 10, 2026-03-10)
 - Empty rows, section dividers, psychology notes
 
-Your job: extract ONLY the actual trade entries. Each trade should have:
+Your job: extract ONLY the actual trade entries. Each trade must have ALL of these fields:
+
+- account_name: which account (e.g. "10K Funded", "50K Funded") — look for labels like "Account 1", "10K", "50K" above the trade rows
+- day: day of week (e.g. "Monday", "Tuesday")
 - trade_date: ISO format YYYY-MM-DD
+- scenario: e.g. "Primary", "Secondary" (empty string if not found)
 - pair: e.g. "EUR/USD"
-- direction: "Long" or "Short"
+- session: e.g. "London", "NY Open", "Asia Close"
+- time_of_entry: e.g. "8:49" (empty string if not found)
+- time_of_exit: e.g. "9:11" (empty string if not found)
 - entry_price: decimal number
 - sl_price: stop loss price (0 if not found)
 - tp_price: take profit price (0 if not found)
+- entry_strategy: how they entered (empty string if not found)
+- sl_strategy: how SL was set (empty string if not found)
+- tp_strategy: how TP was set (empty string if not found)
+- direction: "Long" or "Short"
+- entry_conf_1: first confirmation (e.g. "Session high/low") — empty string if not found
+- entry_conf_2: second confirmation (e.g. "RSI 15") — empty string if not found
+- entry_conf_3: third confirmation — empty string if not found
+- fundamental_check: boolean — did they check fundamentals?
+- event_within_2h: boolean — was there a news event within 2 hours?
+- safe_window: boolean — was it a safe trading window?
 - result: "Win", "Loss", or "BE"
-- pips: number (negative for losses, 0 if not found)
-- risk_reward: e.g. "2:1" or "1:1" (use "0:0" if not found)
-- session: e.g. "London", "NY", "Asian" (use "London" if not found)
-- notes: brief trade notes/evaluation (max 200 chars, empty string if not found)
+- overall_pips: total pips gained/lost (number, negative for losses)
+- pips: same as overall_pips
+- rs_gained: R-multiple gained/lost (number, e.g. 1.0, -1.0)
+- risk_reward: R:R ratio as string (e.g. "1:1", "2:1")
+- dollar_result: e.g. "$101", "-$50" (empty string if not found)
+- percent_risked: e.g. "1.00%", "2%" (empty string if not found)
+- before_picture: URL to before screenshot (empty string if not found)
+- after_picture: URL to after screenshot (empty string if not found)
+- trade_quality: e.g. "⭐⭐⭐" or "3/5" (empty string if not found)
+- forecasted: e.g. "Trade was not forecasted", "Yes" (empty string if not found)
+- trade_evaluation: brief evaluation text (max 300 chars, empty string if not found)
+- notes: any additional notes (empty string if not found)
 
 Respond with ONLY valid JSON in this exact format, no other text:
 {
@@ -75,9 +121,7 @@ Respond with ONLY valid JSON in this exact format, no other text:
   "notes": "brief description of what you found and any issues"
 }
 
-If a field is ambiguous, make your best guess. If you see "Long" direction indicators (like price going up, buy signals), use "Long". If the result isn't explicit but pips are positive, assume "Win".
-
-Skip rows that are clearly not trades (headers, labels, summaries, empty rows, psychology notes).
+Skip rows that are clearly not trades (headers, labels, summaries, empty rows, psychology notes, daily tracker summaries).
 
 Here is the spreadsheet data:
 
@@ -86,11 +130,9 @@ ${sheetText}`,
     ],
   });
 
-  // Extract the text response
   const text =
     response.content[0].type === "text" ? response.content[0].text : "";
 
-  // Parse the JSON — Claude might wrap it in markdown code blocks
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
     throw new Error("AI could not parse the spreadsheet data");
@@ -102,17 +144,39 @@ ${sheetText}`,
   parsed.trades = parsed.trades
     .filter((t) => t.trade_date && t.entry_price > 0)
     .map((t) => ({
+      account_name: t.account_name || "",
+      day: t.day || "",
       trade_date: t.trade_date,
+      scenario: t.scenario || "",
       pair: t.pair || "EUR/USD",
-      direction: t.direction === "Short" ? "Short" : "Long",
+      session: t.session || "London",
+      time_of_entry: t.time_of_entry || "",
+      time_of_exit: t.time_of_exit || "",
       entry_price: Number(t.entry_price) || 0,
       sl_price: Number(t.sl_price) || 0,
       tp_price: Number(t.tp_price) || 0,
-      result:
-        t.result === "Loss" ? "Loss" : t.result === "BE" ? "BE" : "Win",
-      pips: Number(t.pips) || 0,
+      entry_strategy: t.entry_strategy || "",
+      sl_strategy: t.sl_strategy || "",
+      tp_strategy: t.tp_strategy || "",
+      direction: t.direction === "Short" ? "Short" : "Long",
+      entry_conf_1: t.entry_conf_1 || "",
+      entry_conf_2: t.entry_conf_2 || "",
+      entry_conf_3: t.entry_conf_3 || "",
+      fundamental_check: !!t.fundamental_check,
+      event_within_2h: !!t.event_within_2h,
+      safe_window: t.safe_window !== false,
+      result: t.result === "Loss" ? "Loss" : t.result === "BE" ? "BE" : "Win",
+      overall_pips: Number(t.overall_pips) || Number(t.pips) || 0,
+      pips: Number(t.pips) || Number(t.overall_pips) || 0,
+      rs_gained: Number(t.rs_gained) || 0,
       risk_reward: t.risk_reward || "0:0",
-      session: t.session || "London",
+      dollar_result: t.dollar_result || "",
+      percent_risked: t.percent_risked || "",
+      before_picture: t.before_picture || "",
+      after_picture: t.after_picture || "",
+      trade_quality: t.trade_quality || "",
+      forecasted: t.forecasted || "",
+      trade_evaluation: (t.trade_evaluation || "").slice(0, 500),
       notes: (t.notes || "").slice(0, 500),
     }));
 
