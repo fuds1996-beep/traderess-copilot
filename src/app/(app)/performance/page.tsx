@@ -27,7 +27,7 @@ function getWeekStart(dateStr: string): string {
 }
 
 function getMonthKey(dateStr: string): string {
-  return dateStr.slice(0, 7); // YYYY-MM
+  return dateStr.slice(0, 7);
 }
 
 function getQuarterKey(dateStr: string): string {
@@ -84,8 +84,52 @@ function groupTrades(
     }));
 }
 
+/** Compute P/L bar chart data and win rate line chart data from trades grouped by period */
+function computeChartData(trades: Trade[], period: PeriodView) {
+  const keyFn = period === "quarterly" ? getQuarterKey
+    : period === "monthly" ? getMonthKey
+    : getWeekStart;
+
+  const labelFn = (k: string) =>
+    period === "quarterly" ? formatQuarterLabel(k)
+    : period === "monthly" ? formatMonthLabel(k)
+    : formatWeekLabel(k);
+
+  const groups = new Map<string, Trade[]>();
+  for (const t of trades) {
+    const k = keyFn(t.trade_date);
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k)!.push(t);
+  }
+
+  const sorted = [...groups.entries()].sort(([a], [b]) => a.localeCompare(b));
+
+  const pnlData = sorted.map(([key, grp]) => {
+    const pnl = grp.reduce((s, t) => {
+      const v = parseFloat((t.dollar_result || "").replace(/[^0-9.\-]/g, ""));
+      return s + (isNaN(v) ? 0 : v);
+    }, 0);
+    return { week_label: labelFn(key), pnl: Math.round(pnl * 100) / 100 };
+  });
+
+  const winRateData = sorted.map(([key, grp]) => {
+    const wins = grp.filter((t) => t.result === "Win").length;
+    const wr = grp.length > 0 ? Math.round((wins / grp.length) * 100 * 10) / 10 : 0;
+    return { week_label: labelFn(key), win_rate: wr };
+  });
+
+  return { pnlData, winRateData };
+}
+
+const PERIOD_LABELS: Record<PeriodView, string> = {
+  weekly: "Weekly",
+  monthly: "Monthly",
+  quarterly: "Quarterly",
+  all: "All Time",
+};
+
 export default function PerformancePage() {
-  const { weeks, sessionData, dayData, loading: perfLoading, hasData: hasPerfData } = usePerformance();
+  const { sessionData, dayData, loading: perfLoading } = usePerformance();
   const { trades, loading: tradesLoading, refresh: refreshTrades } = useTrades();
   const { byAccount, accountNames, hasData: hasBalances, loading: balLoading } = useAccountBalances();
   const [periodView, setPeriodView] = useState<PeriodView>("weekly");
@@ -93,6 +137,10 @@ export default function PerformancePage() {
   const loading = perfLoading || tradesLoading || balLoading;
 
   const periodGroups = useMemo(() => groupTrades(trades, periodView), [trades, periodView]);
+  const { pnlData, winRateData } = useMemo(
+    () => computeChartData(trades, periodView === "all" ? "monthly" : periodView),
+    [trades, periodView],
+  );
 
   if (loading) {
     return (
@@ -105,6 +153,8 @@ export default function PerformancePage() {
       </div>
     );
   }
+
+  const chartPeriodLabel = periodView === "all" ? "Monthly" : PERIOD_LABELS[periodView];
 
   return (
     <div className="space-y-6">
@@ -140,37 +190,36 @@ export default function PerformancePage() {
         />
       ))}
 
-      {/* Charts — only show if there's performance data */}
-      {hasPerfData && (
-        <>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="glass rounded-2xl p-5 border border-pink-200/40">
-              <h3 className="text-sm font-semibold text-gray-900 mb-4">Weekly P/L</h3>
-              <WeeklyPnlBarChart data={weeks} />
-            </div>
-            <div className="glass rounded-2xl p-5 border border-pink-200/40">
-              <h3 className="text-sm font-semibold text-gray-900 mb-4">Win Rate Trend</h3>
-              <WinRateLineChart data={weeks} />
-            </div>
+      {/* P/L + Win Rate Charts — computed from actual trades */}
+      {pnlData.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="glass rounded-2xl p-5 border border-pink-200/40">
+            <h3 className="text-sm font-semibold text-gray-900 mb-4">{chartPeriodLabel} P/L</h3>
+            <WeeklyPnlBarChart data={pnlData} />
           </div>
+          <div className="glass rounded-2xl p-5 border border-pink-200/40">
+            <h3 className="text-sm font-semibold text-gray-900 mb-4">{chartPeriodLabel} Win Rate</h3>
+            <WinRateLineChart data={winRateData} />
+          </div>
+        </div>
+      )}
 
-          {(sessionData.length > 0 || dayData.length > 0) && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {sessionData.length > 0 && (
-                <div className="glass rounded-2xl p-5 border border-pink-200/40">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-4">Performance by Session</h3>
-                  <SessionBarChart data={sessionData} />
-                </div>
-              )}
-              {dayData.length > 0 && (
-                <div className="glass rounded-2xl p-5 border border-pink-200/40">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-4">Trades by Day of Week</h3>
-                  <DayOfWeekBarChart data={dayData} />
-                </div>
-              )}
+      {/* Session + Day charts */}
+      {(sessionData.length > 0 || dayData.length > 0) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {sessionData.length > 0 && (
+            <div className="glass rounded-2xl p-5 border border-pink-200/40">
+              <h3 className="text-sm font-semibold text-gray-900 mb-4">Performance by Session</h3>
+              <SessionBarChart data={sessionData} />
             </div>
           )}
-        </>
+          {dayData.length > 0 && (
+            <div className="glass rounded-2xl p-5 border border-pink-200/40">
+              <h3 className="text-sm font-semibold text-gray-900 mb-4">Trades by Day of Week</h3>
+              <DayOfWeekBarChart data={dayData} />
+            </div>
+          )}
+        </div>
       )}
 
       {/* Account Balances */}

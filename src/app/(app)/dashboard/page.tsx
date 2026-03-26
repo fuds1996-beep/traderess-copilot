@@ -133,7 +133,7 @@ export default function DashboardPage() {
         <StatCard
           icon={Target}
           label="Accounts"
-          value={propAccounts.length || "—"}
+          value={accountNames.length || propAccounts.length || "—"}
           color="text-purple-400"
         />
         <StatCard

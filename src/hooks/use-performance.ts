@@ -46,9 +46,16 @@ function statsFromTrades(trades: Trade[]): DashboardStats {
 
   const sortedDates = [...byDate.entries()].sort(([a], [b]) => a.localeCompare(b));
   let cumulative = 0;
+  let lastYear = "";
   const cumPnl = sortedDates.map(([date, pnl]) => {
     cumulative += pnl;
-    return { week: date, pnl: Math.round(cumulative * 100) / 100 };
+    // Format as "MMM DD" — add year only when it changes
+    const d = new Date(date);
+    const year = date.slice(0, 4);
+    const label = d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+      + (year !== lastYear && lastYear !== "" ? ` '${year.slice(2)}` : "");
+    lastYear = year;
+    return { week: label, pnl: Math.round(cumulative * 100) / 100 };
   });
 
   // Session breakdown from trades
