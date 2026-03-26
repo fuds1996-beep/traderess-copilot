@@ -126,6 +126,100 @@ export interface CopilotSettings {
   copilot_skills: { name: string; desc: string; active: boolean }[];
 }
 
+// daily_journals
+export interface DailyJournal {
+  id: string;
+  user_id: string;
+  journal_date: string;
+  day_of_week: string;
+  week_start: string;
+  market_mood: string;
+  fundamentals_summary: string;
+  emotion_before: string;
+  emotion_during: string;
+  emotion_after: string;
+  effort_rating: number;
+  journal_text: string;
+  trades_taken: number;
+  pips_positive: number;
+  pips_negative: number;
+  pips_overall: number;
+  rs_total: number;
+}
+
+// chart_time_log
+export interface ChartTimeEntry {
+  id: string;
+  user_id: string;
+  log_date: string;
+  week_start: string;
+  chart_time_minutes: number;
+  logging_time_minutes: number;
+  education_time_minutes: number;
+  total_minutes: number;
+  time_slots: { start: string; end: string; category: string }[];
+}
+
+// weekly_summaries
+export interface WeeklySummary {
+  id: string;
+  user_id: string;
+  week_start: string;
+  week_end: string;
+  week_label: string;
+  overall_summary: string;
+  total_chart_time_minutes: number;
+  total_trades: number;
+  total_pips: number;
+  total_rs: number;
+  trading_plan_text: string;
+  risk_ladder_config: { account: string; sl_pips: number; tp_pips: number; r_value: number; risk_pct: number }[];
+}
+
+// account_balances
+export interface AccountBalance {
+  id: string;
+  user_id: string;
+  account_name: string;
+  week_start: string;
+  balance_start: number;
+  balance_end: number;
+  weekly_result: number;
+  account_status: string;
+}
+
+// missed_trades
+export interface MissedTrade {
+  id: string;
+  user_id: string;
+  trade_date: string;
+  pair: string;
+  direction: "Long" | "Short";
+  session: string;
+  scenario: string;
+  reason_missed: string;
+  would_have_result: string;
+  would_have_pips: number;
+  entry_price: number;
+  sl_price: number;
+  tp_price: number;
+  notes: string;
+}
+
+// trading_goals
+export interface TradingGoal {
+  id: string;
+  user_id: string;
+  period_start: string;
+  period_type: "monthly" | "weekly";
+  primary_goals: { goal: string; completed: boolean }[];
+  process_goals: { goal: string; completed: boolean }[];
+  psychological_goals: { goal: string; completed: boolean }[];
+  improvement_items: { item: string; progress: string }[];
+  core_focus: string[];
+  intention_text: string;
+}
+
 // ─── Computed / view types ───────────────────────────────────────────────────
 
 export interface DashboardStats {
