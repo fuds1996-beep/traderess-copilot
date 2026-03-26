@@ -7,46 +7,43 @@ import {
   Loader2,
   Check,
   AlertCircle,
-  RefreshCw,
-  Table,
-  TrendingUp,
+  Sparkles,
+  Brain,
 } from "lucide-react";
-
-type SheetType = "trades" | "performance";
 
 interface SyncResult {
   synced: number;
+  confidence: "high" | "medium" | "low";
   message: string;
 }
 
 export default function SheetsConnector() {
   const [sheetUrl, setSheetUrl] = useState("");
   const [range, setRange] = useState("Sheet1");
-  const [sheetType, setSheetType] = useState<SheetType>("trades");
   const [loading, setLoading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [preview, setPreview] = useState<string[][] | null>(null);
   const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   function extractSpreadsheetId(url: string): string | null {
-    // Handle full URL: https://docs.google.com/spreadsheets/d/SPREADSHEET_ID/...
     const match = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
     if (match) return match[1];
-    // Handle raw ID
     if (/^[a-zA-Z0-9_-]{20,}$/.test(url.trim())) return url.trim();
     return null;
   }
 
-  async function handlePreview() {
-    setError(null);
+  function reset() {
     setPreview(null);
     setSyncResult(null);
+    setError(null);
+  }
 
+  async function handlePreview() {
+    reset();
     const id = extractSpreadsheetId(sheetUrl);
     if (!id) {
-      setError(
-        "Invalid Google Sheets URL. Paste the full URL or the spreadsheet ID.",
-      );
+      setError("Invalid Google Sheets URL. Paste the full URL or spreadsheet ID.");
       return;
     }
 
@@ -67,9 +64,8 @@ export default function SheetsConnector() {
         return;
       }
 
-      // Use auto-detected header row from the API
       const headerIdx = data.headerIdx ?? 0;
-      setPreview(data.rows.slice(headerIdx, headerIdx + 6)); // Show header + 5 data rows
+      setPreview(data.rows.slice(headerIdx, headerIdx + 6));
     } catch {
       setError("Failed to connect to Google Sheets");
     } finally {
@@ -84,16 +80,12 @@ export default function SheetsConnector() {
     const id = extractSpreadsheetId(sheetUrl);
     if (!id) return;
 
-    setLoading(true);
+    setSyncing(true);
     try {
       const res = await fetch("/api/sheets/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          spreadsheetId: id,
-          range,
-          sheetType,
-        }),
+        body: JSON.stringify({ spreadsheetId: id, range }),
       });
       const data = await res.json();
 
@@ -106,9 +98,15 @@ export default function SheetsConnector() {
     } catch {
       setError("Sync request failed");
     } finally {
-      setLoading(false);
+      setSyncing(false);
     }
   }
+
+  const confidenceColors = {
+    high: "text-emerald-400",
+    medium: "text-amber-400",
+    low: "text-red-400",
+  };
 
   return (
     <div className="space-y-4">
@@ -128,9 +126,7 @@ export default function SheetsConnector() {
               value={sheetUrl}
               onChange={(e) => {
                 setSheetUrl(e.target.value);
-                setPreview(null);
-                setSyncResult(null);
-                setError(null);
+                reset();
               }}
               placeholder="https://docs.google.com/spreadsheets/d/..."
               className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-9 pr-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
@@ -141,7 +137,7 @@ export default function SheetsConnector() {
             disabled={loading || !sheetUrl.trim()}
             className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 text-white text-sm rounded-lg transition-colors shrink-0"
           >
-            {loading && !syncResult ? (
+            {loading ? (
               <Loader2 size={14} className="animate-spin" />
             ) : (
               <FileSpreadsheet size={14} />
@@ -151,47 +147,18 @@ export default function SheetsConnector() {
         </div>
       </div>
 
-      {/* Options row */}
-      <div className="flex gap-3">
-        <div className="flex-1">
-          <label className="block text-xs text-slate-400 mb-1.5">
-            Sheet / Range
-          </label>
-          <input
-            type="text"
-            value={range}
-            onChange={(e) => setRange(e.target.value)}
-            placeholder="Sheet1 or Sheet1!A1:K"
-            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
-          />
-        </div>
-        <div>
-          <label className="block text-xs text-slate-400 mb-1.5">
-            Data Type
-          </label>
-          <div className="flex gap-1">
-            <button
-              onClick={() => setSheetType("trades")}
-              className={`flex items-center gap-1.5 px-3 py-2 text-xs rounded-lg border transition-colors ${
-                sheetType === "trades"
-                  ? "bg-indigo-600/20 border-indigo-500 text-indigo-400"
-                  : "bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-600"
-              }`}
-            >
-              <Table size={12} /> Trades
-            </button>
-            <button
-              onClick={() => setSheetType("performance")}
-              className={`flex items-center gap-1.5 px-3 py-2 text-xs rounded-lg border transition-colors ${
-                sheetType === "performance"
-                  ? "bg-indigo-600/20 border-indigo-500 text-indigo-400"
-                  : "bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-600"
-              }`}
-            >
-              <TrendingUp size={12} /> Weekly
-            </button>
-          </div>
-        </div>
+      {/* Sheet name */}
+      <div>
+        <label className="block text-xs text-slate-400 mb-1.5">
+          Sheet Name / Range
+        </label>
+        <input
+          type="text"
+          value={range}
+          onChange={(e) => setRange(e.target.value)}
+          placeholder="Sheet1 or March 23-27"
+          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+        />
       </div>
 
       {/* Error */}
@@ -207,10 +174,7 @@ export default function SheetsConnector() {
         <div className="bg-slate-900 border border-slate-700 rounded-lg overflow-hidden">
           <div className="flex items-center justify-between px-3 py-2 border-b border-slate-700">
             <span className="text-xs text-slate-400">
-              Preview ({preview.length - 1} data rows shown)
-            </span>
-            <span className="text-[10px] text-slate-500">
-              Headers: {preview[0]?.join(", ")}
+              Data preview (auto-detected headers)
             </span>
           </div>
           <div className="overflow-x-auto">
@@ -220,9 +184,9 @@ export default function SheetsConnector() {
                   {preview[0]?.map((h, i) => (
                     <th
                       key={i}
-                      className="text-left py-1.5 px-2 text-slate-400 font-medium"
+                      className="text-left py-1.5 px-2 text-slate-400 font-medium whitespace-nowrap"
                     >
-                      {h}
+                      {h || <span className="text-slate-600">—</span>}
                     </th>
                   ))}
                 </tr>
@@ -238,7 +202,7 @@ export default function SheetsConnector() {
                         key={ci}
                         className="py-1.5 px-2 text-slate-300 truncate max-w-[120px]"
                       >
-                        {cell}
+                        {cell || <span className="text-slate-700">—</span>}
                       </td>
                     ))}
                   </tr>
@@ -247,30 +211,54 @@ export default function SheetsConnector() {
             </table>
           </div>
 
-          {/* Sync button */}
-          <div className="px-3 py-2.5 border-t border-slate-700">
-            <button
-              onClick={handleSync}
-              disabled={loading}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm rounded-lg transition-colors"
-            >
-              {loading ? (
-                <Loader2 size={14} className="animate-spin" />
-              ) : (
-                <RefreshCw size={14} />
-              )}
-              Sync {sheetType === "trades" ? "Trades" : "Performance"} to
-              Copilot
-            </button>
+          {/* AI Sync button */}
+          <div className="px-3 py-3 border-t border-slate-700 bg-slate-800/50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs text-slate-400">
+                <Brain size={14} className="text-indigo-400" />
+                <span>
+                  AI will read your spreadsheet and extract trades automatically
+                </span>
+              </div>
+              <button
+                onClick={handleSync}
+                disabled={syncing}
+                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm rounded-lg transition-colors"
+              >
+                {syncing ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin" />
+                    Parsing with AI...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={14} />
+                    Sync with AI
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* Success */}
       {syncResult && (
-        <div className="flex items-center gap-2 p-3 bg-emerald-900/30 border border-emerald-800/50 rounded-lg">
-          <Check size={14} className="text-emerald-400 shrink-0" />
-          <p className="text-xs text-emerald-400">{syncResult.message}</p>
+        <div className="bg-emerald-900/20 border border-emerald-800/50 rounded-lg p-4 space-y-2">
+          <div className="flex items-center gap-2">
+            <Check size={14} className="text-emerald-400 shrink-0" />
+            <p className="text-sm text-emerald-400 font-medium">
+              {syncResult.synced} trades synced
+            </p>
+            <span
+              className={`text-[10px] px-2 py-0.5 rounded-full bg-slate-800 ${confidenceColors[syncResult.confidence]}`}
+            >
+              {syncResult.confidence} confidence
+            </span>
+          </div>
+          {syncResult.message && (
+            <p className="text-xs text-slate-400">{syncResult.message}</p>
+          )}
         </div>
       )}
 
@@ -281,12 +269,9 @@ export default function SheetsConnector() {
           link&quot; (Viewer access).
         </p>
         <p>
-          <strong>Trade log columns:</strong> Date, Pair, Direction, Entry, SL,
-          TP, Result, Pips, R:R, Session, Notes
-        </p>
-        <p>
-          <strong>Performance columns:</strong> Week, PnL, Trades, Win Rate, R
-          Value
+          AI parsing works with any spreadsheet layout — it automatically finds
+          trade data regardless of column names, row positions, or formatting
+          style.
         </p>
       </div>
     </div>
