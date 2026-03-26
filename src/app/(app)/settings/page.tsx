@@ -1,7 +1,8 @@
 "use client";
 
-import { Bot } from "lucide-react";
+import { Bot, FileSpreadsheet } from "lucide-react";
 import ToggleSwitch from "@/components/ui/ToggleSwitch";
+import SheetsConnector from "@/components/sheets/SheetsConnector";
 import { useSettings } from "@/hooks/use-settings";
 
 export default function SettingsPage() {
@@ -26,6 +27,17 @@ export default function SettingsPage() {
         <p className="text-sm text-slate-400 mt-1">
           Configure your trading copilot
         </p>
+      </div>
+
+      {/* Google Sheets Integration — full width */}
+      <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
+        <div className="flex items-center gap-2 mb-4">
+          <FileSpreadsheet size={16} className="text-emerald-400" />
+          <h3 className="text-sm font-semibold text-white">
+            Google Sheets Trading Tracker
+          </h3>
+        </div>
+        <SheetsConnector />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
