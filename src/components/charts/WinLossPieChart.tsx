@@ -7,7 +7,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { PIE_COLORS } from "@/lib/mock-data";
+const PIE_COLORS = ["#10b981", "#ef4444", "#f59e0b"];
 
 export default function WinLossPieChart({
   data,

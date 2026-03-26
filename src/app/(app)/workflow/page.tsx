@@ -14,11 +14,30 @@ import {
   Timer,
 } from "lucide-react";
 import Badge from "@/components/ui/Badge";
-import {
-  WORKFLOW_STEPS,
-  DATA_SOURCES,
-  SCHEDULE_CONFIGS,
-} from "@/lib/mock-data";
+
+const WORKFLOW_STEPS = [
+  { phase: "0A", title: "Extract Weekly Trading Data", icon: "Upload" as const, desc: "Navigate to Google Sheets tracker. Extract latest week\u2019s trading data. Update performance records.", agents: ["Performance File Updater", "Traders Profile Updater"], status: "ready" as const },
+  { phase: "0B", title: "Verify Data Extraction", icon: "Shield" as const, desc: "Verification agent cross-checks extracted data against source spreadsheet.", agents: ["Verification Agent"], status: "ready" as const },
+  { phase: "1", title: "Receive Economic Calendar", icon: "Calendar" as const, desc: "Paste raw economic calendar for the upcoming week. Convert to CET. Parse high/medium impact events.", agents: [], status: "manual" as const },
+  { phase: "2", title: "Extract FX Articles", icon: "Newspaper" as const, desc: "Navigate to EUR/USD and DXY news pages. Extract top article links from each.", agents: ["EUR/USD Article Reader", "DXY Article Reader"], status: "ready" as const },
+  { phase: "3", title: "Deep Read Articles", icon: "BookOpen" as const, desc: "Open each article, read full text, extract key institutional insights \u2014 not just headlines.", agents: ["Agent 1: EUR/USD Reader", "Agent 2: DXY Reader"], status: "ready" as const },
+  { phase: "4", title: "Verification Gate", icon: "CheckCircle" as const, desc: "Cross-checks article summaries to confirm genuine deep-dive analysis, not headline scraping.", agents: ["Verification Agent"], status: "ready" as const },
+  { phase: "5", title: "Simplification Pass", icon: "Lightbulb" as const, desc: "Simplifies complex terminology. Keeps key terms but explains in plain English for gradual learning.", agents: ["Simplification Agent"], status: "ready" as const },
+  { phase: "6", title: "Compile & Deliver Briefing", icon: "FileText" as const, desc: "Compile weekly briefing from all sources. Inject previous week\u2019s trading insights. Generate briefing.", agents: ["Briefing Compiler"], status: "ready" as const },
+];
+
+const DATA_SOURCES = [
+  { name: "Google Sheets Tracker", status: "connected" as const, icon: "FileText" as const },
+  { name: "FX Street EUR/USD", status: "connected" as const, icon: "Globe" as const },
+  { name: "FX Street DXY", status: "connected" as const, icon: "Globe" as const },
+  { name: "Economic Calendar", status: "manual" as const, icon: "Calendar" as const },
+];
+
+const SCHEDULE_CONFIGS = [
+  { name: "Daily Briefing", status: "Active", desc: "Runs Phase 1\u20136 \u00b7 Mon\u2013Fri at 06:00 CET", note: "Skips Phase 0A/0B (weekly only)" },
+  { name: "Full Weekly Run", status: "Active", desc: "Runs Phase 0A\u20136 \u00b7 Sunday at 19:00 CET", note: "Includes data extraction + performance update" },
+  { name: "Monthly Evaluation", status: "Planned", desc: "Last Sunday of month \u00b7 Full performance report", note: null },
+];
 
 const STEP_ICONS = {
   Upload,

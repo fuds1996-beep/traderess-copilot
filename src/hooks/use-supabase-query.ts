@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 /**
- * Generic hook for Supabase queries with mock fallback.
+ * Generic hook for Supabase queries.
  * Returns `{ data, loading, error }`.
- * If the Supabase query fails or returns no data, `fallback` is used.
+ * If the query fails or returns no data, `data` will be the `fallback` value.
  */
 export function useSupabaseQuery<T>(
   queryFn: (supabase: ReturnType<typeof createClient>) => Promise<{ data: T | null; error: unknown }>,
@@ -27,17 +27,16 @@ export function useSupabaseQuery<T>(
         if (cancelled) return;
 
         if (err) {
-          // Supabase errors (including missing tables during dev) → use fallback
           setError(typeof err === "object" && err !== null && "message" in err ? (err as { message: string }).message : "Query failed");
           setData(fallback);
         } else if (result === null || (Array.isArray(result) && result.length === 0)) {
-          // No data yet → use fallback (demo mode)
+          // No data — return the fallback (empty state)
           setData(fallback);
         } else {
           setData(result);
         }
       } catch {
-        // Network error / Supabase not configured → use fallback silently
+        // Network error / Supabase not configured
         if (!cancelled) setData(fallback);
       } finally {
         if (!cancelled) setLoading(false);

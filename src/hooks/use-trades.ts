@@ -2,23 +2,6 @@
 
 import { useSupabaseQuery } from "./use-supabase-query";
 import type { Trade } from "@/lib/types";
-import { TRADE_LOG } from "@/lib/mock-data";
-
-const MOCK_TRADES: Trade[] = TRADE_LOG.map((t) => ({
-  id: String(t.id),
-  user_id: "",
-  trade_date: t.date,
-  pair: t.pair,
-  direction: t.direction,
-  entry_price: t.entry,
-  sl_price: t.sl,
-  tp_price: t.tp,
-  result: t.result,
-  pips: t.pips,
-  risk_reward: t.rr,
-  session: t.session,
-  notes: t.notes,
-}));
 
 export function useTrades() {
   const { data, loading } = useSupabaseQuery<Trade[]>(
@@ -33,8 +16,10 @@ export function useTrades() {
         .limit(50);
       return { data: data as Trade[] | null, error };
     },
-    MOCK_TRADES,
+    [],
   );
 
-  return { trades: data, loading };
+  const hasData = data.length > 0;
+
+  return { trades: data, loading, hasData };
 }
