@@ -24,6 +24,7 @@ import EffortScatterChart from "@/components/charts/EffortScatterChart";
 import { useJournals } from "@/hooks/use-journals";
 import { useTrades } from "@/hooks/use-trades";
 import { usePsychology } from "@/hooks/use-psychology";
+import { computeJournalPatterns, type JournalPattern } from "@/lib/compute-journal-patterns";
 import { createClient } from "@/lib/supabase/client";
 import type { DailyJournal } from "@/lib/types";
 
@@ -79,9 +80,14 @@ export default function JournalPage() {
   const { journals, loading: jLoading, refresh } = useJournals();
   const { trades, loading: tLoading } = useTrades();
   const psych = usePsychology(journals, trades);
+  const patterns = useMemo(() => computeJournalPatterns(journals), [journals]);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [collapsedWeeks, setCollapsedWeeks] = useState<Set<string>>(new Set());
+  const [showReflection, setShowReflection] = useState(false);
+  const [reflectionData, setReflectionData] = useState({ went_well: "", do_differently: "", key_lesson: "", next_focus: "" });
+  const [reflectionSaving, setReflectionSaving] = useState(false);
+  const [reflectionSaved, setReflectionSaved] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState<Partial<DailyJournal>>({});
   const [addingNew, setAddingNew] = useState(false);
@@ -262,6 +268,108 @@ export default function JournalPage() {
           </div>
         </div>
       )}
+
+      {/* Pattern Detection */}
+      {patterns.length > 0 && (
+        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Brain size={16} className="text-pink-500" />
+              <h3 className="text-sm font-semibold text-gray-900">Pattern Detection</h3>
+            </div>
+            <span className="text-[10px] text-gray-400 max-w-[250px] text-right">
+              Patterns detected from journal text, correlated with daily trading results
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {patterns.map((p) => (
+              <PatternCard key={p.keyword} pattern={p} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Weekly Reflection */}
+      <div className="glass rounded-2xl p-5 border border-pink-200/40">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-gray-900">Weekly Reflection</h3>
+          {!showReflection && (
+            <button
+              onClick={() => setShowReflection(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-pink-500 hover:bg-pink-600 text-white text-xs rounded-lg transition-colors"
+            >
+              <Pencil size={12} /> Write Reflection
+            </button>
+          )}
+        </div>
+
+        {showReflection && (
+          <div className="space-y-3">
+            {[
+              { key: "went_well", label: "What went well this week?", placeholder: "Your wins, good decisions, moments of discipline..." },
+              { key: "do_differently", label: "What would I do differently?", placeholder: "Mistakes to avoid, lessons from losses..." },
+              { key: "key_lesson", label: "Key lesson learned", placeholder: "The most important takeaway..." },
+              { key: "next_focus", label: "Focus for next week", placeholder: "What to prioritize going forward..." },
+            ].map((field) => (
+              <div key={field.key}>
+                <label className="block text-xs text-gray-500 mb-1">{field.label}</label>
+                <textarea
+                  value={reflectionData[field.key as keyof typeof reflectionData]}
+                  onChange={(e) => setReflectionData({ ...reflectionData, [field.key]: e.target.value })}
+                  rows={2}
+                  placeholder={field.placeholder}
+                  className="w-full bg-white/40 border border-pink-200/40 rounded-xl px-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-pink-400 resize-y"
+                />
+              </div>
+            ))}
+            <div className="flex gap-2">
+              <button
+                onClick={async () => {
+                  setReflectionSaving(true);
+                  const supabase = createClient();
+                  const { data: { user } } = await supabase.auth.getUser();
+                  if (user) {
+                    const ws = getWeekStart(new Date().toISOString().split("T")[0]);
+                    const we = new Date(ws);
+                    we.setDate(we.getDate() + 4);
+                    await supabase.from("weekly_summaries").upsert({
+                      user_id: user.id,
+                      week_start: ws,
+                      week_end: we.toISOString().split("T")[0],
+                      week_label: `Week of ${ws}`,
+                      overall_summary: JSON.stringify(reflectionData),
+                    }, { onConflict: "user_id,week_start" });
+                  }
+                  setReflectionSaving(false);
+                  setReflectionSaved(true);
+                  setShowReflection(false);
+                  setTimeout(() => setReflectionSaved(false), 3000);
+                }}
+                disabled={reflectionSaving}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs rounded-lg transition-colors"
+              >
+                <Save size={12} /> {reflectionSaving ? "Saving..." : "Save Reflection"}
+              </button>
+              <button
+                onClick={() => setShowReflection(false)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-white/50 border border-pink-200/40 text-gray-600 text-xs rounded-lg"
+              >
+                <X size={12} /> Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {reflectionSaved && (
+          <div className="p-3 bg-emerald-50/60 border border-emerald-200/40 rounded-xl text-xs text-emerald-600">
+            Reflection saved successfully
+          </div>
+        )}
+
+        {!showReflection && !reflectionSaved && (
+          <p className="text-xs text-gray-400">Take a moment to reflect on your trading week.</p>
+        )}
+      </div>
 
       {/* Weekly grouped journal entries */}
       <div>
@@ -498,6 +606,36 @@ function JournalEditor({
           placeholder="Write your daily trading journal..."
           className="w-full bg-white/60 border border-pink-200/40 rounded px-3 py-2 text-xs text-gray-900 placeholder-slate-600 focus:border-pink-400 focus:outline-none resize-y leading-relaxed"
         />
+      </div>
+    </div>
+  );
+}
+
+// ─── Pattern Card ────────────────────────────────────────────────────────────
+
+function PatternCard({ pattern }: { pattern: JournalPattern }) {
+  const colors = {
+    positive: { bg: "bg-emerald-50/60 border-emerald-200/40", text: "text-emerald-600", badge: "text-emerald-500" },
+    negative: { bg: "bg-red-50/60 border-red-200/40", text: "text-red-600", badge: "text-red-500" },
+    neutral: { bg: "bg-amber-50/60 border-amber-200/40", text: "text-amber-600", badge: "text-amber-500" },
+  };
+  const c = colors[pattern.variant];
+
+  return (
+    <div className={`p-3 rounded-xl border ${c.bg}`}>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className={`text-xs font-semibold capitalize ${c.text}`}>&quot;{pattern.keyword}&quot;</span>
+        <span className={`text-[10px] font-bold ${c.badge}`}>
+          {pattern.impact > 0 ? "+" : ""}{pattern.impact.toFixed(1)}p impact
+        </span>
+      </div>
+      <div className="text-[11px] text-gray-600 space-y-0.5">
+        <div>With keyword: <strong className={pattern.avgPipsWithKeyword >= 0 ? "text-emerald-500" : "text-red-500"}>
+          {pattern.avgPipsWithKeyword > 0 ? "+" : ""}{pattern.avgPipsWithKeyword}p
+        </strong> ({pattern.daysWithKeyword} days)</div>
+        <div>Without: <strong className={pattern.avgPipsWithout >= 0 ? "text-emerald-500" : "text-red-500"}>
+          {pattern.avgPipsWithout > 0 ? "+" : ""}{pattern.avgPipsWithout}p
+        </strong> ({pattern.daysWithout} days)</div>
       </div>
     </div>
   );

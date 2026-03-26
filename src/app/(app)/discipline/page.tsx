@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   Target,
   Clock,
@@ -8,11 +9,15 @@ import {
   XCircle,
   ArrowUp,
   ArrowDown,
+  AlertTriangle,
+  TrendingUp,
 } from "lucide-react";
 import EmptyState from "@/components/ui/EmptyState";
 import Badge from "@/components/ui/Badge";
 import ProgressBar from "@/components/ui/ProgressBar";
 import DisciplineRadarChart from "@/components/charts/DisciplineRadarChart";
+import { computeRiskAnalysis } from "@/lib/compute-risk-analysis";
+import { createClient } from "@/lib/supabase/client";
 import ChartTimeBarChart from "@/components/charts/ChartTimeBarChart";
 import CorrelationDualAxisChart from "@/components/charts/CorrelationDualAxisChart";
 import { useTrades } from "@/hooks/use-trades";
@@ -39,8 +44,9 @@ export default function DisciplinePage() {
   const { journals, loading: jL } = useJournals();
   const { entries: chartTimeEntries, totalHours, avgPerDay, loading: cL } = useChartTime();
   const { trades: missedTrades, avoidedWins, avoidedLosses, loading: mL } = useMissedTrades();
-  const { goals, primaryPct, processPct, psychPct, loading: gL } = useGoals();
+  const { goals, loading: gL, refresh } = useGoals();
   const { scores, chartTimeVsPips, radarData } = useDiscipline(trades, journals, chartTimeEntries, missedTrades);
+  const riskAnalysis = useMemo(() => computeRiskAnalysis(trades), [trades]);
 
   const loading = tL || jL || cL || mL || gL;
 
@@ -174,14 +180,14 @@ export default function DisciplinePage() {
         </div>
       )}
 
-      {/* Goals */}
+      {/* Goals — interactive checkboxes */}
       {goals && (
         <div className="glass rounded-2xl p-5 border border-pink-200/40">
           <h3 className="text-sm font-semibold text-gray-900 mb-4">Trading Goals</h3>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <GoalSection title="Primary Goals" goals={goals.primary_goals} pct={primaryPct} color="bg-indigo-500" />
-            <GoalSection title="Process Goals" goals={goals.process_goals} pct={processPct} color="bg-emerald-500" />
-            <GoalSection title="Psychological Goals" goals={goals.psychological_goals} pct={psychPct} color="bg-purple-500" />
+            <InteractiveGoalSection title="Primary Goals" goals={goals.primary_goals} field="primary_goals" goalId={goals.id} color="bg-pink-500" onRefresh={refresh} />
+            <InteractiveGoalSection title="Process Goals" goals={goals.process_goals} field="process_goals" goalId={goals.id} color="bg-emerald-500" onRefresh={refresh} />
+            <InteractiveGoalSection title="Psychological Goals" goals={goals.psychological_goals} field="psychological_goals" goalId={goals.id} color="bg-purple-500" onRefresh={refresh} />
           </div>
 
           {goals.improvement_items.length > 0 && (
@@ -205,22 +211,114 @@ export default function DisciplinePage() {
           )}
         </div>
       )}
+
+      {/* Risk Analysis */}
+      {riskAnalysis && (
+        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+          <div className="flex items-center gap-2 mb-4">
+            <AlertTriangle size={16} className="text-amber-500" />
+            <h3 className="text-sm font-semibold text-gray-900">Risk Analysis</h3>
+            <span className="text-[10px] text-gray-400">Monte Carlo simulation (1,000 runs × 100 trades)</span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+            <div className="p-3 bg-pink-50/60 rounded-xl text-center">
+              <div className="text-[10px] text-gray-400 mb-1">Win Rate</div>
+              <div className="text-lg font-bold text-gray-900">{riskAnalysis.winRate}%</div>
+            </div>
+            <div className="p-3 bg-pink-50/60 rounded-xl text-center">
+              <div className="text-[10px] text-gray-400 mb-1">Avg Win</div>
+              <div className="text-lg font-bold text-emerald-500">+{riskAnalysis.avgWinR}R</div>
+            </div>
+            <div className="p-3 bg-pink-50/60 rounded-xl text-center">
+              <div className="text-[10px] text-gray-400 mb-1">Avg Loss</div>
+              <div className="text-lg font-bold text-red-500">-{riskAnalysis.avgLossR}R</div>
+            </div>
+            <div className="p-3 bg-pink-50/60 rounded-xl text-center">
+              <div className="text-[10px] text-gray-400 mb-1">Risk/Trade</div>
+              <div className="text-lg font-bold text-gray-900">{riskAnalysis.riskPerTrade}%</div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className={`p-4 rounded-xl border ${
+              riskAnalysis.profitProbability >= 70 ? "bg-emerald-50/60 border-emerald-200/40" :
+              riskAnalysis.profitProbability >= 50 ? "bg-amber-50/60 border-amber-200/40" :
+              "bg-red-50/60 border-red-200/40"
+            }`}>
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp size={14} className={riskAnalysis.profitProbability >= 70 ? "text-emerald-500" : riskAnalysis.profitProbability >= 50 ? "text-amber-500" : "text-red-500"} />
+                <span className="text-xs text-gray-600">Probability of Profit</span>
+              </div>
+              <div className={`text-3xl font-bold ${riskAnalysis.profitProbability >= 70 ? "text-emerald-500" : riskAnalysis.profitProbability >= 50 ? "text-amber-500" : "text-red-500"}`}>
+                {riskAnalysis.profitProbability}%
+              </div>
+              <ProgressBar
+                value={riskAnalysis.profitProbability}
+                color={riskAnalysis.profitProbability >= 70 ? "bg-emerald-500" : riskAnalysis.profitProbability >= 50 ? "bg-amber-500" : "bg-red-500"}
+              />
+              <p className="text-[10px] text-gray-400 mt-1">After 100 trades at current stats</p>
+            </div>
+
+            <div className={`p-4 rounded-xl border ${
+              riskAnalysis.drawdown20Probability < 15 ? "bg-emerald-50/60 border-emerald-200/40" :
+              riskAnalysis.drawdown20Probability < 30 ? "bg-amber-50/60 border-amber-200/40" :
+              "bg-red-50/60 border-red-200/40"
+            }`}>
+              <div className="flex items-center gap-2 mb-2">
+                <Shield size={14} className={riskAnalysis.drawdown20Probability < 15 ? "text-emerald-500" : riskAnalysis.drawdown20Probability < 30 ? "text-amber-500" : "text-red-500"} />
+                <span className="text-xs text-gray-600">Risk of 20% Drawdown</span>
+              </div>
+              <div className={`text-3xl font-bold ${riskAnalysis.drawdown20Probability < 15 ? "text-emerald-500" : riskAnalysis.drawdown20Probability < 30 ? "text-amber-500" : "text-red-500"}`}>
+                {riskAnalysis.drawdown20Probability}%
+              </div>
+              <ProgressBar
+                value={riskAnalysis.drawdown20Probability}
+                color={riskAnalysis.drawdown20Probability < 15 ? "bg-emerald-500" : riskAnalysis.drawdown20Probability < 30 ? "bg-amber-500" : "bg-red-500"}
+              />
+              <p className="text-[10px] text-gray-400 mt-1">Chance of hitting 20% max drawdown</p>
+            </div>
+          </div>
+
+          <p className="text-[9px] text-gray-300 mt-3 italic">
+            For educational simulation purposes only — based on historical data patterns. Not financial advice.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
 
-function GoalSection({
+// ─── Interactive Goal Section with checkbox persistence ──────────────────────
+
+function InteractiveGoalSection({
   title,
   goals,
-  pct,
+  field,
+  goalId,
   color,
+  onRefresh,
 }: {
   title: string;
   goals: { goal: string; completed: boolean }[];
-  pct: number;
+  field: string;
+  goalId: string;
   color: string;
+  onRefresh: () => void;
 }) {
   if (!goals || goals.length === 0) return null;
+
+  const completed = goals.filter((g) => g.completed).length;
+  const pct = Math.round((completed / goals.length) * 100);
+
+  async function toggleGoal(idx: number) {
+    const updated = [...goals];
+    updated[idx] = { ...updated[idx], completed: !updated[idx].completed };
+
+    const supabase = createClient();
+    await supabase.from("trading_goals").update({ [field]: updated }).eq("id", goalId);
+    onRefresh();
+  }
 
   return (
     <div>
@@ -231,14 +329,18 @@ function GoalSection({
       <ProgressBar value={pct} color={color} />
       <div className="mt-2 space-y-1">
         {goals.map((g, i) => (
-          <div key={i} className="flex items-start gap-2 text-[11px]">
+          <button
+            key={i}
+            onClick={() => toggleGoal(i)}
+            className="flex items-start gap-2 text-[11px] w-full text-left hover:bg-pink-50/40 rounded p-0.5 transition-colors"
+          >
             {g.completed ? (
               <CheckCircle size={12} className="text-emerald-400 mt-0.5 shrink-0" />
             ) : (
               <XCircle size={12} className="text-gray-300 mt-0.5 shrink-0" />
             )}
             <span className={g.completed ? "text-gray-500 line-through" : "text-gray-600"}>{g.goal}</span>
-          </div>
+          </button>
         ))}
       </div>
     </div>
