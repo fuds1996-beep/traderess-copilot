@@ -1,12 +1,21 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import {
+  fetchSheetRows,
+  findHeaderRow,
+  col,
+  cellStr,
+  cellNum,
+  parseDate,
+  isTradeRow,
+} from "@/lib/sheets";
 
 /**
  * POST /api/sheets/sync
  * Body: { spreadsheetId, range?, sheetType: "trades" | "performance" }
  *
- * Fetches data from the connected Google Sheet via /api/sheets,
- * parses rows into the correct table format, and upserts into Supabase.
+ * Fetches a Google Sheet, auto-detects headers, parses trade/performance
+ * rows, and inserts into Supabase.
  */
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -32,34 +41,20 @@ export async function POST(request: Request) {
     );
   }
 
-  // Fetch sheet data via our own API route
-  const origin = request.headers.get("origin") || request.headers.get("host") || "";
-  const protocol = origin.startsWith("localhost") ? "http" : "https";
-  const base = origin.startsWith("http") ? origin : `${protocol}://${origin}`;
-  const sheetUrl = `${base}/api/sheets?spreadsheetId=${spreadsheetId}&range=${encodeURIComponent(range || "Sheet1")}`;
-
-  const sheetRes = await fetch(sheetUrl);
-  if (!sheetRes.ok) {
-    const err = await sheetRes.json();
-    return NextResponse.json(
-      { error: "Failed to fetch sheet", details: err },
-      { status: 400 },
-    );
-  }
-
-  const { rows } = (await sheetRes.json()) as { rows: string[][] };
-
-  if (!rows || rows.length < 2) {
-    return NextResponse.json(
-      { error: "Sheet has no data rows (need header + at least 1 row)" },
-      { status: 400 },
-    );
-  }
-
-  const headers = rows[0].map((h) => h.toLowerCase().trim());
-  const dataRows = rows.slice(1);
-
   try {
+    const rows = await fetchSheetRows(spreadsheetId, range || "Sheet1");
+
+    if (rows.length < 2) {
+      return NextResponse.json(
+        { error: "Sheet has no data rows" },
+        { status: 400 },
+      );
+    }
+
+    // Auto-detect the header row
+    const { headerIdx, headers } = findHeaderRow(rows);
+    const dataRows = rows.slice(headerIdx + 1);
+
     if (sheetType === "trades") {
       const result = await syncTrades(supabase, user.id, headers, dataRows);
       return NextResponse.json(result);
@@ -75,52 +70,57 @@ export async function POST(request: Request) {
   }
 }
 
-/**
- * Finds the index of a header, trying multiple aliases.
- */
-function col(headers: string[], ...aliases: string[]): number {
-  for (const alias of aliases) {
-    const idx = headers.findIndex((h) => h.includes(alias));
-    if (idx >= 0) return idx;
-  }
-  return -1;
-}
-
-function cellStr(row: string[], idx: number): string {
-  return idx >= 0 && idx < row.length ? row[idx].trim() : "";
-}
-
-function cellNum(row: string[], idx: number): number {
-  const raw = cellStr(row, idx).replace(/[^0-9.\-]/g, "");
-  return parseFloat(raw) || 0;
-}
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function syncTrades(supabase: any, userId: string, headers: string[], rows: string[][]) {
-  const iDate = col(headers, "date");
-  const iPair = col(headers, "pair", "symbol", "instrument");
-  const iDir = col(headers, "dir", "direction", "side", "type");
-  const iEntry = col(headers, "entry", "open", "entry price");
-  const iSl = col(headers, "sl", "stop", "stop loss");
-  const iTp = col(headers, "tp", "take profit", "target");
-  const iResult = col(headers, "result", "outcome", "win/loss");
+  // Map columns with wide aliases to handle various spreadsheet formats
+  const iDate = col(headers, "date", "day");
+  const iPair = col(headers, "major pair", "pair", "symbol", "instrument");
+  const iDir = col(headers, "direction", "dir", "side", "type");
+  const iEntry = col(headers, "entry", "open", "entry price", "entry strategy");
+  const iSl = col(headers, "sl", "sl strategy", "stop loss", "stop");
+  const iTp = col(headers, "tp", "tp strategy", "tp rate", "take profit", "target");
+  const iResult = col(headers, "outcome", "result", "win/loss");
   const iPips = col(headers, "pips", "pip");
-  const iRr = col(headers, "r:r", "rr", "risk reward", "r/r");
+  const iRr = col(headers, "r2r", "r:r", "rr", "risk reward", "r/r", "r2r of trade");
   const iSession = col(headers, "session");
-  const iNotes = col(headers, "notes", "note", "comment");
+  const iNotes = col(headers, "trade evaluation", "notes", "note", "comment", "summary");
+  const iScenario = col(headers, "scenario");
+  const iRsGained = col(headers, "r's gained", "rs gained", "r gained");
 
   const trades = rows
-    .filter((r) => cellStr(r, iDate) !== "")
+    .filter((r) => isTradeRow(r, iDate, iEntry))
     .map((r) => {
-      const dirRaw = cellStr(r, iDir).toLowerCase();
-      const direction = dirRaw.includes("short") || dirRaw === "sell" || dirRaw === "s" ? "Short" : "Long";
+      // Direction: check direction column, or infer from scenario
+      let dirRaw = cellStr(r, iDir).toLowerCase();
+      if (!dirRaw && iScenario >= 0) {
+        dirRaw = cellStr(r, iScenario).toLowerCase();
+      }
+      const direction =
+        dirRaw.includes("short") || dirRaw === "sell" || dirRaw === "s"
+          ? "Short"
+          : "Long";
 
+      // Result
       const resultRaw = cellStr(r, iResult).toLowerCase();
-      const result = resultRaw.includes("loss") || resultRaw === "l"
-        ? "Loss"
-        : resultRaw.includes("be") || resultRaw.includes("break")
-          ? "BE"
-          : "Win";
+      const result =
+        resultRaw.includes("loss") || resultRaw === "l" || resultRaw === "sl"
+          ? "Loss"
+          : resultRaw.includes("be") || resultRaw.includes("break")
+            ? "BE"
+            : "Win";
+
+      // Pips — try pips column, fall back to R's gained
+      let pips = cellNum(r, iPips);
+      if (pips === 0 && iRsGained >= 0) {
+        pips = cellNum(r, iRsGained) * 10; // rough estimate
+      }
+
+      // R:R
+      let rr = cellStr(r, iRr);
+      if (!rr && iRsGained >= 0) {
+        const rVal = cellNum(r, iRsGained);
+        rr = rVal !== 0 ? `${Math.abs(rVal)}:1` : "0:0";
+      }
 
       return {
         user_id: userId,
@@ -131,26 +131,33 @@ async function syncTrades(supabase: any, userId: string, headers: string[], rows
         sl_price: cellNum(r, iSl),
         tp_price: cellNum(r, iTp),
         result,
-        pips: cellNum(r, iPips),
-        risk_reward: cellStr(r, iRr) || "0:0",
+        pips,
+        risk_reward: rr || "0:0",
         session: cellStr(r, iSession) || "London",
-        notes: cellStr(r, iNotes),
+        notes: cellStr(r, iNotes).slice(0, 500),
       };
-    });
+    })
+    // Filter out rows with no entry price (section headers, empty rows)
+    .filter((t) => t.entry_price > 0);
 
   if (trades.length === 0) {
-    return { synced: 0, message: "No valid trade rows found" };
+    return {
+      synced: 0,
+      message: "No valid trade rows found. Check that your sheet has Date and Entry price columns.",
+    };
   }
 
-  const { error } = await supabase.from("trade_log").upsert(trades, {
-    onConflict: "user_id,trade_date,pair,entry_price",
-    ignoreDuplicates: true,
-  });
-
+  // Insert trades, skipping any that conflict
+  const { error } = await supabase.from("trade_log").insert(trades);
   if (error) {
-    // Upsert may fail on conflict config — fall back to insert
-    const { error: insertErr } = await supabase.from("trade_log").insert(trades);
-    if (insertErr) throw new Error(insertErr.message);
+    // If duplicate key error, that's OK — some trades already exist
+    if (error.message.includes("duplicate") || error.code === "23505") {
+      return {
+        synced: trades.length,
+        message: `Found ${trades.length} trades (some may already exist)`,
+      };
+    }
+    throw new Error(error.message);
   }
 
   return { synced: trades.length, message: `Synced ${trades.length} trades` };
@@ -159,13 +166,16 @@ async function syncTrades(supabase: any, userId: string, headers: string[], rows
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function syncPerformance(supabase: any, userId: string, headers: string[], rows: string[][]) {
   const iWeek = col(headers, "week");
-  const iPnl = col(headers, "pnl", "p/l", "profit");
-  const iTrades = col(headers, "trades", "total trades", "# trades");
+  const iPnl = col(headers, "pnl", "p/l", "profit", "weekly result");
+  const iTrades = col(headers, "trades", "total trades", "# trades", "trades taken");
   const iWr = col(headers, "win rate", "wr", "win%", "winrate");
-  const iR = col(headers, "r value", "r-value", "rvalue", "r");
+  const iR = col(headers, "r value", "r-value", "rvalue", "overall r", "r");
 
   const weeks = rows
-    .filter((r) => cellStr(r, iWeek) !== "")
+    .filter((r) => {
+      const weekVal = cellStr(r, iWeek);
+      return weekVal !== "" && !weekVal.toLowerCase().includes("week") && weekVal.length > 2;
+    })
     .map((r) => {
       const weekLabel = cellStr(r, iWeek);
       return {
@@ -189,26 +199,10 @@ async function syncPerformance(supabase: any, userId: string, headers: string[],
     return { synced: 0, message: "No valid performance rows found" };
   }
 
-  // Insert (skip duplicates via unique constraint)
   const { error } = await supabase.from("trading_performance").insert(weeks);
-  if (error && !error.message.includes("duplicate")) {
+  if (error && !error.message.includes("duplicate") && error.code !== "23505") {
     throw new Error(error.message);
   }
 
   return { synced: weeks.length, message: `Synced ${weeks.length} weeks` };
-}
-
-/** Best-effort date parser — handles "Mar 10", "2026-03-10", "10/03/2026", etc. */
-function parseDate(raw: string): string {
-  if (!raw) return new Date().toISOString().split("T")[0];
-
-  // ISO format
-  if (/^\d{4}-\d{2}-\d{2}/.test(raw)) return raw.slice(0, 10);
-
-  // Try native Date
-  const d = new Date(raw);
-  if (!isNaN(d.getTime())) return d.toISOString().split("T")[0];
-
-  // Fallback
-  return new Date().toISOString().split("T")[0];
 }

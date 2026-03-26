@@ -67,7 +67,9 @@ export default function SheetsConnector() {
         return;
       }
 
-      setPreview(data.rows.slice(0, 6)); // Show header + 5 rows
+      // Use auto-detected header row from the API
+      const headerIdx = data.headerIdx ?? 0;
+      setPreview(data.rows.slice(headerIdx, headerIdx + 6)); // Show header + 5 data rows
     } catch {
       setError("Failed to connect to Google Sheets");
     } finally {
