@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import ProgressBar from "@/components/ui/ProgressBar";
 import Badge from "@/components/ui/Badge";
-import SkillRadarChart from "@/components/charts/SkillRadarChart";
+import { LazySkillRadarChart as SkillRadarChart } from "@/components/charts/lazy";
 import type { TraderProfile, PropFirmAccount } from "@/lib/types";
 
 const TABS = ["overview", "psychology", "strengths", "fears", "plan"] as const;

@@ -21,8 +21,7 @@ import {
 } from "lucide-react";
 import { JournalSkeleton } from "@/components/ui/Skeleton";
 import EmptyState from "@/components/ui/EmptyState";
-import EmotionTimelineChart from "@/components/charts/EmotionTimelineChart";
-import EffortScatterChart from "@/components/charts/EffortScatterChart";
+import { LazyEmotionTimelineChart as EmotionTimelineChart, LazyEffortScatterChart as EffortScatterChart } from "@/components/charts/lazy";
 import { useJournals } from "@/hooks/use-journals";
 import { useTrades } from "@/hooks/use-trades";
 import { usePsychology } from "@/hooks/use-psychology";

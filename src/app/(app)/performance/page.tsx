@@ -3,14 +3,16 @@
 import { useState, useMemo } from "react";
 import { BarChart3 } from "lucide-react";
 import { PerformanceSkeleton } from "@/components/ui/Skeleton";
-import AccountPnlBarChart from "@/components/charts/AccountPnlBarChart";
-import WinRateLineChart from "@/components/charts/WinRateLineChart";
-import SessionBarChart from "@/components/charts/SessionBarChart";
-import DayOfWeekBarChart from "@/components/charts/DayOfWeekBarChart";
-import AccountBalanceLineChart from "@/components/charts/AccountBalanceLineChart";
+import {
+  LazyAccountPnlBarChart as AccountPnlBarChart,
+  LazyWinRateLineChart as WinRateLineChart,
+  LazySessionBarChart as SessionBarChart,
+  LazyDayOfWeekBarChart as DayOfWeekBarChart,
+  LazyAccountBalanceLineChart as AccountBalanceLineChart,
+  LazyEmotionTimelineChart as EmotionTimelineChart,
+} from "@/components/charts/lazy";
 import PeriodSummary from "@/components/performance/PeriodSummary";
 import GroupedTradeLog from "@/components/performance/GroupedTradeLog";
-import EmotionTimelineChart from "@/components/charts/EmotionTimelineChart";
 import { usePerformance } from "@/hooks/use-performance";
 import { useTrades } from "@/hooks/use-trades";
 import { useAccountBalances } from "@/hooks/use-account-balances";
