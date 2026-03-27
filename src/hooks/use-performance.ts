@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useDateRange } from "@/contexts/DateRangeContext";
+import { useRealtimeSubscription } from "./use-realtime";
 import type { Trade, WeeklyPerformance, DashboardStats } from "@/lib/types";
 
 const EMPTY_STATS: DashboardStats = {
@@ -157,6 +158,7 @@ export function usePerformance() {
   const [weeks, setWeeks] = useState<WeeklyPerformance[]>([]);
   const [allTrades, setAllTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
+  const [ready, setReady] = useState(false);
   const { filterDates } = useDateRange();
 
   const fetch = useCallback(async () => {
@@ -185,10 +187,13 @@ export function usePerformance() {
       // Silently handle errors
     } finally {
       setLoading(false);
+      setReady(true);
     }
   }, []);
 
   useEffect(() => { fetch(); }, [fetch]);
+
+  useRealtimeSubscription("trade_log", ready, fetch);
 
   // Apply date range filter
   const trades = useMemo(() => filterDates(allTrades), [allTrades, filterDates]);

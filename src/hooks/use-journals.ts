@@ -3,11 +3,13 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useDateRange } from "@/contexts/DateRangeContext";
+import { useRealtimeSubscription } from "./use-realtime";
 import type { DailyJournal } from "@/lib/types";
 
 export function useJournals(weekStart?: string) {
   const [allJournals, setAllJournals] = useState<DailyJournal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [ready, setReady] = useState(false);
   const { filterDates } = useDateRange();
 
   const fetch = useCallback(async () => {
@@ -32,10 +34,13 @@ export function useJournals(weekStart?: string) {
       setAllJournals([]);
     } finally {
       setLoading(false);
+      setReady(true);
     }
   }, [weekStart]);
 
   useEffect(() => { fetch(); }, [fetch]);
+
+  useRealtimeSubscription("daily_journals", ready, fetch);
 
   const journals = useMemo(() => filterDates(allJournals), [allJournals, filterDates]);
 
