@@ -182,7 +182,7 @@ export default function PerformancePage() {
       )}
 
       {/* Account Balances */}
-      {hasBalances && (
+      {hasBalances && trades.length > 0 && (
         <div className="glass rounded-2xl p-5 border border-pink-200/40">
           <h3 className="text-sm font-semibold text-gray-900 mb-4">Account Balances Over Time</h3>
           <AccountBalanceLineChart byAccount={byAccount} accountNames={accountNames} />

@@ -188,14 +188,17 @@ export function usePerformance() {
 
   useEffect(() => { fetch(); }, [fetch]);
 
-  // Prefer weekly aggregates if they exist, otherwise compute from trades
-  const hasWeeklyData = weeks.length > 0;
+  // trade_log is the source of truth — only show data if trades exist
   const hasTradeData = trades.length > 0;
-  const hasData = hasWeeklyData || hasTradeData;
+  const hasWeeklyData = weeks.length > 0;
+  const hasData = hasTradeData;
 
-  const stats = hasWeeklyData
-    ? computeWeeklyStats(weeks)
-    : statsFromTrades(trades);
+  // Always compute from trades (source of truth); fall back to weekly aggregates only if no trades
+  const stats = hasTradeData
+    ? statsFromTrades(trades)
+    : hasWeeklyData
+      ? computeWeeklyStats(weeks)
+      : EMPTY_STATS;
 
   // Session and day data
   const tradeStats = statsFromTrades(trades);

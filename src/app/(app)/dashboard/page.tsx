@@ -285,7 +285,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Account Balances */}
-      {hasBalances && (
+      {hasBalances && hasData && (
         <div id="account-balances" className="glass rounded-2xl p-5 border border-pink-200/40">
           <h3 className="text-sm font-semibold text-gray-900 mb-4">Account Balances</h3>
           <AccountBalanceLineChart byAccount={byAccount} accountNames={accountNames} />
