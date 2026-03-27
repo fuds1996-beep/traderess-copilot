@@ -11,6 +11,12 @@ import {
 } from "lucide-react";
 import type { Trade } from "@/lib/types";
 
+interface BestWorstTrade {
+  pair: string;
+  dollars: number;
+  date: string;
+}
+
 interface PeriodStats {
   totalTrades: number;
   wins: number;
@@ -20,9 +26,14 @@ interface PeriodStats {
   totalPips: number;
   totalRs: number;
   totalDollars: number;
-  bestTrade: number;
-  worstTrade: number;
+  bestTrade: BestWorstTrade;
+  worstTrade: BestWorstTrade;
   avgPipsPerTrade: number;
+}
+
+function parseDollars(t: Trade): number {
+  const v = parseFloat((t.dollar_result || "").replace(/[^0-9.\-]/g, ""));
+  return isNaN(v) ? 0 : v;
 }
 
 function computeStats(trades: Trade[]): PeriodStats {
@@ -34,14 +45,18 @@ function computeStats(trades: Trade[]): PeriodStats {
 
   const totalPips = trades.reduce((s, t) => s + (t.overall_pips || t.pips || 0), 0);
   const totalRs = trades.reduce((s, t) => s + (t.rs_gained || 0), 0);
-  const totalDollars = trades.reduce((s, t) => {
-    const v = parseFloat((t.dollar_result || "").replace(/[^0-9.\-]/g, ""));
-    return s + (isNaN(v) ? 0 : v);
-  }, 0);
+  const totalDollars = trades.reduce((s, t) => s + parseDollars(t), 0);
 
-  const pipsArr = trades.map((t) => t.overall_pips || t.pips || 0);
-  const bestTrade = pipsArr.length > 0 ? Math.max(...pipsArr) : 0;
-  const worstTrade = pipsArr.length > 0 ? Math.min(...pipsArr) : 0;
+  // Best/worst by dollar amount
+  let bestTrade: BestWorstTrade = { pair: "—", dollars: 0, date: "" };
+  let worstTrade: BestWorstTrade = { pair: "—", dollars: 0, date: "" };
+
+  for (const t of trades) {
+    const d = parseDollars(t);
+    if (d > bestTrade.dollars) bestTrade = { pair: t.pair, dollars: d, date: t.trade_date };
+    if (d < worstTrade.dollars) worstTrade = { pair: t.pair, dollars: d, date: t.trade_date };
+  }
+
   const avgPipsPerTrade = totalTrades > 0 ? Math.round((totalPips / totalTrades) * 10) / 10 : 0;
 
   return {
@@ -90,13 +105,15 @@ export default function PeriodSummary({
         <MiniStat
           icon={TrendingUp}
           label="Best Trade"
-          value={`${stats.bestTrade}p`}
+          value={`$${Math.abs(stats.bestTrade.dollars).toLocaleString()}`}
+          sub={stats.bestTrade.pair}
           color="text-emerald-500"
         />
         <MiniStat
           icon={TrendingDown}
           label="Worst Trade"
-          value={`${stats.worstTrade}p`}
+          value={`-$${Math.abs(stats.worstTrade.dollars).toLocaleString()}`}
+          sub={stats.worstTrade.pair}
           color="text-red-500"
         />
       </div>
@@ -105,22 +122,13 @@ export default function PeriodSummary({
       <div className="mt-4 flex items-center gap-2">
         <div className="flex-1 flex h-3 rounded-full overflow-hidden bg-gray-100">
           {stats.wins > 0 && (
-            <div
-              className="bg-emerald-400 transition-all"
-              style={{ width: `${(stats.wins / stats.totalTrades) * 100}%` }}
-            />
+            <div className="bg-emerald-400 transition-all" style={{ width: `${(stats.wins / stats.totalTrades) * 100}%` }} />
           )}
           {stats.be > 0 && (
-            <div
-              className="bg-amber-300 transition-all"
-              style={{ width: `${(stats.be / stats.totalTrades) * 100}%` }}
-            />
+            <div className="bg-amber-300 transition-all" style={{ width: `${(stats.be / stats.totalTrades) * 100}%` }} />
           )}
           {stats.losses > 0 && (
-            <div
-              className="bg-red-400 transition-all"
-              style={{ width: `${(stats.losses / stats.totalTrades) * 100}%` }}
-            />
+            <div className="bg-red-400 transition-all" style={{ width: `${(stats.losses / stats.totalTrades) * 100}%` }} />
           )}
         </div>
         <div className="flex gap-3 text-[10px] text-gray-400 shrink-0">
@@ -130,7 +138,6 @@ export default function PeriodSummary({
         </div>
       </div>
 
-      {/* Extra stats row */}
       <div className="mt-3 flex gap-4 text-[10px] text-gray-400">
         <span>Avg pips/trade: <strong className="text-gray-600">{stats.avgPipsPerTrade}</strong></span>
         <span>Total R&apos;s: <strong className={stats.totalRs >= 0 ? "text-emerald-500" : "text-red-500"}>{stats.totalRs > 0 ? "+" : ""}{stats.totalRs}R</strong></span>
@@ -143,11 +150,13 @@ function MiniStat({
   icon: Icon,
   label,
   value,
+  sub,
   color = "text-gray-900",
 }: {
   icon: typeof DollarSign;
   label: string;
   value: string | number;
+  sub?: string;
   color?: string;
 }) {
   return (
@@ -157,6 +166,7 @@ function MiniStat({
         <span className="text-[10px] text-gray-400 uppercase tracking-wide">{label}</span>
       </div>
       <div className={`text-lg font-bold ${color}`}>{value}</div>
+      {sub && <div className="text-[10px] text-gray-400">{sub}</div>}
     </div>
   );
 }

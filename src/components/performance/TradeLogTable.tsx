@@ -80,11 +80,19 @@ function newEmptyTrade(): Partial<Trade> {
 export default function TradeLogTable({
   trades,
   onRefresh,
+  visibleColumns: visibleColsProp,
 }: {
   trades: Trade[];
   onRefresh: () => void;
   compact?: boolean;
+  visibleColumns?: Set<string>;
 }) {
+  // Filter columns based on visibility prop
+  const activeCols = useMemo(
+    () => visibleColsProp ? COLUMNS.filter((c) => visibleColsProp.has(c.key)) : COLUMNS,
+    [visibleColsProp],
+  );
+
   // Filters
   const [accountFilter, setAccountFilter] = useState<string>("all");
   const [sessionFilter, setSessionFilter] = useState<string>("all");
@@ -324,7 +332,7 @@ export default function TradeLogTable({
         <table className="w-full text-[11px]">
           <thead>
             <tr className="border-b border-pink-200/40">
-              {COLUMNS.map((c) => (
+              {activeCols.map((c) => (
                 <th
                   key={c.key}
                   onClick={() => toggleSort(c.key)}
@@ -347,7 +355,7 @@ export default function TradeLogTable({
             {/* New trade row */}
             {addingNew && (
               <tr className="border-b border-pink-300/50 bg-pink-50/60">
-                {COLUMNS.map((c) => (
+                {activeCols.map((c) => (
                   <td key={c.key} className="py-1 px-1">
                     {renderEditCell(c.key, newTrade as Record<string, unknown>, (d) => setNewTrade(d as Partial<Trade>))}
                   </td>
@@ -360,7 +368,7 @@ export default function TradeLogTable({
             {filtered.map((t) => (
               <>
                 <tr key={t.id} className="border-b border-pink-200/30 hover:bg-pink-50/40 transition-colors">
-                  {COLUMNS.map((c) => (
+                  {activeCols.map((c) => (
                     <td key={c.key} className="py-1.5 px-1.5 max-w-[160px] truncate">
                       {editingId === t.id ? renderEditCell(c.key, editData, setEditData) : renderCell(t, c.key)}
                     </td>
@@ -386,7 +394,7 @@ export default function TradeLogTable({
                 {/* Expanded evaluation row */}
                 {expandedId === t.id && (t.trade_evaluation || t.notes) && (
                   <tr key={`${t.id}-eval`} className="border-b border-pink-200/30">
-                    <td colSpan={COLUMNS.length + 1} className="py-3 px-4 bg-white/60/30">
+                    <td colSpan={activeCols.length + 1} className="py-3 px-4 bg-white/60/30">
                       {t.trade_evaluation && (
                         <div className="mb-3">
                           <div className="text-[10px] text-pink-500 font-semibold mb-1 uppercase tracking-wide">Trade Evaluation</div>

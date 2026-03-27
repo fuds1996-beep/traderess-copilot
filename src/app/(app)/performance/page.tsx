@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { BarChart3 } from "lucide-react";
 import { PerformanceSkeleton } from "@/components/ui/Skeleton";
-import WeeklyPnlBarChart from "@/components/charts/WeeklyPnlBarChart";
+import AccountPnlBarChart from "@/components/charts/AccountPnlBarChart";
 import WinRateLineChart from "@/components/charts/WinRateLineChart";
 import SessionBarChart from "@/components/charts/SessionBarChart";
 import DayOfWeekBarChart from "@/components/charts/DayOfWeekBarChart";
@@ -85,12 +85,11 @@ function groupTrades(
     }));
 }
 
-/** Compute P/L bar chart data and win rate line chart data from trades grouped by period */
-function computeChartData(trades: Trade[], period: PeriodView) {
+/** Compute win rate line chart data from trades grouped by period */
+function computeWinRateData(trades: Trade[], period: PeriodView) {
   const keyFn = period === "quarterly" ? getQuarterKey
     : period === "monthly" ? getMonthKey
     : getWeekStart;
-
   const labelFn = (k: string) =>
     period === "quarterly" ? formatQuarterLabel(k)
     : period === "monthly" ? formatMonthLabel(k)
@@ -102,24 +101,24 @@ function computeChartData(trades: Trade[], period: PeriodView) {
     if (!groups.has(k)) groups.set(k, []);
     groups.get(k)!.push(t);
   }
+  return [...groups.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, grp]) => ({
+      week_label: labelFn(key),
+      win_rate: grp.length > 0 ? Math.round((grp.filter((t) => t.result === "Win").length / grp.length) * 100 * 10) / 10 : 0,
+    }));
+}
 
-  const sorted = [...groups.entries()].sort(([a], [b]) => a.localeCompare(b));
-
-  const pnlData = sorted.map(([key, grp]) => {
-    const pnl = grp.reduce((s, t) => {
-      const v = parseFloat((t.dollar_result || "").replace(/[^0-9.\-]/g, ""));
-      return s + (isNaN(v) ? 0 : v);
-    }, 0);
-    return { week_label: labelFn(key), pnl: Math.round(pnl * 100) / 100 };
-  });
-
-  const winRateData = sorted.map(([key, grp]) => {
-    const wins = grp.filter((t) => t.result === "Win").length;
-    const wr = grp.length > 0 ? Math.round((wins / grp.length) * 100 * 10) / 10 : 0;
-    return { week_label: labelFn(key), win_rate: wr };
-  });
-
-  return { pnlData, winRateData };
+/** Get period key/label functions for the AccountPnlBarChart */
+function getPeriodFns(period: PeriodView) {
+  const keyFn = period === "quarterly" ? getQuarterKey
+    : period === "monthly" ? getMonthKey
+    : getWeekStart;
+  const labelFn = (k: string) =>
+    period === "quarterly" ? formatQuarterLabel(k)
+    : period === "monthly" ? formatMonthLabel(k)
+    : formatWeekLabel(k);
+  return { keyFn, labelFn };
 }
 
 const PERIOD_LABELS: Record<PeriodView, string> = {
@@ -138,10 +137,9 @@ export default function PerformancePage() {
   const loading = perfLoading || tradesLoading || balLoading;
 
   const periodGroups = useMemo(() => groupTrades(trades, periodView), [trades, periodView]);
-  const { pnlData, winRateData } = useMemo(
-    () => computeChartData(trades, periodView === "all" ? "monthly" : periodView),
-    [trades, periodView],
-  );
+  const chartPeriod = periodView === "all" ? "monthly" : periodView;
+  const winRateData = useMemo(() => computeWinRateData(trades, chartPeriod), [trades, chartPeriod]);
+  const { keyFn, labelFn } = useMemo(() => getPeriodFns(chartPeriod), [chartPeriod]);
 
   if (loading) return <PerformanceSkeleton />;
 
@@ -181,12 +179,12 @@ export default function PerformancePage() {
         />
       ))}
 
-      {/* P/L + Win Rate Charts — computed from actual trades */}
-      {pnlData.length > 0 && (
+      {/* P/L by Account + Win Rate Charts */}
+      {trades.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="glass rounded-2xl p-5 border border-pink-200/40">
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">{chartPeriodLabel} P/L</h3>
-            <WeeklyPnlBarChart data={pnlData} />
+            <h3 className="text-sm font-semibold text-gray-900 mb-4">{chartPeriodLabel} P/L by Account</h3>
+            <AccountPnlBarChart trades={trades} periodKeyFn={keyFn} labelFn={labelFn} />
           </div>
           <div className="glass rounded-2xl p-5 border border-pink-200/40">
             <h3 className="text-sm font-semibold text-gray-900 mb-4">{chartPeriodLabel} Win Rate</h3>
