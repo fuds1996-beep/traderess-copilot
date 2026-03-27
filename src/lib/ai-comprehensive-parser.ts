@@ -113,8 +113,8 @@ For each actual trade entry:
 - pips: same as overall_pips
 - rs_gained: the "R's Gained/Lost" column — R-multiple value (number, e.g. 1.0, -1.0). NEGATIVE for losses. NOT the same as R2R ratio.
 - risk_reward: the "R2R of Trade" column — ratio string like "1:1"
-- dollar_result: the "$ Lost or Gained" column — parse numbers, parentheses $(500) = negative
-- percent_risked: the "% Risked" column
+- dollar_result: CRITICAL — the "$ Lost or Gained" column. Contains dollar amounts like "$125", "$1,474", "-$50". Preserve the dollar sign and commas. Parentheses $(500) = negative. Do NOT leave empty if data exists.
+- percent_risked: the "% Risked" column only (NOT "% Gained/lost" which goes in custom_fields)
 - before_picture, after_picture: TradingView screenshot URLs
 - trade_quality, forecasted, trade_evaluation (FULL text, never truncate), notes
 - custom_fields: object with ANY extra columns not listed above (e.g. rsi_rate, dxy_conf, tp_conf_1, pct_gained_lost). Use snake_case keys. Different students have different extra columns — capture ALL of them. Empty {} if none.
