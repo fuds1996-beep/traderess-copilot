@@ -16,6 +16,9 @@ import {
   Calendar,
   Brain,
   AlertCircle,
+  Trash2,
+  AlertTriangle,
+  Loader2,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -52,6 +55,8 @@ export default function SyncHistory({ refreshKey }: { refreshKey?: number }) {
   const [records, setRecords] = useState<SyncRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchHistory = useCallback(async () => {
     try {
@@ -73,6 +78,63 @@ export default function SyncHistory({ refreshKey }: { refreshKey?: number }) {
   }, []);
 
   useEffect(() => { fetchHistory(); }, [fetchHistory, refreshKey]);
+
+  async function deleteSyncRun(record: SyncRecord) {
+    setDeleting(true);
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Delete data based on the sync's week_start and sheet range
+      // For trades: delete by date range if week_start is available
+      if (record.week_start && record.status === "success") {
+        const ws = record.week_start;
+        // Compute week end (7 days from start)
+        const startDate = new Date(ws);
+        const endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + 6);
+        const from = ws;
+        const to = endDate.toISOString().split("T")[0];
+
+        // Delete trades in this date range
+        if (record.synced.trades) {
+          await supabase.from("trade_log").delete()
+            .eq("user_id", user.id).gte("trade_date", from).lte("trade_date", to);
+        }
+        // Delete journals in this date range
+        if (record.synced.journals) {
+          await supabase.from("daily_journals").delete()
+            .eq("user_id", user.id).gte("journal_date", from).lte("journal_date", to);
+        }
+        // Delete chart time in this date range
+        if (record.synced.chart_time) {
+          await supabase.from("chart_time_log").delete()
+            .eq("user_id", user.id).gte("log_date", from).lte("log_date", to);
+        }
+        // Delete account balances for this week
+        if (record.synced.account_balances) {
+          await supabase.from("account_balances").delete()
+            .eq("user_id", user.id).eq("week_start", ws);
+        }
+        // Delete weekly summary for this week
+        if (record.synced.weekly_summary) {
+          await supabase.from("weekly_summaries").delete()
+            .eq("user_id", user.id).eq("week_start", ws);
+        }
+      }
+
+      // Delete the sync history record itself
+      await supabase.from("sync_history").delete().eq("id", record.id);
+
+      setDeleteConfirmId(null);
+      fetchHistory();
+    } catch {
+      // Silent fail
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -203,11 +265,60 @@ export default function SyncHistory({ refreshKey }: { refreshKey?: number }) {
                     <p className="text-[11px] text-gray-600 leading-relaxed">{r.message}</p>
                   </div>
                 )}
+
+                {/* Delete button */}
+                <div className="flex justify-end pt-1">
+                  <button
+                    onClick={() => setDeleteConfirmId(r.id)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] text-red-400 hover:text-red-500 hover:bg-red-50/60 rounded-lg transition-colors"
+                  >
+                    <Trash2 size={11} /> Delete this sync &amp; its data
+                  </button>
+                </div>
               </div>
             )}
           </div>
         );
       })}
+
+      {/* Delete confirmation */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={() => setDeleteConfirmId(null)} />
+          <div className="relative bg-white/95 backdrop-blur-xl border border-pink-200/40 rounded-2xl shadow-2xl p-6 max-w-sm w-full text-center">
+            <div className="w-12 h-12 rounded-full bg-red-50 border border-red-200/40 flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle size={22} className="text-red-500" />
+            </div>
+            <h3 className="text-base font-semibold text-gray-900 mb-1">Delete Sync Data?</h3>
+            <p className="text-sm text-gray-500 mb-2">This will permanently delete:</p>
+            <div className="text-xs text-gray-500 mb-4 space-y-0.5">
+              {(() => {
+                const rec = records.find((r) => r.id === deleteConfirmId);
+                if (!rec) return null;
+                const items = Object.entries(rec.synced).filter(([, v]) => v > 0);
+                return items.map(([key, count]) => (
+                  <div key={key}>• {count} {DATA_TYPE_META[key]?.label || key}</div>
+                ));
+              })()}
+              <div>• This sync history record</div>
+            </div>
+            <div className="flex gap-3 justify-center">
+              <button onClick={() => setDeleteConfirmId(null)} className="px-4 py-2 text-sm text-gray-500 bg-white/60 border border-pink-200/40 rounded-xl hover:bg-pink-50">Cancel</button>
+              <button
+                onClick={() => {
+                  const rec = records.find((r) => r.id === deleteConfirmId);
+                  if (rec) deleteSyncRun(rec);
+                }}
+                disabled={deleting}
+                className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-red-500 hover:bg-red-600 disabled:opacity-50 rounded-xl shadow-md shadow-red-500/20"
+              >
+                {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                {deleting ? "Deleting..." : "Delete All"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
