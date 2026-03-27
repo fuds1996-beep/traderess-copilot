@@ -4,48 +4,16 @@ import { useState, useMemo } from "react";
 import { ChevronDown, ChevronUp, Calendar, Eye, EyeOff } from "lucide-react";
 import TradeLogTable from "./TradeLogTable";
 import type { Trade } from "@/lib/types";
+import {
+  getWeekStart,
+  getMonthKey,
+  getQuarterKey,
+  formatWeekRange,
+  formatMonthLabel,
+  formatQuarterLabel,
+} from "@/lib/date-utils";
 
 type GroupMode = "week" | "month" | "quarter";
-
-function getWeekStart(dateStr: string): string {
-  if (!dateStr) return "unknown";
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return "unknown";
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  const monday = new Date(d);
-  monday.setDate(diff);
-  return monday.toISOString().split("T")[0];
-}
-
-function getMonthKey(dateStr: string): string {
-  return dateStr.slice(0, 7);
-}
-
-function getQuarterKey(dateStr: string): string {
-  const month = parseInt(dateStr.slice(5, 7));
-  const q = Math.ceil(month / 3);
-  return `${dateStr.slice(0, 4)}-Q${q}`;
-}
-
-function formatWeekRange(weekStart: string): string {
-  if (weekStart === "unknown") return "Unknown dates";
-  const start = new Date(weekStart);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 6);
-  const opts: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
-  return `${start.toLocaleDateString("en-US", opts)} – ${end.toLocaleDateString("en-US", opts)}, ${start.getFullYear()}`;
-}
-
-function formatMonthLabel(key: string): string {
-  const d = new Date(key + "-01");
-  return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
-}
-
-function formatQuarterLabel(key: string): string {
-  const [year, q] = key.split("-");
-  return `${q} ${year}`;
-}
 
 function computeGroupStats(trades: Trade[]) {
   const wins = trades.filter((t) => t.result === "Win").length;
@@ -59,7 +27,6 @@ function computeGroupStats(trades: Trade[]) {
   return { wins, losses, pips: Math.round(pips * 10) / 10, dollars: Math.round(dollars * 100) / 100, winRate };
 }
 
-// Default visible columns — a reasonable subset for the initial view
 const DEFAULT_VISIBLE = new Set([
   "account_name", "day", "trade_date", "pair", "session",
   "entry_price", "sl_price", "tp_price", "direction",
@@ -79,13 +46,13 @@ export default function GroupedTradeLog({
   const [showColumnPicker, setShowColumnPicker] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState<Set<string>>(DEFAULT_VISIBLE);
 
-  // Sort trades chronologically first
+  // Sort trades chronologically
   const sortedTrades = useMemo(() =>
     [...trades].sort((a, b) => a.trade_date.localeCompare(b.trade_date)),
     [trades],
   );
 
-  // Group by selected mode, sorted chronologically (most recent first)
+  // Group by selected mode
   const groups = useMemo(() => {
     const keyFn = groupMode === "quarter" ? getQuarterKey : groupMode === "month" ? getMonthKey : getWeekStart;
     const labelFn = groupMode === "quarter" ? formatQuarterLabel : groupMode === "month" ? formatMonthLabel : formatWeekRange;
@@ -98,7 +65,7 @@ export default function GroupedTradeLog({
     }
     return [...map.entries()]
       .sort(([a], [b]) => b.localeCompare(a))
-      .map(([key, trades]) => ({ key, label: labelFn(key), trades }));
+      .map(([key, grpTrades]) => ({ key, label: labelFn(key), trades: grpTrades }));
   }, [sortedTrades, groupMode]);
 
   function toggleGroup(key: string) {
@@ -123,9 +90,8 @@ export default function GroupedTradeLog({
 
   return (
     <div className="space-y-3">
-      {/* Controls row */}
+      {/* Controls */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
-        {/* Group mode */}
         <div className="flex items-center gap-1 p-0.5 bg-white/50 border border-pink-200/40 rounded-lg">
           {(["week", "month", "quarter"] as GroupMode[]).map((m) => (
             <button
@@ -140,7 +106,6 @@ export default function GroupedTradeLog({
           ))}
         </div>
 
-        {/* Column visibility toggle */}
         <div className="relative">
           <button
             onClick={() => setShowColumnPicker(!showColumnPicker)}
@@ -156,24 +121,11 @@ export default function GroupedTradeLog({
               <div className="absolute right-0 top-full mt-1 z-50 w-56 max-h-80 overflow-y-auto bg-white/95 backdrop-blur-xl border border-pink-200/40 rounded-xl shadow-lg p-2">
                 <div className="flex items-center justify-between px-2 py-1 mb-1">
                   <span className="text-[10px] text-gray-400">Toggle columns</span>
-                  <button
-                    onClick={() => setVisibleColumns(DEFAULT_VISIBLE)}
-                    className="text-[9px] text-pink-500 hover:text-pink-600"
-                  >
-                    Reset
-                  </button>
+                  <button onClick={() => setVisibleColumns(DEFAULT_VISIBLE)} className="text-[9px] text-pink-500 hover:text-pink-600">Reset</button>
                 </div>
                 {ALL_COLUMN_LABELS.map(({ key, label }) => (
-                  <label
-                    key={key}
-                    className="flex items-center gap-2 px-2 py-1 text-[10px] text-gray-600 hover:bg-pink-50/50 rounded cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={visibleColumns.has(key)}
-                      onChange={() => toggleColumn(key)}
-                      className="accent-pink-500 w-3 h-3"
-                    />
+                  <label key={key} className="flex items-center gap-2 px-2 py-1 text-[10px] text-gray-600 hover:bg-pink-50/50 rounded cursor-pointer">
+                    <input type="checkbox" checked={visibleColumns.has(key)} onChange={() => toggleColumn(key)} className="accent-pink-500 w-3 h-3" />
                     {label}
                   </label>
                 ))}
@@ -187,13 +139,9 @@ export default function GroupedTradeLog({
       {groups.map((group) => {
         const isCollapsed = collapsedGroups.has(group.key);
         const stats = computeGroupStats(group.trades);
-
         return (
           <div key={group.key} className="glass rounded-2xl border border-pink-200/40 overflow-hidden">
-            <button
-              onClick={() => toggleGroup(group.key)}
-              className="w-full flex items-center justify-between px-5 py-3 hover:bg-pink-50/40 transition-colors"
-            >
+            <button onClick={() => toggleGroup(group.key)} className="w-full flex items-center justify-between px-5 py-3 hover:bg-pink-50/40 transition-colors">
               <div className="flex items-center gap-3">
                 <Calendar size={14} className="text-pink-500" />
                 <span className="text-sm font-semibold text-gray-900">{group.label}</span>
@@ -215,14 +163,9 @@ export default function GroupedTradeLog({
                 {isCollapsed ? <ChevronDown size={14} className="text-gray-400" /> : <ChevronUp size={14} className="text-gray-400" />}
               </div>
             </button>
-
             {!isCollapsed && (
               <div className="px-5 pb-4 border-t border-pink-200/30">
-                <TradeLogTable
-                  trades={group.trades}
-                  onRefresh={onRefresh}
-                  visibleColumns={visibleColumns}
-                />
+                <TradeLogTable trades={group.trades} onRefresh={onRefresh} visibleColumns={visibleColumns} />
               </div>
             )}
           </div>
@@ -232,7 +175,6 @@ export default function GroupedTradeLog({
   );
 }
 
-// All column labels for the picker
 const ALL_COLUMN_LABELS = [
   { key: "account_name", label: "Account" },
   { key: "day", label: "Day" },

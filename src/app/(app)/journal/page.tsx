@@ -27,6 +27,7 @@ import { useTrades } from "@/hooks/use-trades";
 import { usePsychology } from "@/hooks/use-psychology";
 import { computeJournalPatterns, type JournalPattern } from "@/lib/compute-journal-patterns";
 import { createClient } from "@/lib/supabase/client";
+import { getWeekStart, formatWeekRange } from "@/lib/date-utils";
 import type { DailyJournal } from "@/lib/types";
 
 const EMOTION_ICONS: Record<number, typeof Smile> = { 1: Frown, 2: Frown, 3: Meh, 4: Smile, 5: Smile };
@@ -40,22 +41,6 @@ function emotionToNum(emotion: string): number {
   if (lower.includes("stressed") || lower.includes("doubt") || lower.includes("anxious")) return 2;
   if (lower.includes("frustrat") || lower.includes("fear") || lower.includes("angry")) return 1;
   return 3;
-}
-
-function getWeekStart(dateStr: string): string {
-  const d = new Date(dateStr);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday start
-  const monday = new Date(d.setDate(diff));
-  return monday.toISOString().split("T")[0];
-}
-
-function formatWeekLabel(weekStart: string): string {
-  const start = new Date(weekStart);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 4);
-  const opts: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
-  return `${start.toLocaleDateString("en-US", opts)} – ${end.toLocaleDateString("en-US", opts)}, ${start.getFullYear()}`;
 }
 
 function emptyJournal(): Partial<DailyJournal> {
@@ -380,7 +365,7 @@ export default function JournalPage() {
                 >
                   <div className="flex items-center gap-2">
                     <Calendar size={14} className="text-pink-500" />
-                    <span className="text-xs font-semibold text-gray-900">{formatWeekLabel(weekStart)}</span>
+                    <span className="text-xs font-semibold text-gray-900">{formatWeekRange(weekStart)}</span>
                     <span className="text-[10px] text-gray-400">{entries.length} entries</span>
                   </div>
                   {isCollapsed ? <ChevronDown size={14} className="text-gray-400" /> : <ChevronUp size={14} className="text-gray-400" />}

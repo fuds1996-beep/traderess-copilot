@@ -14,46 +14,16 @@ import { usePerformance } from "@/hooks/use-performance";
 import { useTrades } from "@/hooks/use-trades";
 import { useAccountBalances } from "@/hooks/use-account-balances";
 import type { Trade } from "@/lib/types";
+import {
+  getWeekStart,
+  getMonthKey,
+  getQuarterKey,
+  formatMonthLabel,
+  formatQuarterLabel,
+  formatWeekLabel,
+} from "@/lib/date-utils";
 
 type PeriodView = "weekly" | "monthly" | "quarterly" | "all";
-
-function getWeekStart(dateStr: string): string {
-  if (!dateStr) return "";
-  const d = new Date(dateStr);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  const mon = new Date(d);
-  mon.setDate(diff);
-  return mon.toISOString().split("T")[0];
-}
-
-function getMonthKey(dateStr: string): string {
-  return dateStr.slice(0, 7);
-}
-
-function getQuarterKey(dateStr: string): string {
-  const month = parseInt(dateStr.slice(5, 7));
-  const q = Math.ceil(month / 3);
-  return `${dateStr.slice(0, 4)}-Q${q}`;
-}
-
-function formatMonthLabel(key: string): string {
-  const d = new Date(key + "-01");
-  return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
-}
-
-function formatQuarterLabel(key: string): string {
-  const [year, q] = key.split("-");
-  return `${q} ${year}`;
-}
-
-function formatWeekLabel(weekStart: string): string {
-  const start = new Date(weekStart);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 4);
-  const opts: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
-  return `${start.toLocaleDateString("en-US", opts)} – ${end.toLocaleDateString("en-US", opts)}`;
-}
 
 function groupTrades(
   trades: Trade[],

@@ -35,6 +35,7 @@ import { useTrades } from "@/hooks/use-trades";
 import { useDiscipline } from "@/hooks/use-discipline";
 import { useMissedTrades } from "@/hooks/use-missed-trades";
 import { computeInsights } from "@/lib/compute-insights";
+import { getWeekStart } from "@/lib/date-utils";
 import type { Trade } from "@/lib/types";
 
 const QUICK_ACTIONS = [
@@ -81,16 +82,6 @@ function computeWeeklyHistory(trades: Trade[]) {
     trades: d.trades,
     winRate: d.total > 0 ? Math.round((d.wins / d.total) * 100) : 0,
   }));
-}
-
-function getWeekStart(dateStr: string): string {
-  if (!dateStr) return "";
-  const d = new Date(dateStr);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  const mon = new Date(d);
-  mon.setDate(diff);
-  return mon.toISOString().split("T")[0];
 }
 
 const INSIGHT_STYLES = {
