@@ -14,6 +14,9 @@ export function useTrades() {
   const { filterDates } = useDateRange();
   const { toast } = useToast();
   const prevCountRef = useRef(0);
+  const readyRef = useRef(false);
+  const toastRef = useRef(toast);
+  useEffect(() => { toastRef.current = toast; });
 
   const fetchTrades = useCallback(async () => {
     try {
@@ -31,10 +34,10 @@ export function useTrades() {
       const newTrades = (data as Trade[]) || [];
 
       // Toast on realtime update (not initial load)
-      if (ready && newTrades.length !== prevCountRef.current) {
+      if (readyRef.current && newTrades.length !== prevCountRef.current) {
         const diff = newTrades.length - prevCountRef.current;
-        if (diff > 0) toast(`${diff} new trade${diff > 1 ? "s" : ""} synced`, "success");
-        else if (diff < 0) toast(`${Math.abs(diff)} trade${Math.abs(diff) > 1 ? "s" : ""} removed`, "info");
+        if (diff > 0) toastRef.current(`${diff} new trade${diff > 1 ? "s" : ""} synced`, "success");
+        else if (diff < 0) toastRef.current(`${Math.abs(diff)} trade${Math.abs(diff) > 1 ? "s" : ""} removed`, "info");
       }
       prevCountRef.current = newTrades.length;
 
@@ -43,13 +46,13 @@ export function useTrades() {
       setAllTrades([]);
     } finally {
       setLoading(false);
+      readyRef.current = true;
       setReady(true);
     }
-  }, [ready, toast]);
+  }, []); // No dependencies — stable callback
 
   useEffect(() => { fetchTrades(); }, [fetchTrades]);
 
-  // Subscribe to realtime changes on trade_log
   useRealtimeSubscription("trade_log", ready, fetchTrades);
 
   const trades = useMemo(() => filterDates(allTrades), [allTrades, filterDates]);

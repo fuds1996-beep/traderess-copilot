@@ -1,13 +1,13 @@
 "use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useMemo, type ReactNode } from "react";
 
 export type DatePreset = "this_week" | "last_week" | "this_month" | "last_month" | "last_30" | "all";
 
 export interface DateRange {
   preset: DatePreset;
-  from: string; // ISO date
-  to: string;   // ISO date
+  from: string;
+  to: string;
   label: string;
 }
 
@@ -26,7 +26,7 @@ function computeRange(preset: DatePreset): DateRange {
       const day = now.getDay();
       const diff = now.getDate() - day + (day === 0 ? -6 : 1) - 7;
       const mon = new Date(now); mon.setDate(diff);
-      const fri = new Date(mon); fri.setDate(mon.getDate() + 4);
+      const fri = new Date(mon); fri.setDate(mon.getDate() + 6);
       return { preset, from: mon.toISOString().split("T")[0], to: fri.toISOString().split("T")[0], label: "Last Week" };
     }
     case "this_month": {
@@ -47,12 +47,14 @@ function computeRange(preset: DatePreset): DateRange {
   }
 }
 
-const DateRangeCtx = createContext<{
+interface DateRangeCtxType {
   range: DateRange;
   setPreset: (p: DatePreset) => void;
   setCustom: (from: string, to: string) => void;
   filterDates: <T extends { trade_date?: string; journal_date?: string; log_date?: string; week_start?: string }>(items: T[]) => T[];
-}>({
+}
+
+const DateRangeCtx = createContext<DateRangeCtxType>({
   range: computeRange("all"),
   setPreset: () => {},
   setCustom: () => {},
@@ -62,24 +64,27 @@ const DateRangeCtx = createContext<{
 export function DateRangeProvider({ children }: { children: ReactNode }) {
   const [range, setRange] = useState<DateRange>(computeRange("all"));
 
-  function setPreset(p: DatePreset) {
+  const setPreset = useCallback((p: DatePreset) => {
     setRange(computeRange(p));
-  }
+  }, []);
 
-  function setCustom(from: string, to: string) {
-    setRange({ preset: "all", from, to, label: `${from} – ${to}` });
-  }
+  const setCustom = useCallback((from: string, to: string) => {
+    setRange({ preset: "all" as DatePreset, from, to, label: `${from} – ${to}` });
+  }, []);
 
-  function filterDates<T extends { trade_date?: string; journal_date?: string; log_date?: string; week_start?: string }>(items: T[]): T[] {
+  // Stable filterDates that only changes when range changes
+  const filterDates = useCallback(<T extends { trade_date?: string; journal_date?: string; log_date?: string; week_start?: string }>(items: T[]): T[] => {
     if (range.preset === "all") return items;
     return items.filter((item) => {
       const d = item.trade_date || item.journal_date || item.log_date || item.week_start || "";
       return d >= range.from && d <= range.to;
     });
-  }
+  }, [range]);
+
+  const value = useMemo(() => ({ range, setPreset, setCustom, filterDates }), [range, setPreset, setCustom, filterDates]);
 
   return (
-    <DateRangeCtx.Provider value={{ range, setPreset, setCustom, filterDates }}>
+    <DateRangeCtx.Provider value={value}>
       {children}
     </DateRangeCtx.Provider>
   );
