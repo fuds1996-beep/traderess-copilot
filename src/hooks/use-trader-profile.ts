@@ -12,7 +12,7 @@ const EMPTY_PROFILE: TraderProfile = {
   behavioural_patterns: [], trading_plan: [],
   detailed_weaknesses: [], detailed_strengths: [], successes: [], fears: [],
   hobbies: [], expectations: [], experience: {}, trader_type: "",
-  availability: { slot1: "", slot2: "", slot3: "" }, responsibilities: "",
+  availability: { slot1: "", slot2: "", slot3: "" }, responsibilities: "", risk_plan: {},
 };
 
 export function useTraderProfile() {

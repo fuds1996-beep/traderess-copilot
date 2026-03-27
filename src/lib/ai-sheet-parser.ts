@@ -35,6 +35,7 @@ export interface ParsedTrade {
   forecasted: string;
   trade_evaluation: string;
   notes: string;
+  custom_fields: Record<string, string | number | boolean>;
 }
 
 export interface ParseResult {
@@ -113,6 +114,7 @@ Your job: extract ONLY the actual trade entries. Each trade must have ALL of the
 - forecasted: e.g. "Trade was not forecasted", "Yes" (empty string if not found)
 - trade_evaluation: the FULL trade evaluation/journal text — preserve every word, do NOT summarize or truncate. This is critical for pattern analysis. Empty string if not found.
 - notes: the FULL notes text — preserve every word. Empty string if not found.
+- custom_fields: an object containing ANY other columns from the spreadsheet that don't map to the fields above. For example: {"rsi_rate": 40, "tp_conf_1": "Session high/low", "dxy_conf": "Yes", "dxy_conf_1": "DXY SH&L", "pct_gained_lost": "2.10%"}. IMPORTANT: Different students have different extra columns. Capture ALL of them here. Use snake_case keys. Empty object {} if no extra columns.
 
 Respond with ONLY valid JSON in this exact format, no other text:
 {
@@ -182,6 +184,7 @@ ${sheetText}`,
       forecasted: t.forecasted || "",
       trade_evaluation: t.trade_evaluation || "",
       notes: t.notes || "",
+      custom_fields: t.custom_fields && typeof t.custom_fields === "object" ? t.custom_fields : {},
     }));
 
   return parsed;

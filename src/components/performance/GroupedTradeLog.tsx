@@ -49,6 +49,22 @@ export default function GroupedTradeLog({
   const [visibleColumns, setVisibleColumns] = useState<Set<string>>(DEFAULT_VISIBLE);
   const [expandedJournalId, setExpandedJournalId] = useState<string | null>(null);
 
+  // Discover custom field keys for column picker
+  const customFieldLabels = useMemo(() => {
+    const keys = new Set<string>();
+    for (const t of trades) {
+      if (t.custom_fields && typeof t.custom_fields === "object") {
+        for (const k of Object.keys(t.custom_fields)) keys.add(k);
+      }
+    }
+    return [...keys].map((k) => ({
+      key: `cf_${k}`,
+      label: k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+    }));
+  }, [trades]);
+
+  const allColumnLabels = useMemo(() => [...ALL_COLUMN_LABELS, ...customFieldLabels], [customFieldLabels]);
+
   // Sort trades chronologically
   const sortedTrades = useMemo(() =>
     [...trades].sort((a, b) => a.trade_date.localeCompare(b.trade_date)),
@@ -140,7 +156,7 @@ export default function GroupedTradeLog({
                   <span className="text-[10px] text-gray-400">Toggle columns</span>
                   <button onClick={() => setVisibleColumns(DEFAULT_VISIBLE)} className="text-[9px] text-pink-500 hover:text-pink-600">Reset</button>
                 </div>
-                {ALL_COLUMN_LABELS.map(({ key, label }) => (
+                {allColumnLabels.map(({ key, label }) => (
                   <label key={key} className="flex items-center gap-2 px-2 py-1 text-[10px] text-gray-600 hover:bg-pink-50/50 rounded cursor-pointer">
                     <input type="checkbox" checked={visibleColumns.has(key)} onChange={() => toggleColumn(key)} className="accent-pink-500 w-3 h-3" />
                     {label}

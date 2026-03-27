@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 import type { Trade } from "@/lib/types";
-import { TRADE_COLUMNS, getDefaultValue, type ColumnDef } from "@/lib/trade-columns";
+import { TRADE_COLUMNS, getDefaultValue, type ColumnDef, type ColType } from "@/lib/trade-columns";
 import { createClient } from "@/lib/supabase/client";
 
 type SortDir = "asc" | "desc";
@@ -40,9 +40,31 @@ export default function TradeLogTable({
   compact?: boolean;
   visibleColumns?: Set<string>;
 }) {
+  // Discover custom field keys from trade data
+  const customFieldKeys = useMemo(() => {
+    const keys = new Set<string>();
+    for (const t of trades) {
+      if (t.custom_fields && typeof t.custom_fields === "object") {
+        for (const k of Object.keys(t.custom_fields)) keys.add(k);
+      }
+    }
+    return [...keys];
+  }, [trades]);
+
+  // Build dynamic columns: fixed columns + custom field columns
+  const allCols = useMemo(() => {
+    const customCols: ColumnDef[] = customFieldKeys.map((k) => ({
+      key: `cf_${k}`,
+      label: k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+      type: "text" as ColType,
+      width: "w-24",
+    }));
+    return [...TRADE_COLUMNS, ...customCols];
+  }, [customFieldKeys]);
+
   const activeCols = useMemo(
-    () => visibleColsProp ? TRADE_COLUMNS.filter((c) => visibleColsProp.has(c.key)) : TRADE_COLUMNS,
-    [visibleColsProp],
+    () => visibleColsProp ? allCols.filter((c) => visibleColsProp.has(c.key)) : allCols,
+    [visibleColsProp, allCols],
   );
 
   const [accountFilter, setAccountFilter] = useState<string>("all");
@@ -125,7 +147,10 @@ export default function TradeLogTable({
   }
 
   function renderCell(trade: Trade, col: ColumnDef) {
-    const val = (trade as unknown as Record<string, unknown>)[col.key];
+    // Custom fields use cf_ prefix — look up from custom_fields object
+    const val = col.key.startsWith("cf_")
+      ? trade.custom_fields?.[col.key.slice(3)]
+      : (trade as unknown as Record<string, unknown>)[col.key];
     if (col.key === "direction") {
       return <span className={`flex items-center gap-1 ${val === "Long" ? "text-emerald-500" : "text-red-500"}`}>{val === "Long" ? <ArrowUp size={10} /> : <ArrowDown size={10} />}{String(val)}</span>;
     }

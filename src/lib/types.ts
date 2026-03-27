@@ -69,6 +69,7 @@ export interface TraderProfile {
   trader_type: string;
   availability: { slot1: string; slot2: string; slot3: string };
   responsibilities: string;
+  risk_plan: Record<string, unknown>;
 }
 
 // trading_performance
@@ -127,6 +128,7 @@ export interface Trade {
   forecasted: string;
   trade_evaluation: string;
   notes: string;
+  custom_fields: Record<string, string | number | boolean>;
 }
 
 // weekly_briefings
@@ -193,6 +195,8 @@ export interface DailyJournal {
   pips_negative: number;
   pips_overall: number;
   rs_total: number;
+  category_ratings: Record<string, number>;
+  daily_checklist: { task: string; done: boolean; time?: string; notes?: string }[];
 }
 
 // chart_time_log

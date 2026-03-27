@@ -13,6 +13,8 @@ export interface ParsedJournalEntry {
   emotion_after: string;
   effort_rating: number;
   journal_text: string;
+  category_ratings: Record<string, number>;
+  daily_checklist: { task: string; done: boolean; time?: string; notes?: string }[];
 }
 
 export interface ParsedChartTime {
@@ -115,6 +117,7 @@ For each actual trade entry:
 - percent_risked: the "% Risked" column
 - before_picture, after_picture: TradingView screenshot URLs
 - trade_quality, forecasted, trade_evaluation (FULL text, never truncate), notes
+- custom_fields: object with ANY extra columns not listed above (e.g. rsi_rate, dxy_conf, tp_conf_1, pct_gained_lost). Use snake_case keys. Different students have different extra columns — capture ALL of them. Empty {} if none.
 
 ## 2. JOURNALS (array) — one per day that has a journal entry
 - journal_date (YYYY-MM-DD), day_of_week
@@ -123,6 +126,8 @@ For each actual trade entry:
 - emotion_before, emotion_during, emotion_after (the exact text like "Neutral", "Stressed")
 - effort_rating (count the stars ⭐, 1-5)
 - journal_text: the COMPLETE daily summary text. Preserve EVERY word and paragraph.
+- category_ratings: object with per-category scores if present (e.g. {"forecasting": 4, "psychology": 3, "execution": 4, "journalling": 3}). Different students may rate different categories. Empty {} if no category ratings found.
+- daily_checklist: array of daily tasks if a structured daily tracker exists (e.g. [{"task": "HTF bias reviewed", "done": true, "time": "11:31", "notes": "Yes uncertainty in market"}]). Empty [] if no checklist found.
 
 ## 3. CHART_TIME (array) — one per day that has time tracking
 - log_date (YYYY-MM-DD), day_of_week
@@ -224,6 +229,7 @@ ${sheetText}`,
       forecasted: t.forecasted || "",
       trade_evaluation: t.trade_evaluation || "",
       notes: t.notes || "",
+      custom_fields: t.custom_fields && typeof t.custom_fields === "object" ? t.custom_fields : {},
     }));
 
   // Clean journals
@@ -239,6 +245,8 @@ ${sheetText}`,
       emotion_after: j.emotion_after || "",
       effort_rating: Number(j.effort_rating) || 0,
       journal_text: j.journal_text || "",
+      category_ratings: j.category_ratings && typeof j.category_ratings === "object" ? j.category_ratings : {},
+      daily_checklist: Array.isArray(j.daily_checklist) ? j.daily_checklist : [],
     }));
 
   // Clean chart time

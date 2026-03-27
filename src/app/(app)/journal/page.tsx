@@ -453,6 +453,21 @@ export default function JournalPage() {
                                 </div>
                               </div>
 
+                              {/* Category ratings if present */}
+                              {j.category_ratings && Object.keys(j.category_ratings).length > 0 && (
+                                <div>
+                                  <div className="text-[10px] text-purple-400 font-semibold mb-1 uppercase tracking-wide">Category Ratings</div>
+                                  <div className="flex flex-wrap gap-2">
+                                    {Object.entries(j.category_ratings).map(([cat, score]) => (
+                                      <div key={cat} className="px-2.5 py-1 bg-purple-50/60 border border-purple-200/30 rounded-lg text-center">
+                                        <div className="text-[9px] text-gray-400 capitalize">{cat}</div>
+                                        <div className="text-sm font-bold text-purple-500">{String(score)}/5</div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
                               {j.journal_text && (
                                 <div>
                                   <div className="text-[10px] text-pink-500 font-semibold mb-1 uppercase tracking-wide">Daily Journal</div>
