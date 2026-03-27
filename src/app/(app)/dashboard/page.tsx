@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   DollarSign,
   Hash,
@@ -17,6 +17,7 @@ import {
   Sun,
   Sunset,
   Moon,
+  Loader2,
 } from "lucide-react";
 import StatCard from "@/components/ui/StatCard";
 import Badge from "@/components/ui/Badge";
@@ -107,6 +108,7 @@ export default function DashboardPage() {
   const weeklyHistory = useMemo(() => computeWeeklyHistory(trades), [trades]);
 
   const loading = perfLoading || briefLoading || profileLoading || ctLoading || jLoading || tLoading;
+  const [genBriefing, setGenBriefing] = useState(false);
 
   // Compute account count from trades
   const accountNames = useMemo(() => [...new Set(trades.map((t) => t.account_name).filter(Boolean))], [trades]);
@@ -185,8 +187,20 @@ export default function DashboardPage() {
           </div>
           <p className="text-sm text-gray-500">{formatToday()}</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white text-sm rounded-xl hover:bg-pink-600 transition-colors shadow-md shadow-pink-500/20">
-          <Play size={14} /> Run Briefing
+        <button
+          onClick={async () => {
+            setGenBriefing(true);
+            try {
+              const ws = getWeekStart(new Date().toISOString().split("T")[0]);
+              await fetch("/api/briefing/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ weekStart: ws }) });
+            } catch { /* silent */ }
+            finally { setGenBriefing(false); }
+          }}
+          disabled={genBriefing}
+          className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white text-sm rounded-xl hover:bg-pink-600 disabled:opacity-50 transition-colors shadow-md shadow-pink-500/20"
+        >
+          {genBriefing ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
+          {genBriefing ? "Generating..." : "Run Briefing"}
         </button>
       </div>
 

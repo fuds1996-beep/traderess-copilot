@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Eye,
   CheckCircle,
@@ -12,16 +13,47 @@ import {
   BookOpen,
   RefreshCw,
   Newspaper,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 import SentimentDot from "@/components/ui/SentimentDot";
 import CollapsibleSection from "@/components/ui/CollapsibleSection";
-import EmptyState from "@/components/ui/EmptyState";
 import { useBriefing } from "@/hooks/use-briefing";
+import { getWeekStart } from "@/lib/date-utils";
 import type { Sentiment } from "@/lib/types";
 
 export default function BriefingContent() {
-  const { briefing, loading, hasData } = useBriefing();
+  const { briefing, loading, hasData, refresh } = useBriefing();
+  const [generating, setGenerating] = useState(false);
+  const [genWeek, setGenWeek] = useState(getWeekStart(new Date().toISOString().split("T")[0]));
+  const [genError, setGenError] = useState<string | null>(null);
+
+  async function handleGenerate() {
+    setGenerating(true);
+    setGenError(null);
+    try {
+      const controller = new AbortController();
+      setTimeout(() => controller.abort(), 5 * 60 * 1000);
+      const res = await fetch("/api/briefing/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ weekStart: genWeek }),
+        signal: controller.signal,
+      });
+      const data = await res.json();
+      if (!res.ok) { setGenError(data.error || "Generation failed"); }
+      else { refresh(); }
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        setGenError("Timed out — try again");
+      } else {
+        setGenError("Generation failed");
+      }
+    } finally {
+      setGenerating(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -38,32 +70,36 @@ export default function BriefingContent() {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Weekly Briefing</h1>
-          <p className="text-sm text-gray-500 mt-1">Fundamental analysis, economic calendar, and market sentiment</p>
+          <p className="text-sm text-gray-500 mt-1">AI-generated analysis of your trading week</p>
         </div>
         <div className="glass rounded-2xl p-8 border border-pink-200/40">
           <div className="max-w-lg mx-auto text-center">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-pink-500/20">
               <Newspaper size={28} className="text-white" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Briefing Yet</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Generate Your Briefing</h3>
             <p className="text-sm text-gray-500 mb-6">
-              Your weekly briefing will include economic calendar events, EUR/USD &amp; DXY market analysis,
-              copilot guidance with no-trade zones, daily risk ratings, and a pre-session checklist.
+              AI will analyze your trades and journals to create a personalized briefing
+              with insights, risk guidance, and a pre-session checklist.
             </p>
-            <div className="flex justify-center gap-8 text-xs text-gray-400 mb-6">
-              <div className="flex flex-col items-center gap-1.5">
-                <span className="w-7 h-7 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center text-xs font-bold">1</span>
-                Connect Sheet
+
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div>
+                <label className="block text-[10px] text-gray-400 mb-1">Week starting</label>
+                <input type="date" value={genWeek} onChange={(e) => setGenWeek(e.target.value)}
+                  className="bg-white/60 border border-pink-200/40 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-pink-400" />
               </div>
-              <div className="flex flex-col items-center gap-1.5">
-                <span className="w-7 h-7 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center text-xs font-bold">2</span>
-                Run Workflow
-              </div>
-              <div className="flex flex-col items-center gap-1.5">
-                <span className="w-7 h-7 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center text-xs font-bold">3</span>
-                Briefing Ready
+              <div className="pt-4">
+                <button onClick={handleGenerate} disabled={generating}
+                  className="flex items-center gap-2 px-5 py-2 bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white text-sm font-medium rounded-xl shadow-md shadow-pink-500/20 transition-colors">
+                  {generating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                  {generating ? "Generating..." : "Generate Briefing"}
+                </button>
               </div>
             </div>
+
+            {genError && <p className="text-xs text-red-500 mb-2">{genError}</p>}
+            {generating && <p className="text-xs text-gray-400 animate-pulse">AI is analyzing your trades and journals — this may take 1-2 minutes...</p>}
           </div>
         </div>
       </div>
@@ -83,8 +119,12 @@ export default function BriefingContent() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 px-3 py-1.5 bg-pink-500 text-white text-xs rounded-lg hover:bg-pink-600 transition-colors">
-            <RefreshCw size={12} /> Refresh Briefing
+          <input type="date" value={genWeek} onChange={(e) => setGenWeek(e.target.value)}
+            className="bg-white/60 border border-pink-200/40 rounded-lg px-2 py-1.5 text-xs text-gray-900 focus:outline-none focus:border-pink-400" />
+          <button onClick={handleGenerate} disabled={generating}
+            className="flex items-center gap-2 px-3 py-1.5 bg-pink-500 text-white text-xs rounded-lg hover:bg-pink-600 disabled:opacity-50 transition-colors">
+            {generating ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+            {generating ? "Generating..." : "Regenerate"}
           </button>
         </div>
       </div>

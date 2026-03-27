@@ -1,26 +1,36 @@
 "use client";
 
-import { useSupabaseQuery } from "./use-supabase-query";
+import { useState, useEffect, useCallback } from "react";
+import { createClient } from "@/lib/supabase/client";
 import type { WeeklyBriefing } from "@/lib/types";
 
 export function useBriefing() {
-  const { data, loading } = useSupabaseQuery<WeeklyBriefing | null>(
-    async (supabase) => {
+  const [briefing, setBriefing] = useState<WeeklyBriefing | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetch = useCallback(async () => {
+    try {
+      const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return { data: null, error: null };
-      const { data, error } = await supabase
+      if (!user) { setLoading(false); return; }
+
+      const { data } = await supabase
         .from("weekly_briefings")
         .select("*")
         .eq("user_id", user.id)
         .order("week_start", { ascending: false })
         .limit(1)
         .single();
-      return { data: data as WeeklyBriefing | null, error };
-    },
-    null,
-  );
 
-  const hasData = data !== null;
+      setBriefing((data as WeeklyBriefing) || null);
+    } catch {
+      setBriefing(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  return { briefing: data, loading, hasData };
+  useEffect(() => { fetch(); }, [fetch]);
+
+  return { briefing, loading, hasData: briefing !== null, refresh: fetch };
 }
