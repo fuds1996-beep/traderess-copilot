@@ -1,71 +1,92 @@
 "use client";
 
 import { useMemo } from "react";
-import {
-  DollarSign,
-  Hash,
-  Percent,
-  TrendingUp,
-  TrendingDown,
-  Activity,
-} from "lucide-react";
 import type { Trade } from "@/lib/types";
 
-interface BestWorstTrade {
-  pair: string;
-  dollars: number;
-  date: string;
-}
+const SESSIONS = ["LND Open", "NY Open", "NY Close", "Asia Open", "Asia Close"];
 
-interface PeriodStats {
-  totalTrades: number;
+interface SessionStats {
+  session: string;
+  total: number;
   wins: number;
-  losses: number;
+  successRate: number;
+}
+
+interface FullStats {
+  tradesTaken: number;
+  pipsPositive: number;
+  pipsNegative: number;
+  pipsOverall: number;
+  rsPositive: number;
+  rsNegative: number;
+  rsOverall: number;
+  wins: number;
   be: number;
-  winRate: string;
-  totalPips: number;
-  totalRs: number;
-  totalDollars: number;
-  bestTrade: BestWorstTrade;
-  worstTrade: BestWorstTrade;
-  avgPipsPerTrade: number;
+  losses: number;
+  successRate: string;
+  sessions: SessionStats[];
 }
 
-function parseDollars(t: Trade): number {
-  const v = parseFloat((t.dollar_result || "").replace(/[^0-9.\-]/g, ""));
-  return isNaN(v) ? 0 : v;
-}
-
-function computeStats(trades: Trade[]): PeriodStats {
+function computeFullStats(trades: Trade[]): FullStats {
   const wins = trades.filter((t) => t.result === "Win").length;
   const losses = trades.filter((t) => t.result === "Loss").length;
   const be = trades.filter((t) => t.result === "BE").length;
-  const totalTrades = trades.length;
-  const winRate = totalTrades > 0 ? ((wins / totalTrades) * 100).toFixed(1) : "0";
+  const tradesTaken = trades.length;
+  const successRate = tradesTaken > 0 ? ((wins / tradesTaken) * 100).toFixed(1) : "0";
 
-  const totalPips = trades.reduce((s, t) => s + (t.overall_pips || t.pips || 0), 0);
-  const totalRs = trades.reduce((s, t) => s + (t.rs_gained || 0), 0);
-  const totalDollars = trades.reduce((s, t) => s + parseDollars(t), 0);
-
-  // Best/worst by dollar amount
-  let bestTrade: BestWorstTrade = { pair: "—", dollars: 0, date: "" };
-  let worstTrade: BestWorstTrade = { pair: "—", dollars: 0, date: "" };
+  let pipsPositive = 0, pipsNegative = 0;
+  let rsPositive = 0, rsNegative = 0;
 
   for (const t of trades) {
-    const d = parseDollars(t);
-    if (d > bestTrade.dollars) bestTrade = { pair: t.pair, dollars: d, date: t.trade_date };
-    if (d < worstTrade.dollars) worstTrade = { pair: t.pair, dollars: d, date: t.trade_date };
+    const pips = t.overall_pips || t.pips || 0;
+    if (pips > 0) pipsPositive += pips; else pipsNegative += pips;
+
+    const rs = t.rs_gained || 0;
+    if (rs > 0) rsPositive += rs; else rsNegative += rs;
   }
 
-  const avgPipsPerTrade = totalTrades > 0 ? Math.round((totalPips / totalTrades) * 10) / 10 : 0;
+  // Session breakdown
+  const sessionMap = new Map<string, { total: number; wins: number }>();
+  for (const s of SESSIONS) sessionMap.set(s, { total: 0, wins: 0 });
+
+  for (const t of trades) {
+    const s = t.session || "";
+    // Match to known session — fuzzy match
+    const match = SESSIONS.find((sn) =>
+      s.toLowerCase().includes(sn.split(" ")[0].toLowerCase()) &&
+      s.toLowerCase().includes(sn.split(" ")[1]?.toLowerCase() || ""),
+    ) || s;
+
+    if (!sessionMap.has(match)) sessionMap.set(match, { total: 0, wins: 0 });
+    const entry = sessionMap.get(match)!;
+    entry.total++;
+    if (t.result === "Win") entry.wins++;
+  }
+
+  const sessions = [...sessionMap.entries()]
+    .map(([session, d]) => ({
+      session,
+      total: d.total,
+      wins: d.wins,
+      successRate: d.total > 0 ? Math.round((d.wins / d.total) * 100) : 0,
+    }));
 
   return {
-    totalTrades, wins, losses, be, winRate,
-    totalPips: Math.round(totalPips * 10) / 10,
-    totalRs: Math.round(totalRs * 100) / 100,
-    totalDollars: Math.round(totalDollars * 100) / 100,
-    bestTrade, worstTrade, avgPipsPerTrade,
+    tradesTaken,
+    pipsPositive: round(pipsPositive),
+    pipsNegative: round(pipsNegative),
+    pipsOverall: round(pipsPositive + pipsNegative),
+    rsPositive: round(rsPositive),
+    rsNegative: round(rsNegative),
+    rsOverall: round(rsPositive + rsNegative),
+    wins, be, losses,
+    successRate,
+    sessions,
   };
+}
+
+function round(n: number): number {
+  return Math.round(n * 100) / 100;
 }
 
 export default function PeriodSummary({
@@ -75,98 +96,114 @@ export default function PeriodSummary({
   label: string;
   trades: Trade[];
 }) {
-  const stats = useMemo(() => computeStats(trades), [trades]);
+  const stats = useMemo(() => computeFullStats(trades), [trades]);
 
   if (trades.length === 0) return null;
+
+  const sessionTotal = stats.sessions.reduce((s, d) => s + d.total, 0);
+  const sessionWins = stats.sessions.reduce((s, d) => s + d.wins, 0);
+  const sessionSuccessRate = sessionTotal > 0 ? Math.round((sessionWins / sessionTotal) * 100) : 0;
 
   return (
     <div className="glass rounded-2xl p-5 border border-pink-200/40">
       <h3 className="text-sm font-semibold text-gray-900 mb-4">{label}</h3>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <MiniStat icon={Hash} label="Trades" value={stats.totalTrades} />
-        <MiniStat
-          icon={Percent}
-          label="Win Rate"
-          value={`${stats.winRate}%`}
-          color={Number(stats.winRate) >= 60 ? "text-emerald-500" : Number(stats.winRate) >= 40 ? "text-amber-500" : "text-red-500"}
-        />
-        <MiniStat
-          icon={DollarSign}
-          label="P/L"
-          value={`$${stats.totalDollars.toLocaleString()}`}
-          color={stats.totalDollars >= 0 ? "text-emerald-500" : "text-red-500"}
-        />
-        <MiniStat
-          icon={Activity}
-          label="Total Pips"
-          value={stats.totalPips}
-          color={stats.totalPips >= 0 ? "text-emerald-500" : "text-red-500"}
-        />
-        <MiniStat
-          icon={TrendingUp}
-          label="Best Trade"
-          value={`$${Math.abs(stats.bestTrade.dollars).toLocaleString()}`}
-          sub={stats.bestTrade.pair}
-          color="text-emerald-500"
-        />
-        <MiniStat
-          icon={TrendingDown}
-          label="Worst Trade"
-          value={`-$${Math.abs(stats.worstTrade.dollars).toLocaleString()}`}
-          sub={stats.worstTrade.pair}
-          color="text-red-500"
+
+      {/* Main stats grid */}
+      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2 mb-4">
+        <StatCell label="Trades Taken" value={stats.tradesTaken} />
+        <StatCell label="Pips Positive" value={`+${stats.pipsPositive}`} color="text-emerald-500" />
+        <StatCell label="Pips Negative" value={stats.pipsNegative} color="text-red-500" />
+        <StatCell label="Pips Overall" value={stats.pipsOverall} color={stats.pipsOverall >= 0 ? "text-emerald-500" : "text-red-500"} />
+        <StatCell label="Positive R's" value={`+${stats.rsPositive}R`} color="text-emerald-500" />
+        <StatCell label="Negative R's" value={`${stats.rsNegative}R`} color="text-red-500" />
+        <StatCell label="Overall R's" value={`${stats.rsOverall > 0 ? "+" : ""}${stats.rsOverall}R`} color={stats.rsOverall >= 0 ? "text-emerald-500" : "text-red-500"} />
+        <StatCell label="Wins" value={stats.wins} color="text-emerald-500" />
+        <StatCell label="BE" value={stats.be} color="text-amber-500" />
+        <StatCell label="Losses" value={stats.losses} color="text-red-500" />
+        <StatCell label="Success Rate %" value={`${stats.successRate}%`}
+          color={Number(stats.successRate) >= 60 ? "text-emerald-500" : Number(stats.successRate) >= 40 ? "text-amber-500" : "text-red-500"}
+          highlight
         />
       </div>
 
       {/* Win/Loss bar */}
-      <div className="mt-4 flex items-center gap-2">
-        <div className="flex-1 flex h-3 rounded-full overflow-hidden bg-gray-100">
-          {stats.wins > 0 && (
-            <div className="bg-emerald-400 transition-all" style={{ width: `${(stats.wins / stats.totalTrades) * 100}%` }} />
-          )}
-          {stats.be > 0 && (
-            <div className="bg-amber-300 transition-all" style={{ width: `${(stats.be / stats.totalTrades) * 100}%` }} />
-          )}
-          {stats.losses > 0 && (
-            <div className="bg-red-400 transition-all" style={{ width: `${(stats.losses / stats.totalTrades) * 100}%` }} />
-          )}
+      <div className="flex items-center gap-2 mb-4">
+        <div className="flex-1 flex h-2.5 rounded-full overflow-hidden bg-gray-100">
+          {stats.wins > 0 && <div className="bg-emerald-400" style={{ width: `${(stats.wins / stats.tradesTaken) * 100}%` }} />}
+          {stats.be > 0 && <div className="bg-amber-300" style={{ width: `${(stats.be / stats.tradesTaken) * 100}%` }} />}
+          {stats.losses > 0 && <div className="bg-red-400" style={{ width: `${(stats.losses / stats.tradesTaken) * 100}%` }} />}
         </div>
-        <div className="flex gap-3 text-[10px] text-gray-400 shrink-0">
-          <span>{stats.wins}W</span>
-          <span>{stats.losses}L</span>
-          {stats.be > 0 && <span>{stats.be}BE</span>}
+        <div className="flex gap-2 text-[9px] text-gray-400 shrink-0">
+          <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />{stats.wins}W</span>
+          {stats.be > 0 && <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-amber-300" />{stats.be}BE</span>}
+          <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-red-400" />{stats.losses}L</span>
         </div>
       </div>
 
-      <div className="mt-3 flex gap-4 text-[10px] text-gray-400">
-        <span>Avg pips/trade: <strong className="text-gray-600">{stats.avgPipsPerTrade}</strong></span>
-        <span>Total R&apos;s: <strong className={stats.totalRs >= 0 ? "text-emerald-500" : "text-red-500"}>{stats.totalRs > 0 ? "+" : ""}{stats.totalRs}R</strong></span>
+      {/* Session breakdown table */}
+      <div>
+        <h4 className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide mb-2">Session Breakdown</h4>
+        <div className="overflow-x-auto">
+          <table className="w-full text-[11px]">
+            <thead>
+              <tr className="border-b border-pink-200/30">
+                <th className="text-left py-1.5 px-2 text-gray-400 font-medium">Sessions</th>
+                <th className="text-center py-1.5 px-2 text-gray-400 font-medium">Total</th>
+                <th className="text-center py-1.5 px-2 text-gray-400 font-medium">Wins</th>
+                <th className="text-center py-1.5 px-2 text-gray-400 font-medium">Success Rate %</th>
+              </tr>
+            </thead>
+            <tbody>
+              {stats.sessions.map((s) => (
+                <tr key={s.session} className={`border-b border-pink-200/15 ${s.total === 0 ? "opacity-40" : ""}`}>
+                  <td className="py-1.5 px-2 text-gray-700 font-medium">{s.session}</td>
+                  <td className="py-1.5 px-2 text-center text-gray-600">{s.total}</td>
+                  <td className="py-1.5 px-2 text-center text-emerald-500 font-medium">{s.wins}</td>
+                  <td className="py-1.5 px-2 text-center">
+                    {s.total > 0 ? (
+                      <span className={`font-medium ${s.successRate >= 60 ? "text-emerald-500" : s.successRate >= 40 ? "text-amber-500" : "text-red-500"}`}>
+                        {s.successRate}%
+                      </span>
+                    ) : (
+                      <span className="text-gray-300">—</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+              {/* Totals row */}
+              <tr className="border-t border-pink-200/40 bg-pink-50/30 font-semibold">
+                <td className="py-2 px-2 text-gray-900">Total</td>
+                <td className="py-2 px-2 text-center text-gray-900">{sessionTotal}</td>
+                <td className="py-2 px-2 text-center text-emerald-500">{sessionWins}</td>
+                <td className="py-2 px-2 text-center">
+                  <span className={`${sessionSuccessRate >= 60 ? "text-emerald-500" : sessionSuccessRate >= 40 ? "text-amber-500" : "text-red-500"}`}>
+                    {sessionSuccessRate}%
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
 }
 
-function MiniStat({
-  icon: Icon,
+function StatCell({
   label,
   value,
-  sub,
   color = "text-gray-900",
+  highlight,
 }: {
-  icon: typeof DollarSign;
   label: string;
   value: string | number;
-  sub?: string;
   color?: string;
+  highlight?: boolean;
 }) {
   return (
-    <div className="p-2.5 bg-pink-50/60 rounded-xl">
-      <div className="flex items-center gap-1.5 mb-1">
-        <Icon size={12} className="text-pink-400" />
-        <span className="text-[10px] text-gray-400 uppercase tracking-wide">{label}</span>
-      </div>
-      <div className={`text-lg font-bold ${color}`}>{value}</div>
-      {sub && <div className="text-[10px] text-gray-400">{sub}</div>}
+    <div className={`p-2 rounded-lg ${highlight ? "bg-pink-100/60 border border-pink-200/40" : "bg-pink-50/40"}`}>
+      <div className="text-[9px] text-gray-400 uppercase tracking-wide mb-0.5">{label}</div>
+      <div className={`text-sm font-bold ${color}`}>{value}</div>
     </div>
   );
 }
