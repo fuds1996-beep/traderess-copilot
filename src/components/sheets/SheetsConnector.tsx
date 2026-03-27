@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   FileSpreadsheet,
   Link2,
@@ -10,6 +10,12 @@ import {
   Sparkles,
   Brain,
   Zap,
+  Database,
+  BookOpen,
+  Clock,
+  Target,
+  BarChart3,
+  Shield,
 } from "lucide-react";
 
 type SyncMode = "trades_only" | "comprehensive";
@@ -100,6 +106,11 @@ export default function SheetsConnector() {
     medium: "text-amber-400",
     low: "text-red-400",
   };
+
+  // ── Syncing overlay ──────────────────────────────────────────────────────
+  if (syncing) {
+    return <SyncProgressOverlay mode={syncMode} />;
+  }
 
   return (
     <div className="space-y-4">
@@ -281,6 +292,123 @@ export default function SheetsConnector() {
         </p>
         <p>
           <strong>Trades Only</strong> extracts just the trade entries (faster, lower API cost).
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Sync Progress Overlay ──────────────────────────────────────────────────
+
+const SYNC_STEPS_FULL = [
+  { icon: FileSpreadsheet, label: "Reading spreadsheet data", detail: "Fetching rows from Google Sheets..." },
+  { icon: Brain, label: "AI is analyzing your data", detail: "Claude is reading your trades, journals, and psychology..." },
+  { icon: Database, label: "Extracting trade entries", detail: "Identifying trade rows across all accounts..." },
+  { icon: BookOpen, label: "Parsing daily journals", detail: "Extracting emotions, market mood, and evaluations..." },
+  { icon: Clock, label: "Processing chart time logs", detail: "Computing daily study and screen time..." },
+  { icon: BarChart3, label: "Calculating account balances", detail: "Reading start/end week balances per account..." },
+  { icon: Target, label: "Extracting goals & intentions", detail: "Parsing primary, process, and psychological goals..." },
+  { icon: Shield, label: "Saving to your dashboard", detail: "Writing data to all tables..." },
+  { icon: Sparkles, label: "Almost there...", detail: "Finalizing and verifying your data..." },
+];
+
+const SYNC_STEPS_TRADES = [
+  { icon: FileSpreadsheet, label: "Reading spreadsheet data", detail: "Fetching rows from Google Sheets..." },
+  { icon: Brain, label: "AI is analyzing trades", detail: "Claude is reading your trade entries..." },
+  { icon: Database, label: "Extracting trade data", detail: "Parsing entries, prices, results, evaluations..." },
+  { icon: Shield, label: "Saving trades", detail: "Writing to your trade log..." },
+  { icon: Sparkles, label: "Almost there...", detail: "Finalizing..." },
+];
+
+function SyncProgressOverlay({ mode }: { mode: "trades_only" | "comprehensive" }) {
+  const steps = mode === "comprehensive" ? SYNC_STEPS_FULL : SYNC_STEPS_TRADES;
+  const [currentStep, setCurrentStep] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval>>(undefined);
+
+  useEffect(() => {
+    // Simulate progress through steps
+    const stepInterval = mode === "comprehensive" ? 15000 : 8000; // ms per step
+    const totalSteps = steps.length;
+
+    intervalRef.current = setInterval(() => {
+      setCurrentStep((prev) => (prev < totalSteps - 1 ? prev + 1 : prev));
+    }, stepInterval);
+
+    // Elapsed timer
+    const timerInterval = setInterval(() => {
+      setElapsed((prev) => prev + 1);
+    }, 1000);
+
+    return () => {
+      clearInterval(intervalRef.current);
+      clearInterval(timerInterval);
+    };
+  }, [mode, steps.length]);
+
+  const progressPercent = Math.min(((currentStep + 1) / steps.length) * 100, 95);
+  const minutes = Math.floor(elapsed / 60);
+  const seconds = elapsed % 60;
+
+  return (
+    <div className="py-6">
+      <div className="glass rounded-2xl border border-pink-200/40 p-8 max-w-md mx-auto text-center">
+        {/* Animated icon */}
+        <div className="relative w-20 h-20 mx-auto mb-6">
+          {/* Outer spinning ring */}
+          <div className="absolute inset-0 rounded-full border-2 border-pink-200/40 border-t-pink-500 animate-spin" />
+          {/* Inner pulsing circle */}
+          <div className="absolute inset-2 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center shadow-lg shadow-pink-500/30 animate-pulse">
+            {(() => { const StepIcon = steps[currentStep].icon; return <StepIcon size={24} className="text-white" />; })()}
+          </div>
+        </div>
+
+        {/* Current step */}
+        <h3 className="text-base font-semibold text-gray-900 mb-1">
+          {steps[currentStep].label}
+        </h3>
+        <p className="text-xs text-gray-500 mb-5">
+          {steps[currentStep].detail}
+        </p>
+
+        {/* Progress bar */}
+        <div className="w-full bg-pink-100/50 rounded-full h-2 mb-3">
+          <div
+            className="h-2 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 transition-all duration-1000 ease-out"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+
+        {/* Step indicators */}
+        <div className="flex justify-center gap-1.5 mb-4">
+          {steps.map((_, i) => (
+            <div
+              key={i}
+              className={`w-1.5 h-1.5 rounded-full transition-all duration-500 ${
+                i < currentStep ? "bg-pink-500" :
+                i === currentStep ? "bg-pink-500 scale-125" :
+                "bg-pink-200"
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* Timer + estimate */}
+        <div className="flex items-center justify-center gap-3 text-[10px] text-gray-400">
+          <span className="font-mono">
+            {minutes}:{String(seconds).padStart(2, "0")} elapsed
+          </span>
+          <span>·</span>
+          <span>
+            {mode === "comprehensive"
+              ? "Full sync takes 2–5 minutes"
+              : "Usually takes 30–60 seconds"}
+          </span>
+        </div>
+
+        {/* Patience message */}
+        <p className="text-[10px] text-gray-300 mt-4 italic">
+          AI is carefully reading every row of your spreadsheet — please don&apos;t close this page
         </p>
       </div>
     </div>
