@@ -100,10 +100,33 @@ export default function SheetsConnector({ onSyncComplete }: { onSyncComplete?: (
       const data = await res.json();
       const durationSec = Math.round((Date.now() - startTime) / 1000);
 
-      if (!res.ok) { setError(data.error || "Sync failed"); return; }
-      setSyncResult(data);
+      if (!res.ok) {
+        const errorMsg = data.error || "Sync failed";
+        setError(errorMsg);
+        await saveHistory("failed", "", errorMsg, {}, durationSec);
+        onSyncComplete?.();
+        return;
+      }
 
-      // Save to sync history
+      setSyncResult(data);
+      await saveHistory("success", data.confidence || "", data.message || "", data.synced || {}, durationSec);
+      onSyncComplete?.();
+    } catch (err) {
+      const durationSec = Math.round((Date.now() - startTime) / 1000);
+      let errorMsg: string;
+      if (err instanceof DOMException && err.name === "AbortError") {
+        errorMsg = "Sync timed out after 5 minutes. Try syncing a smaller sheet range or use 'Trades Only' mode.";
+      } else {
+        errorMsg = "Sync request failed. This may be a timeout issue — try 'Trades Only' mode for faster syncing, or check that the sheet is shared publicly.";
+      }
+      setError(errorMsg);
+      await saveHistory("failed", "", errorMsg, {}, durationSec);
+      onSyncComplete?.();
+    } finally {
+      setSyncing(false);
+    }
+
+    async function saveHistory(status: string, confidence: string, message: string, synced: Record<string, unknown>, durationSec: number) {
       try {
         const { createClient } = await import("@/lib/supabase/client");
         const supabase = createClient();
@@ -114,24 +137,14 @@ export default function SheetsConnector({ onSyncComplete }: { onSyncComplete?: (
             sync_mode: syncMode,
             sheet_name: range || "Sheet1",
             week_start: weekStart || "",
-            status: "success",
-            confidence: data.confidence || "",
-            message: data.message || "",
-            synced: data.synced || {},
+            status,
+            confidence,
+            message,
+            synced,
             duration_seconds: durationSec,
           });
         }
-      } catch { /* history save is non-critical */ }
-
-      onSyncComplete?.();
-    } catch (err) {
-      if (err instanceof DOMException && err.name === "AbortError") {
-        setError("Sync timed out after 5 minutes. Try syncing a smaller sheet range or use 'Trades Only' mode.");
-      } else {
-        setError("Sync request failed. This may be a timeout issue — try 'Trades Only' mode for faster syncing, or check that the sheet is shared publicly.");
-      }
-    } finally {
-      setSyncing(false);
+      } catch { /* non-critical */ }
     }
   }
 
