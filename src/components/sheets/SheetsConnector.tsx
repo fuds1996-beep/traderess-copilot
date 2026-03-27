@@ -154,13 +154,13 @@ export default function SheetsConnector({ onSyncComplete }: { onSyncComplete?: (
     low: "text-red-400",
   };
 
-  // ── Syncing overlay ──────────────────────────────────────────────────────
-  if (syncing) {
-    return <SyncProgressOverlay mode={syncMode} />;
-  }
-
   return (
     <div className="space-y-4">
+      {/* Syncing overlay — shown on top, does NOT unmount the rest */}
+      {syncing && <SyncProgressOverlay mode={syncMode} />}
+
+      {/* URL Input — hidden while syncing */}
+      {syncing ? null : (<>
       {/* URL Input */}
       <div>
         <label className="block text-xs text-gray-500 mb-1.5">Google Sheet URL or ID</label>
@@ -341,6 +341,7 @@ export default function SheetsConnector({ onSyncComplete }: { onSyncComplete?: (
           <strong>Trades Only</strong> extracts just the trade entries (faster, lower API cost).
         </p>
       </div>
+      </>)}
     </div>
   );
 }
