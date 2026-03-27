@@ -10,10 +10,13 @@ import DayOfWeekBarChart from "@/components/charts/DayOfWeekBarChart";
 import AccountBalanceLineChart from "@/components/charts/AccountBalanceLineChart";
 import PeriodSummary from "@/components/performance/PeriodSummary";
 import GroupedTradeLog from "@/components/performance/GroupedTradeLog";
+import EmotionTimelineChart from "@/components/charts/EmotionTimelineChart";
 import { usePerformance } from "@/hooks/use-performance";
 import { useTrades } from "@/hooks/use-trades";
 import { useAccountBalances } from "@/hooks/use-account-balances";
-import type { Trade } from "@/lib/types";
+import { useJournals } from "@/hooks/use-journals";
+import { usePsychology } from "@/hooks/use-psychology";
+import type { Trade, DailyJournal } from "@/lib/types";
 import {
   getWeekStart,
   getMonthKey,
@@ -102,9 +105,11 @@ export default function PerformancePage() {
   const { sessionData, dayData, loading: perfLoading } = usePerformance();
   const { trades, loading: tradesLoading, refresh: refreshTrades } = useTrades();
   const { byAccount, accountNames, hasData: hasBalances, loading: balLoading } = useAccountBalances();
+  const { journals, loading: jLoading, refresh: refreshJournals } = useJournals();
+  const psych = usePsychology(journals, trades);
   const [periodView, setPeriodView] = useState<PeriodView>("weekly");
 
-  const loading = perfLoading || tradesLoading || balLoading;
+  const loading = perfLoading || tradesLoading || balLoading || jLoading;
 
   const periodGroups = useMemo(() => groupTrades(trades, periodView), [trades, periodView]);
   const chartPeriod = periodView === "all" ? "monthly" : periodView;
@@ -189,14 +194,43 @@ export default function PerformancePage() {
         </div>
       )}
 
-      {/* Trade Log — grouped by week */}
+      {/* Psychology & Emotion Timeline */}
+      {psych.emotionTimeline.length > 0 && (
+        <div id="journal" className="glass rounded-2xl p-5 border border-pink-200/40">
+          <h3 className="text-sm font-semibold text-gray-900 mb-4">Emotion & Psychology Timeline</h3>
+          <EmotionTimelineChart data={psych.emotionTimeline} />
+          <div className="flex justify-center gap-4 mt-3 text-[10px] text-gray-400">
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-purple-500" /> Before</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-pink-500" /> During</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" /> After</span>
+          </div>
+          {psych.emotionPnlCorrelation.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-pink-200/30">
+              <h4 className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide mb-2">Emotion vs Performance</h4>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {psych.emotionPnlCorrelation.map((e) => (
+                  <div key={e.emotion} className="p-2.5 bg-pink-50/60 rounded-lg text-center">
+                    <div className="text-[11px] text-gray-500 mb-0.5">{e.emotion}</div>
+                    <div className={`text-sm font-bold ${e.avgPips >= 0 ? "text-emerald-500" : "text-red-500"}`}>
+                      {e.avgPips > 0 ? "+" : ""}{e.avgPips}p
+                    </div>
+                    <div className="text-[9px] text-gray-400">{e.count} days</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Trade Log + Journals — grouped by week */}
       <div>
         <div className="flex items-center gap-2 mb-3">
           <BarChart3 size={16} className="text-pink-500" />
-          <h3 className="text-sm font-semibold text-gray-900">Trade Log</h3>
-          <span className="text-[10px] text-gray-400">{trades.length} total trades</span>
+          <h3 className="text-sm font-semibold text-gray-900">Trade Log & Journal</h3>
+          <span className="text-[10px] text-gray-400">{trades.length} trades · {journals.length} journal entries</span>
         </div>
-        <GroupedTradeLog trades={trades} onRefresh={refreshTrades} />
+        <GroupedTradeLog trades={trades} journals={journals} onRefresh={() => { refreshTrades(); refreshJournals(); }} />
       </div>
     </div>
   );

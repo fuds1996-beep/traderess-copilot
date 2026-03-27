@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { ChevronDown, ChevronUp, Calendar, Eye, EyeOff } from "lucide-react";
+import { ChevronDown, ChevronUp, Calendar, Eye, EyeOff, BookOpen, Smile, Meh, Frown } from "lucide-react";
 import TradeLogTable from "./TradeLogTable";
-import type { Trade } from "@/lib/types";
+import type { Trade, DailyJournal } from "@/lib/types";
 import {
   getWeekStart,
   getMonthKey,
@@ -36,15 +36,18 @@ const DEFAULT_VISIBLE = new Set([
 
 export default function GroupedTradeLog({
   trades,
+  journals = [],
   onRefresh,
 }: {
   trades: Trade[];
+  journals?: DailyJournal[];
   onRefresh: () => void;
 }) {
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [groupMode, setGroupMode] = useState<GroupMode>("week");
   const [showColumnPicker, setShowColumnPicker] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState<Set<string>>(DEFAULT_VISIBLE);
+  const [expandedJournalId, setExpandedJournalId] = useState<string | null>(null);
 
   // Sort trades chronologically
   const sortedTrades = useMemo(() =>
@@ -67,6 +70,20 @@ export default function GroupedTradeLog({
       .sort(([a], [b]) => b.localeCompare(a))
       .map(([key, grpTrades]) => ({ key, label: labelFn(key), trades: grpTrades }));
   }, [sortedTrades, groupMode]);
+
+  // Group journals by the same period keys as trades
+  const journalsByGroup = useMemo(() => {
+    const keyFn = groupMode === "quarter" ? getQuarterKey : groupMode === "month" ? getMonthKey : getWeekStart;
+    const map = new Map<string, DailyJournal[]>();
+    for (const j of journals) {
+      const dateStr = j.journal_date || j.week_start || "";
+      if (!dateStr) continue;
+      const k = keyFn(dateStr);
+      if (!map.has(k)) map.set(k, []);
+      map.get(k)!.push(j);
+    }
+    return map;
+  }, [journals, groupMode]);
 
   function toggleGroup(key: string) {
     setCollapsedGroups((prev) => {
@@ -139,6 +156,8 @@ export default function GroupedTradeLog({
       {groups.map((group) => {
         const isCollapsed = collapsedGroups.has(group.key);
         const stats = computeGroupStats(group.trades);
+        const weekJournals = journalsByGroup.get(group.key) || [];
+
         return (
           <div key={group.key} className="glass rounded-2xl border border-pink-200/40 overflow-hidden">
             <button onClick={() => toggleGroup(group.key)} className="w-full flex items-center justify-between px-5 py-3 hover:bg-pink-50/40 transition-colors">
@@ -146,6 +165,11 @@ export default function GroupedTradeLog({
                 <Calendar size={14} className="text-pink-500" />
                 <span className="text-sm font-semibold text-gray-900">{group.label}</span>
                 <span className="text-[10px] text-gray-400">{group.trades.length} trades</span>
+                {weekJournals.length > 0 && (
+                  <span className="text-[10px] text-purple-400 flex items-center gap-1">
+                    <BookOpen size={10} /> {weekJournals.length} journal{weekJournals.length > 1 ? "s" : ""}
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-4">
                 <div className="hidden sm:flex items-center gap-3 text-[11px]">
@@ -165,6 +189,28 @@ export default function GroupedTradeLog({
             </button>
             {!isCollapsed && (
               <div className="border-t border-pink-200/30">
+                {/* Journal entries for this period */}
+                {weekJournals.length > 0 && (
+                  <div className="px-5 pt-3 pb-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <BookOpen size={12} className="text-purple-400" />
+                      <span className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide">Daily Journal</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-3">
+                      {weekJournals
+                        .sort((a, b) => (a.journal_date || "").localeCompare(b.journal_date || ""))
+                        .map((j) => (
+                        <JournalMiniCard
+                          key={j.id}
+                          journal={j}
+                          isExpanded={expandedJournalId === j.id}
+                          onToggle={() => setExpandedJournalId(expandedJournalId === j.id ? null : j.id)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {/* Trades by account */}
                 <AccountSubGroups trades={group.trades} onRefresh={onRefresh} visibleColumns={visibleColumns} />
               </div>
             )}
@@ -242,6 +288,91 @@ function AccountSubGroups({ trades, onRefresh, visibleColumns }: {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+// ─── Journal Mini Card (shown inside week groups) ───────────────────────────
+
+const EMOTION_ICONS: Record<number, typeof Smile> = { 1: Frown, 2: Frown, 3: Meh, 4: Smile, 5: Smile };
+const EMOTION_COLORS: Record<number, string> = { 1: "text-red-400", 2: "text-amber-400", 3: "text-gray-400", 4: "text-emerald-400", 5: "text-emerald-400" };
+
+function emotionToNum(emotion: string): number {
+  const lower = (emotion || "").toLowerCase();
+  if (lower.includes("confident") || lower.includes("excited")) return 5;
+  if (lower.includes("focused") || lower.includes("calm") || lower.includes("observant")) return 4;
+  if (lower.includes("stressed") || lower.includes("doubt") || lower.includes("anxious")) return 2;
+  if (lower.includes("frustrat") || lower.includes("fear") || lower.includes("angry")) return 1;
+  return 3;
+}
+
+function JournalMiniCard({ journal: j, isExpanded, onToggle }: {
+  journal: DailyJournal;
+  isExpanded: boolean;
+  onToggle: () => void;
+}) {
+  const emotionNum = emotionToNum(j.emotion_during);
+  const EmIcon = EMOTION_ICONS[emotionNum] || Meh;
+
+  return (
+    <div className={`border rounded-xl overflow-hidden transition-all ${isExpanded ? "border-purple-200/60 bg-purple-50/20 col-span-full" : "border-pink-200/30 bg-white/30"}`}>
+      <button onClick={onToggle} className="w-full flex items-center justify-between p-2.5 text-left hover:bg-pink-50/30 transition-colors">
+        <div className="flex items-center gap-2">
+          <div className="text-center w-8">
+            <div className="text-[10px] font-bold text-gray-900">{(j.day_of_week || "").slice(0, 3)}</div>
+            <div className="text-[8px] text-gray-400">{(j.journal_date || "").slice(5)}</div>
+          </div>
+          <EmIcon size={14} className={EMOTION_COLORS[emotionNum]} />
+          <div className="flex items-center gap-1.5 text-[10px]">
+            <span className="text-gray-500">{j.emotion_before || "—"}</span>
+            <span className="text-gray-300">→</span>
+            <span className="text-gray-500">{j.emotion_during || "—"}</span>
+            <span className="text-gray-300">→</span>
+            <span className="text-gray-500">{j.emotion_after || "—"}</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {j.effort_rating > 0 && <span className="text-[9px] text-amber-400">{"⭐".repeat(j.effort_rating)}</span>}
+          {isExpanded ? <ChevronUp size={12} className="text-gray-400" /> : <ChevronDown size={12} className="text-gray-400" />}
+        </div>
+      </button>
+
+      {isExpanded && (
+        <div className="px-3 pb-3 border-t border-pink-200/20 pt-2 space-y-2">
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 text-[10px]">
+            <div className="p-1.5 bg-white/40 rounded">
+              <span className="text-gray-400">Mood</span>
+              <div className="text-gray-700 font-medium">{j.market_mood || "—"}</div>
+            </div>
+            <div className="p-1.5 bg-white/40 rounded">
+              <span className="text-gray-400">Fundmntls</span>
+              <div className="text-gray-700 font-medium">{j.fundamentals_summary || "—"}</div>
+            </div>
+            <div className="p-1.5 bg-white/40 rounded">
+              <span className="text-gray-400">Trades</span>
+              <div className="text-gray-700 font-medium">{j.trades_taken || 0}</div>
+            </div>
+            <div className="p-1.5 bg-white/40 rounded">
+              <span className="text-gray-400">Pips</span>
+              <div className={`font-medium ${(j.pips_overall || 0) >= 0 ? "text-emerald-500" : "text-red-500"}`}>{j.pips_overall || 0}</div>
+            </div>
+            <div className="p-1.5 bg-white/40 rounded">
+              <span className="text-gray-400">R&apos;s</span>
+              <div className={`font-medium ${(j.rs_total || 0) >= 0 ? "text-emerald-500" : "text-red-500"}`}>{j.rs_total || 0}R</div>
+            </div>
+            <div className="p-1.5 bg-white/40 rounded">
+              <span className="text-gray-400">Effort</span>
+              <div className="text-gray-700 font-medium">{j.effort_rating || 0}/5</div>
+            </div>
+          </div>
+          {j.journal_text && (
+            <div>
+              <div className="text-[9px] text-purple-400 font-semibold mb-0.5 uppercase tracking-wide">Journal</div>
+              <p className="text-[11px] text-gray-600 leading-relaxed whitespace-pre-wrap max-h-40 overflow-y-auto">{j.journal_text}</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

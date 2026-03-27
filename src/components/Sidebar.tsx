@@ -25,7 +25,7 @@ const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, badgeKey: null },
   { href: "/profile", label: "Trader Profile", icon: User, badgeKey: null },
   { href: "/performance", label: "Performance", icon: TrendingUp, badgeKey: null },
-  { href: "/journal", label: "Journal", icon: Brain, badgeKey: "journal" as const },
+  { href: "/journal", label: "Journal", icon: Brain, badgeKey: null },
   { href: "/discipline", label: "Discipline", icon: Target, badgeKey: null },
   { href: "/briefing", label: "Weekly Briefing", icon: Newspaper, badgeKey: "briefing" as const },
   { href: "/workflow", label: "Copilot Workflow", icon: Workflow, badgeKey: null },
