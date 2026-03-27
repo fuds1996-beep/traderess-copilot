@@ -27,6 +27,7 @@ function newEmptyTrade(): Record<string, unknown> {
   const obj: Record<string, unknown> = {};
   for (const col of TRADE_COLUMNS) obj[col.key] = getDefaultValue(col);
   obj.trade_date = new Date().toISOString().split("T")[0];
+  obj.custom_fields = {};
   return obj;
 }
 
@@ -332,6 +333,36 @@ export default function TradeLogTable({
                   className="w-full bg-white/60 border border-pink-200/40 rounded-xl px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-pink-400 resize-y leading-relaxed"
                 />
               </div>
+
+              {/* Custom fields — dynamic per student */}
+              {(() => {
+                const data = addingNew ? newTrade : editData;
+                const cf = (data.custom_fields || {}) as Record<string, string | number | boolean>;
+                if (Object.keys(cf).length === 0) return null;
+                return (
+                  <div>
+                    <h4 className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide mb-2">Additional Fields</h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {Object.entries(cf).map(([key, val]) => (
+                        <div key={key}>
+                          <label className="block text-[10px] text-gray-400 mb-1">
+                            {key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                          </label>
+                          <input
+                            type="text"
+                            value={String(val || "")}
+                            onChange={(e) => {
+                              const setter = addingNew ? setNewTrade : setEditData;
+                              setter({ ...data, custom_fields: { ...cf, [key]: e.target.value } });
+                            }}
+                            className="w-full bg-white/60 border border-pink-200/40 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-pink-400"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Modal footer */}
