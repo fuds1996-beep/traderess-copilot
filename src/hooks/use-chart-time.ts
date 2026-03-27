@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useDateRange } from "@/contexts/DateRangeContext";
 import type { ChartTimeEntry } from "@/lib/types";
 
 export function useChartTime() {
-  const [entries, setEntries] = useState<ChartTimeEntry[]>([]);
+  const [allEntries, setAllEntries] = useState<ChartTimeEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const { filterDates } = useDateRange();
 
   const fetch = useCallback(async () => {
     try {
@@ -19,11 +21,11 @@ export function useChartTime() {
         .select("*")
         .eq("user_id", user.id)
         .order("log_date", { ascending: true })
-        .limit(100);
+        .limit(200);
 
-      setEntries((data as ChartTimeEntry[]) || []);
+      setAllEntries((data as ChartTimeEntry[]) || []);
     } catch {
-      setEntries([]);
+      setAllEntries([]);
     } finally {
       setLoading(false);
     }
@@ -31,18 +33,14 @@ export function useChartTime() {
 
   useEffect(() => { fetch(); }, [fetch]);
 
-  // Computed
+  const entries = useMemo(() => filterDates(allEntries), [allEntries, filterDates]);
+
   const totalMinutes = entries.reduce((s, e) => s + e.total_minutes, 0);
-  const totalHours = Math.round(totalMinutes / 6) / 10; // 1 decimal
+  const totalHours = Math.round(totalMinutes / 6) / 10;
   const avgPerDay = entries.length > 0 ? Math.round(totalMinutes / entries.length) : 0;
 
   return {
-    entries,
-    loading,
-    hasData: entries.length > 0,
-    totalMinutes,
-    totalHours,
-    avgPerDay,
-    refresh: fetch,
+    entries, loading, hasData: entries.length > 0,
+    totalMinutes, totalHours, avgPerDay, refresh: fetch,
   };
 }

@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useDateRange } from "@/contexts/DateRangeContext";
 import type { DailyJournal } from "@/lib/types";
 
 export function useJournals(weekStart?: string) {
-  const [journals, setJournals] = useState<DailyJournal[]>([]);
+  const [allJournals, setAllJournals] = useState<DailyJournal[]>([]);
   const [loading, setLoading] = useState(true);
+  const { filterDates } = useDateRange();
 
   const fetch = useCallback(async () => {
     try {
@@ -24,16 +26,18 @@ export function useJournals(weekStart?: string) {
         query = query.eq("week_start", weekStart);
       }
 
-      const { data } = await query.limit(100);
-      setJournals((data as DailyJournal[]) || []);
+      const { data } = await query.limit(200);
+      setAllJournals((data as DailyJournal[]) || []);
     } catch {
-      setJournals([]);
+      setAllJournals([]);
     } finally {
       setLoading(false);
     }
   }, [weekStart]);
 
   useEffect(() => { fetch(); }, [fetch]);
+
+  const journals = useMemo(() => filterDates(allJournals), [allJournals, filterDates]);
 
   return { journals, loading, hasData: journals.length > 0, refresh: fetch };
 }

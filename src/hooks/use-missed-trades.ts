@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useDateRange } from "@/contexts/DateRangeContext";
 import type { MissedTrade } from "@/lib/types";
 
 export function useMissedTrades() {
-  const [trades, setTrades] = useState<MissedTrade[]>([]);
+  const [allTrades, setAllTrades] = useState<MissedTrade[]>([]);
   const [loading, setLoading] = useState(true);
+  const { filterDates } = useDateRange();
 
   const fetch = useCallback(async () => {
     try {
@@ -19,11 +21,11 @@ export function useMissedTrades() {
         .select("*")
         .eq("user_id", user.id)
         .order("trade_date", { ascending: false })
-        .limit(50);
+        .limit(100);
 
-      setTrades((data as MissedTrade[]) || []);
+      setAllTrades((data as MissedTrade[]) || []);
     } catch {
-      setTrades([]);
+      setAllTrades([]);
     } finally {
       setLoading(false);
     }
@@ -31,7 +33,7 @@ export function useMissedTrades() {
 
   useEffect(() => { fetch(); }, [fetch]);
 
-  // Discipline stats
+  const trades = useMemo(() => filterDates(allTrades), [allTrades, filterDates]);
   const avoidedWins = trades.filter((t) => t.would_have_result === "Win").length;
   const avoidedLosses = trades.filter((t) => t.would_have_result === "Loss").length;
 

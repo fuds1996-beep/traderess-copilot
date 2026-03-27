@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useDateRange } from "@/contexts/DateRangeContext";
 import type { Trade, WeeklyPerformance, DashboardStats } from "@/lib/types";
 
 const EMPTY_STATS: DashboardStats = {
@@ -154,8 +155,9 @@ function computeWeeklyStats(weeks: WeeklyPerformance[]): DashboardStats {
 
 export function usePerformance() {
   const [weeks, setWeeks] = useState<WeeklyPerformance[]>([]);
-  const [trades, setTrades] = useState<Trade[]>([]);
+  const [allTrades, setAllTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
+  const { filterDates } = useDateRange();
 
   const fetch = useCallback(async () => {
     try {
@@ -178,7 +180,7 @@ export function usePerformance() {
       ]);
 
       setWeeks((weekRes.data as WeeklyPerformance[]) || []);
-      setTrades((tradeRes.data as Trade[]) || []);
+      setAllTrades((tradeRes.data as Trade[]) || []);
     } catch {
       // Silently handle errors
     } finally {
@@ -188,30 +190,22 @@ export function usePerformance() {
 
   useEffect(() => { fetch(); }, [fetch]);
 
-  // trade_log is the source of truth — only show data if trades exist
+  // Apply date range filter
+  const trades = useMemo(() => filterDates(allTrades), [allTrades, filterDates]);
+
   const hasTradeData = trades.length > 0;
   const hasWeeklyData = weeks.length > 0;
   const hasData = hasTradeData;
 
-  // Always compute from trades (source of truth); fall back to weekly aggregates only if no trades
   const stats = hasTradeData
     ? statsFromTrades(trades)
     : hasWeeklyData
       ? computeWeeklyStats(weeks)
       : EMPTY_STATS;
 
-  // Session and day data
   const tradeStats = statsFromTrades(trades);
-  const sessionData = hasWeeklyData
-    ? (weeks[weeks.length - 1]?.session_data?.length > 0
-        ? weeks[weeks.length - 1].session_data
-        : tradeStats.sessionData || [])
-    : tradeStats.sessionData || [];
-  const dayData = hasWeeklyData
-    ? (weeks[weeks.length - 1]?.day_data?.length > 0
-        ? weeks[weeks.length - 1].day_data
-        : tradeStats.dayData || [])
-    : tradeStats.dayData || [];
+  const sessionData = tradeStats.sessionData || [];
+  const dayData = tradeStats.dayData || [];
 
   return { weeks, stats, sessionData, dayData, loading, hasData };
 }

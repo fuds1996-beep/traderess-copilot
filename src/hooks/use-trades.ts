@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useDateRange } from "@/contexts/DateRangeContext";
 import type { Trade } from "@/lib/types";
 
 export function useTrades() {
-  const [trades, setTrades] = useState<Trade[]>([]);
+  const [allTrades, setAllTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
+  const { filterDates } = useDateRange();
 
   const fetchTrades = useCallback(async () => {
     try {
@@ -19,11 +21,11 @@ export function useTrades() {
         .select("*")
         .eq("user_id", user.id)
         .order("trade_date", { ascending: false })
-        .limit(100);
+        .limit(500);
 
-      setTrades((data as Trade[]) || []);
+      setAllTrades((data as Trade[]) || []);
     } catch {
-      setTrades([]);
+      setAllTrades([]);
     } finally {
       setLoading(false);
     }
@@ -31,6 +33,8 @@ export function useTrades() {
 
   useEffect(() => { fetchTrades(); }, [fetchTrades]);
 
+  // Apply date range filter
+  const trades = useMemo(() => filterDates(allTrades), [allTrades, filterDates]);
   const hasData = trades.length > 0;
 
   return { trades, loading, hasData, refresh: fetchTrades };
