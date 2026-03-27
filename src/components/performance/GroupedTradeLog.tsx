@@ -164,10 +164,81 @@ export default function GroupedTradeLog({
               </div>
             </button>
             {!isCollapsed && (
-              <div className="px-5 pb-4 border-t border-pink-200/30">
-                <TradeLogTable trades={group.trades} onRefresh={onRefresh} visibleColumns={visibleColumns} />
+              <div className="border-t border-pink-200/30">
+                <AccountSubGroups trades={group.trades} onRefresh={onRefresh} visibleColumns={visibleColumns} />
               </div>
             )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Sub-group trades by account within each time period ─────────────────────
+
+const ACCOUNT_COLORS = [
+  "border-l-pink-400",
+  "border-l-emerald-400",
+  "border-l-amber-400",
+  "border-l-blue-400",
+  "border-l-purple-400",
+  "border-l-red-400",
+];
+
+function AccountSubGroups({ trades, onRefresh, visibleColumns }: {
+  trades: Trade[];
+  onRefresh: () => void;
+  visibleColumns: Set<string>;
+}) {
+  // Group by account, preserve chronological order within each
+  const accountGroups = useMemo(() => {
+    const map = new Map<string, Trade[]>();
+    for (const t of trades) {
+      const acct = t.account_name || "Unassigned";
+      if (!map.has(acct)) map.set(acct, []);
+      map.get(acct)!.push(t);
+    }
+    return [...map.entries()];
+  }, [trades]);
+
+  // If only one account (or no account names), show flat list
+  if (accountGroups.length <= 1) {
+    return (
+      <div className="px-5 pb-4 pt-2">
+        <TradeLogTable trades={trades} onRefresh={onRefresh} visibleColumns={visibleColumns} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="divide-y divide-pink-200/20">
+      {accountGroups.map(([accountName, accountTrades], idx) => {
+        const stats = computeGroupStats(accountTrades);
+        const colorClass = ACCOUNT_COLORS[idx % ACCOUNT_COLORS.length];
+
+        return (
+          <div key={accountName} className={`border-l-3 ${colorClass}`}>
+            {/* Account sub-header */}
+            <div className="flex items-center justify-between px-5 py-2.5 bg-pink-50/30">
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${colorClass.replace("border-l-", "bg-")}`} />
+                <span className="text-xs font-semibold text-gray-800">{accountName}</span>
+                <span className="text-[10px] text-gray-400">{accountTrades.length} trades</span>
+              </div>
+              <div className="flex items-center gap-3 text-[10px]">
+                <span className="text-emerald-500 font-medium">{stats.wins}W</span>
+                <span className="text-red-500 font-medium">{stats.losses}L</span>
+                <span className={`font-medium ${stats.dollars >= 0 ? "text-emerald-500" : "text-red-500"}`}>
+                  {stats.dollars >= 0 ? "+" : ""}${Math.abs(stats.dollars).toLocaleString()}
+                </span>
+                <span className="text-gray-400">{stats.winRate}%</span>
+              </div>
+            </div>
+            {/* Account trades */}
+            <div className="px-5 pb-3">
+              <TradeLogTable trades={accountTrades} onRefresh={onRefresh} visibleColumns={visibleColumns} />
+            </div>
           </div>
         );
       })}
