@@ -29,7 +29,6 @@ import { usePerformance } from "@/hooks/use-performance";
 import { useBriefing } from "@/hooks/use-briefing";
 import { useTraderProfile } from "@/hooks/use-trader-profile";
 import { useChartTime } from "@/hooks/use-chart-time";
-import { useTradingAccounts } from "@/hooks/use-trading-accounts";
 import { useJournals } from "@/hooks/use-journals";
 import { useTrades } from "@/hooks/use-trades";
 import { useDiscipline } from "@/hooks/use-discipline";
@@ -100,7 +99,6 @@ export default function DashboardPage() {
   const { briefing, loading: briefLoading } = useBriefing();
   const { profile, propAccounts, loading: profileLoading } = useTraderProfile();
   const { totalHours, loading: ctLoading } = useChartTime();
-  const { accounts, totalPayouts, loading: acctLoading } = useTradingAccounts();
   const { journals, loading: jLoading } = useJournals();
   const { trades, loading: tLoading } = useTrades();
   const { trades: missedTrades } = useMissedTrades();
@@ -109,7 +107,10 @@ export default function DashboardPage() {
   const insights = useMemo(() => computeInsights(trades), [trades]);
   const weeklyHistory = useMemo(() => computeWeeklyHistory(trades), [trades]);
 
-  const loading = perfLoading || briefLoading || profileLoading || ctLoading || acctLoading || jLoading || tLoading;
+  const loading = perfLoading || briefLoading || profileLoading || ctLoading || jLoading || tLoading;
+
+  // Compute account count from trades
+  const accountNames = useMemo(() => [...new Set(trades.map((t) => t.account_name).filter(Boolean))], [trades]);
 
   // Compute trends: compare last week vs previous week
   const trends = useMemo(() => {
@@ -219,11 +220,11 @@ export default function DashboardPage() {
         <StatCard
           icon={Target}
           label="Accounts"
-          value={accounts.length || "—"}
+          value={accountNames.length || "—"}
           color="text-purple-500"
           id="accounts-card"
-          onClick={accounts.length > 0 ? () => document.getElementById("account-section")?.scrollIntoView({ behavior: "smooth" }) : undefined}
-          sub={totalPayouts > 0 ? `$${totalPayouts.toLocaleString()} paid` : accounts.length > 0 ? "Click to view" : undefined}
+          onClick={accountNames.length > 0 ? () => document.getElementById("account-section")?.scrollIntoView({ behavior: "smooth" }) : undefined}
+          sub={accountNames.length > 0 ? "Click to view" : undefined}
         />
         <StatCard
           icon={Clock}
@@ -284,10 +285,12 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Trading Accounts */}
-      <div id="account-section" className="glass rounded-2xl p-5 border border-pink-200/40">
-        <AccountDashboard />
-      </div>
+      {/* Trading Accounts — auto-computed from trade data */}
+      {trades.length > 0 && (
+        <div id="account-section" className="glass rounded-2xl p-5 border border-pink-200/40">
+          <AccountDashboard trades={trades} />
+        </div>
+      )}
 
       {/* Events + Quick Actions Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
