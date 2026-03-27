@@ -101,12 +101,12 @@ Your job: extract ONLY the actual trade entries. Each trade must have ALL of the
 - event_within_2h: boolean — was there a news event within 2 hours?
 - safe_window: boolean — was it a safe trading window?
 - result: "Win", "Loss", or "BE"
-- overall_pips: total pips gained/lost (number, negative for losses)
-- pips: same as overall_pips
-- rs_gained: R-multiple gained/lost (number, e.g. 1.0, -1.0)
-- risk_reward: R:R ratio as string (e.g. "1:1", "2:1")
-- dollar_result: e.g. "$101", "-$50" (empty string if not found)
-- percent_risked: e.g. "1.00%", "2%" (empty string if not found)
+- overall_pips: the "Overall Pips" column — total pips gained or lost (number, negative for losses, e.g. 10.0, -42.0)
+- pips: same value as overall_pips
+- rs_gained: the "R's Gained/Lost" column — R-multiple value (number, e.g. 1.0, -1.0, 0.9). This is NOT the same as R2R. Look for a column with header containing "R's" or "R gained" or "R lost". If the trade was a loss, this should be NEGATIVE (e.g. -1.0). If a win, POSITIVE (e.g. 1.0, 0.5).
+- risk_reward: the "R2R of Trade" column — ratio as string (e.g. "1:1", "2:1"). This is the risk-to-reward RATIO, not the R's gained.
+- dollar_result: the "$ Lost or Gained" column — e.g. "$101", "-$50", "$(1,368.00)". Parse the number including negatives. Parentheses like $(500) mean negative.
+- percent_risked: the "% Risked" column — e.g. "1.00%", "2%", "3.60%"
 - before_picture: URL to before screenshot (empty string if not found)
 - after_picture: URL to after screenshot (empty string if not found)
 - trade_quality: e.g. "⭐⭐⭐" or "3/5" (empty string if not found)
@@ -121,7 +121,11 @@ Respond with ONLY valid JSON in this exact format, no other text:
   "notes": "brief description of what you found and any issues"
 }
 
-Skip rows that are clearly not trades (headers, labels, summaries, empty rows, psychology notes, daily tracker summaries).
+CRITICAL RULES:
+- Skip rows that are clearly not trades (headers, labels, summaries, empty rows, psychology notes).
+- Each physical trade entry in the spreadsheet should produce EXACTLY ONE trade object. Do NOT create duplicates.
+- If the same trade appears under multiple account sections, each account's version IS a separate trade (different account_name).
+- But the SAME row should NEVER produce two identical trades with the same account, date, and entry price.
 
 Here is the spreadsheet data:
 

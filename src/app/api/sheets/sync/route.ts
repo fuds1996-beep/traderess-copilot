@@ -71,17 +71,35 @@ async function syncTradesOnly(supabase: any, userId: string, rows: string[][]) {
     });
   }
 
+  // Deduplicate: delete existing trades for the same dates before inserting
+  const dateRange = getDateRange(parsed.trades);
+  if (dateRange) {
+    await supabase.from("trade_log")
+      .delete()
+      .eq("user_id", userId)
+      .gte("trade_date", dateRange.minDate)
+      .lte("trade_date", dateRange.maxDate);
+  }
+
   const trades = parsed.trades.map((t) => ({ user_id: userId, ...t }));
   const { error } = await supabase.from("trade_log").insert(trades);
   if (error && !error.message.includes("duplicate") && error.code !== "23505") {
     throw new Error(error.message);
   }
 
+  const rangeLabel = dateRange ? `${dateRange.minDate} to ${dateRange.maxDate}` : "unknown";
   return NextResponse.json({
     synced: { trades: parsed.trades.length },
     confidence: parsed.confidence,
-    message: `Synced ${parsed.trades.length} trades. ${parsed.notes}`,
+    message: `Synced ${parsed.trades.length} trades (replaced existing for ${rangeLabel}). ${parsed.notes}`,
   });
+}
+
+// Helper to get min/max dates from parsed trades
+function getDateRange(trades: { trade_date: string }[]): { minDate: string; maxDate: string } | null {
+  const dates = trades.map((t) => t.trade_date).filter(Boolean).sort();
+  if (dates.length === 0) return null;
+  return { minDate: dates[0], maxDate: dates[dates.length - 1] };
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -92,17 +110,27 @@ async function syncComprehensive(supabase: any, userId: string, rows: string[][]
   // Run all inserts in parallel
   const promises: Promise<void>[] = [];
 
-  // 1. Trades
+  // 1. Trades — delete existing for the date range first, then insert
   if (parsed.trades.length > 0) {
     counts.trades = parsed.trades.length;
+    const dateRange = getDateRange(parsed.trades);
     promises.push(
-      supabase.from("trade_log").insert(
-        parsed.trades.map((t) => ({ user_id: userId, ...t })),
-      ).then(({ error }: { error: { message: string; code: string } | null }) => {
+      (async () => {
+        // Delete existing trades for this date range to prevent duplicates
+        if (dateRange) {
+          await supabase.from("trade_log")
+            .delete()
+            .eq("user_id", userId)
+            .gte("trade_date", dateRange.minDate)
+            .lte("trade_date", dateRange.maxDate);
+        }
+        const { error } = await supabase.from("trade_log").insert(
+          parsed.trades.map((t) => ({ user_id: userId, ...t })),
+        );
         if (error && !error.message.includes("duplicate") && error.code !== "23505") {
           console.warn("trade_log insert:", error.message);
         }
-      }),
+      })(),
     );
   }
 
