@@ -8,7 +8,7 @@ export default function StatCard({
   label,
   value,
   sub,
-  color = "text-pink-500",
+  color = "text-brand",
   trend,
   sparkline,
   onClick,
@@ -76,7 +76,7 @@ function MiniSparkline({ data, color }: { data: number[]; color: string }) {
     : color.includes("blue") ? "#3b82f6"
     : color.includes("amber") ? "#f59e0b"
     : color.includes("purple") ? "#a855f7"
-    : color.includes("pink") ? "#ec4899"
+    : color.includes("pink") ? "#e98e97"
     : "#9ca3af";
 
   return (

@@ -39,7 +39,7 @@ export default function MobileNav() {
   return (
     <>
       {/* Bottom bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-pink-200/40 safe-area-pb">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-brand-light/40 safe-area-pb">
         <div className="flex items-center justify-around px-2 py-1">
           {MAIN_NAV.map((item) => {
             const isActive = pathname === item.href;
@@ -48,7 +48,7 @@ export default function MobileNav() {
                 key={item.href}
                 href={item.href}
                 className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-colors ${
-                  isActive ? "text-pink-500" : "text-gray-400"
+                  isActive ? "text-brand" : "text-gray-400"
                 }`}
               >
                 <item.icon size={20} />
@@ -59,7 +59,7 @@ export default function MobileNav() {
           <button
             onClick={() => setShowMore(true)}
             className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-colors ${
-              isMoreActive ? "text-pink-500" : "text-gray-400"
+              isMoreActive ? "text-brand" : "text-gray-400"
             }`}
           >
             <MoreHorizontal size={20} />
@@ -72,7 +72,7 @@ export default function MobileNav() {
       {showMore && (
         <div className="md:hidden fixed inset-0 z-[60]">
           <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={() => setShowMore(false)} />
-          <div className="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl rounded-t-3xl border-t border-pink-200/40 p-6 animate-in slide-in-from-bottom">
+          <div className="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl rounded-t-3xl border-t border-brand-light/40 p-6 animate-in slide-in-from-bottom">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-gray-900">More</h3>
               <button onClick={() => setShowMore(false)} className="p-1 text-gray-400"><X size={18} /></button>
@@ -84,7 +84,7 @@ export default function MobileNav() {
                   href={item.href}
                   onClick={() => setShowMore(false)}
                   className={`flex items-center gap-3 p-3 rounded-xl transition-colors ${
-                    pathname === item.href ? "bg-pink-50 text-pink-500" : "text-gray-600 hover:bg-pink-50/50"
+                    pathname === item.href ? "bg-brand-light text-brand" : "text-gray-600 hover:bg-brand-light/50"
                   }`}
                 >
                   <item.icon size={18} />

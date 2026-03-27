@@ -30,8 +30,8 @@ export default function SkillRadarChart({
         <Radar
           name="Score"
           dataKey="value"
-          stroke="#ec4899"
-          fill="#ec4899"
+          stroke="#e98e97"
+          fill="#e98e97"
           fillOpacity={0.2}
           strokeWidth={2}
         />

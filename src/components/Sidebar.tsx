@@ -71,25 +71,25 @@ export default function Sidebar({
       } glass-sidebar flex flex-col transition-all duration-200 shrink-0`}
     >
       {/* Logo + Avatar */}
-      <div className="p-4 border-b border-pink-200/30">
+      <div className="p-4 border-b border-brand-light/30">
         {collapsed ? (
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center mx-auto shadow-md shadow-pink-500/20">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center mx-auto shadow-md shadow-brand/20">
             <Zap size={18} className="text-white" />
           </div>
         ) : (
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center shadow-md shadow-pink-500/20">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center shadow-md shadow-brand/20">
                 <Zap size={18} className="text-white" />
               </div>
               <div>
                 <div className="text-sm font-bold text-gray-900 tracking-tight">Traderess</div>
-                <div className="text-[10px] text-pink-500 font-medium">COPILOT</div>
+                <div className="text-[10px] text-brand font-medium">COPILOT</div>
               </div>
             </div>
             {firstName && (
               <div className="flex items-center gap-2 px-1">
-                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-pink-400 to-rose-400 flex items-center justify-center text-[10px] font-bold text-white shrink-0">
+                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center text-[10px] font-bold text-white shrink-0">
                   {initial}
                 </div>
                 <span className="text-xs text-gray-600 truncate">{firstName}</span>
@@ -111,8 +111,8 @@ export default function Sidebar({
               title={collapsed ? item.label : undefined}
               className={`relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${
                 isActive
-                  ? "bg-pink-500/15 text-pink-600 font-medium shadow-sm"
-                  : "text-gray-500 hover:bg-pink-50 hover:text-gray-700"
+                  ? "bg-brand/15 text-brand-dark font-medium shadow-sm"
+                  : "text-gray-500 hover:bg-brand-light hover:text-gray-700"
               }`}
             >
               <item.icon size={18} />
@@ -126,7 +126,7 @@ export default function Sidebar({
       </nav>
 
       {/* Logout + Collapse */}
-      <div className="p-3 border-t border-pink-200/30 space-y-1">
+      <div className="p-3 border-t border-brand-light/30 space-y-1">
         <button
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"

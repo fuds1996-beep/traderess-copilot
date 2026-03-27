@@ -15,15 +15,15 @@ export default function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-      <div className="w-14 h-14 rounded-2xl bg-pink-100/60 border border-pink-200/40 flex items-center justify-center mb-4">
-        <Icon size={24} className="text-pink-400" />
+      <div className="w-14 h-14 rounded-2xl bg-brand-light/60 border border-brand-light/40 flex items-center justify-center mb-4">
+        <Icon size={24} className="text-brand" />
       </div>
       <h3 className="text-sm font-semibold text-gray-900 mb-1">{title}</h3>
       <p className="text-xs text-gray-500 max-w-sm mb-5">{description}</p>
       {showConnect && (
         <Link
           href="/settings"
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-gray-900 text-sm rounded-xl transition-all shadow-md shadow-pink-500/20"
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-brand to-brand-dark hover:from-brand-dark hover:to-brand-dark text-gray-900 text-sm rounded-xl transition-all shadow-md shadow-brand/20"
         >
           <FileSpreadsheet size={14} />
           Connect Google Sheet

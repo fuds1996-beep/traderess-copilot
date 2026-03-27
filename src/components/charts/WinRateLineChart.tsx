@@ -55,9 +55,9 @@ export default function WinRateLineChart({
         <Line
           type="monotone"
           dataKey="win_rate"
-          stroke="#ec4899"
+          stroke="#e98e97"
           strokeWidth={2}
-          dot={{ fill: "#ec4899", r: 4 }}
+          dot={{ fill: "#e98e97", r: 4 }}
         />
       </LineChart>
     </ResponsiveContainer>

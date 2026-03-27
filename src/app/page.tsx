@@ -17,10 +17,10 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen">
       {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/60 backdrop-blur-xl border-b border-pink-200/30">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/60 backdrop-blur-xl border-b border-brand-light/30">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center shadow-md shadow-pink-500/20">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center shadow-md shadow-brand/20">
               <Zap size={16} className="text-white" />
             </div>
             <span className="text-base font-bold text-gray-900">Traderess Copilot</span>
@@ -29,7 +29,7 @@ export default function LandingPage() {
             <Link href="/login" className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
               Log in
             </Link>
-            <Link href="/register" className="px-5 py-2 bg-pink-500 hover:bg-pink-600 text-white text-sm font-medium rounded-xl transition-colors shadow-md shadow-pink-500/20">
+            <Link href="/register" className="px-5 py-2 bg-brand hover:bg-brand-dark text-white text-sm font-medium rounded-xl transition-colors shadow-md shadow-brand/20">
               Get Started
             </Link>
           </div>
@@ -39,13 +39,13 @@ export default function LandingPage() {
       {/* Hero */}
       <section className="pt-32 pb-20 px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-pink-50 border border-pink-200/50 rounded-full text-xs text-pink-600 font-medium mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-light border border-brand-light/50 rounded-full text-xs text-brand-dark font-medium mb-6">
             <Sparkles size={12} /> AI-Powered Trading Copilot
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
             Your trading journal,
             <br />
-            <span className="bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-brand to-brand-dark bg-clip-text text-transparent">
               powered by AI
             </span>
           </h1>
@@ -54,10 +54,10 @@ export default function LandingPage() {
             journal entries, and psychology — giving you insights no spreadsheet can.
           </p>
           <div className="flex items-center justify-center gap-4">
-            <Link href="/register" className="flex items-center gap-2 px-6 py-3 bg-pink-500 hover:bg-pink-600 text-white text-sm font-medium rounded-xl transition-colors shadow-lg shadow-pink-500/25">
+            <Link href="/register" className="flex items-center gap-2 px-6 py-3 bg-brand hover:bg-brand-dark text-white text-sm font-medium rounded-xl transition-colors shadow-lg shadow-brand/25">
               Start Free <ArrowRight size={16} />
             </Link>
-            <Link href="/login" className="flex items-center gap-2 px-6 py-3 bg-white/60 border border-pink-200/50 text-gray-700 text-sm font-medium rounded-xl hover:bg-pink-50 transition-colors">
+            <Link href="/login" className="flex items-center gap-2 px-6 py-3 bg-white/60 border border-brand-light/50 text-gray-700 text-sm font-medium rounded-xl hover:bg-brand-light transition-colors">
               I have an account
             </Link>
           </div>
@@ -139,8 +139,8 @@ export default function LandingPage() {
       {/* Testimonial / Trust */}
       <section className="py-20 px-6">
         <div className="max-w-3xl mx-auto text-center">
-          <div className="glass rounded-2xl p-8 border border-pink-200/40">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center mx-auto mb-4 text-lg font-bold text-white">T</div>
+          <div className="glass rounded-2xl p-8 border border-brand-light/40">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center mx-auto mb-4 text-lg font-bold text-white">T</div>
             <p className="text-lg text-gray-700 italic mb-4">
               &quot;The AI actually reads my journal entries and tells me when I&apos;m trading frustrated.
               It noticed patterns I couldn&apos;t see myself — like my win rate dropping every Wednesday.&quot;
@@ -155,17 +155,17 @@ export default function LandingPage() {
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">Ready to trade smarter?</h2>
           <p className="text-gray-500 mb-8">Join students who use AI to understand their trading psychology and improve their performance.</p>
-          <Link href="/register" className="inline-flex items-center gap-2 px-8 py-4 bg-pink-500 hover:bg-pink-600 text-white text-base font-medium rounded-xl transition-colors shadow-lg shadow-pink-500/25">
+          <Link href="/register" className="inline-flex items-center gap-2 px-8 py-4 bg-brand hover:bg-brand-dark text-white text-base font-medium rounded-xl transition-colors shadow-lg shadow-brand/25">
             <Zap size={18} /> Get Started Free <ArrowRight size={18} />
           </Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-pink-200/30 py-8 px-6">
+      <footer className="border-t border-brand-light/30 py-8 px-6">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
+            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center">
               <Zap size={12} className="text-white" />
             </div>
             <span className="text-sm text-gray-500">Traderess Copilot</span>
@@ -179,9 +179,9 @@ export default function LandingPage() {
 
 function FeatureCard({ icon: Icon, title, description }: { icon: typeof BarChart3; title: string; description: string }) {
   return (
-    <div className="glass rounded-2xl p-5 border border-pink-200/40 hover:border-pink-300/50 transition-colors">
-      <div className="w-10 h-10 rounded-xl bg-pink-50 border border-pink-200/40 flex items-center justify-center mb-3">
-        <Icon size={18} className="text-pink-500" />
+    <div className="glass rounded-2xl p-5 border border-brand-light/40 hover:border-brand-light/50 transition-colors">
+      <div className="w-10 h-10 rounded-xl bg-brand-light border border-brand-light/40 flex items-center justify-center mb-3">
+        <Icon size={18} className="text-brand" />
       </div>
       <h3 className="text-sm font-semibold text-gray-900 mb-1.5">{title}</h3>
       <p className="text-xs text-gray-500 leading-relaxed">{description}</p>
@@ -192,7 +192,7 @@ function FeatureCard({ icon: Icon, title, description }: { icon: typeof BarChart
 function StepCard({ step, title, description }: { step: number; title: string; description: string }) {
   return (
     <div className="text-center">
-      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center mx-auto mb-4 text-lg font-bold text-white shadow-lg shadow-pink-500/20">
+      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center mx-auto mb-4 text-lg font-bold text-white shadow-lg shadow-brand/20">
         {step}
       </div>
       <h3 className="text-base font-semibold text-gray-900 mb-2">{title}</h3>

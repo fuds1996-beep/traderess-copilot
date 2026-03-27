@@ -159,7 +159,7 @@ export default function TradeLogTable({
     if (col.type === "url") {
       const url = String(val || "");
       if (!url) return <span className="text-gray-300">—</span>;
-      return <a href={url} target="_blank" rel="noopener noreferrer" className="text-pink-500 hover:text-pink-400"><ExternalLink size={12} /></a>;
+      return <a href={url} target="_blank" rel="noopener noreferrer" className="text-brand hover:text-brand"><ExternalLink size={12} /></a>;
     }
     if (["fundamental_check", "event_within_2h", "safe_window"].includes(col.key)) {
       const isYes = val === true || val === "Yes";
@@ -181,13 +181,13 @@ export default function TradeLogTable({
       {/* Toolbar */}
       <div className="flex items-center justify-between mb-3 gap-2">
         <button onClick={() => setShowFilters(!showFilters)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition-colors ${showFilters || activeFilters > 0 ? "bg-pink-500/10 border-pink-400 text-pink-500" : "bg-pink-100/60 border-pink-200/50 text-gray-600 hover:bg-pink-100"}`}>
+          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition-colors ${showFilters || activeFilters > 0 ? "bg-brand/10 border-brand text-brand" : "bg-brand-light/60 border-brand-light/50 text-gray-600 hover:bg-brand-light"}`}>
           <Filter size={12} /> Filters
-          {activeFilters > 0 && <span className="bg-pink-500 text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center">{activeFilters}</span>}
+          {activeFilters > 0 && <span className="bg-brand text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center">{activeFilters}</span>}
         </button>
         <div className="flex items-center gap-2 text-[10px] text-gray-400">
           <span>{filtered.length} of {trades.length} trades</span>
-          <button onClick={() => setAddingNew(true)} className="flex items-center gap-1.5 px-3 py-1.5 bg-pink-500 hover:bg-pink-600 text-white text-xs rounded-lg transition-colors">
+          <button onClick={() => setAddingNew(true)} className="flex items-center gap-1.5 px-3 py-1.5 bg-brand hover:bg-brand-dark text-white text-xs rounded-lg transition-colors">
             <Plus size={12} /> Add Trade
           </button>
         </div>
@@ -195,24 +195,24 @@ export default function TradeLogTable({
 
       {/* Filter bar */}
       {showFilters && (
-        <div className="flex flex-wrap gap-3 mb-4 p-3 bg-white/40 border border-pink-200/40 rounded-lg">
+        <div className="flex flex-wrap gap-3 mb-4 p-3 bg-white/40 border border-brand-light/40 rounded-lg">
           <div>
             <label className="block text-[10px] text-gray-400 mb-1">Account</label>
-            <select value={accountFilter} onChange={(e) => setAccountFilter(e.target.value)} className="bg-white/50 border border-pink-200/40 rounded px-2 py-1.5 text-xs text-gray-900">
+            <select value={accountFilter} onChange={(e) => setAccountFilter(e.target.value)} className="bg-white/50 border border-brand-light/40 rounded px-2 py-1.5 text-xs text-gray-900">
               <option value="all">All</option>
               {accounts.map((a) => <option key={a} value={a}>{a}</option>)}
             </select>
           </div>
           <div>
             <label className="block text-[10px] text-gray-400 mb-1">Session</label>
-            <select value={sessionFilter} onChange={(e) => setSessionFilter(e.target.value)} className="bg-white/50 border border-pink-200/40 rounded px-2 py-1.5 text-xs text-gray-900">
+            <select value={sessionFilter} onChange={(e) => setSessionFilter(e.target.value)} className="bg-white/50 border border-brand-light/40 rounded px-2 py-1.5 text-xs text-gray-900">
               <option value="all">All</option>
               {sessions.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
           <div>
             <label className="block text-[10px] text-gray-400 mb-1">Result</label>
-            <select value={resultFilter} onChange={(e) => setResultFilter(e.target.value)} className="bg-white/50 border border-pink-200/40 rounded px-2 py-1.5 text-xs text-gray-900">
+            <select value={resultFilter} onChange={(e) => setResultFilter(e.target.value)} className="bg-white/50 border border-brand-light/40 rounded px-2 py-1.5 text-xs text-gray-900">
               <option value="all">All</option><option value="Win">Win</option><option value="Loss">Loss</option><option value="BE">BE</option>
             </select>
           </div>
@@ -221,7 +221,7 @@ export default function TradeLogTable({
             <div className="flex gap-1">
               {[{ key: "trade_date", label: "Date" }, { key: "overall_pips", label: "Pips" }, { key: "rs_gained", label: "R's" }].map((s) => (
                 <button key={s.key} onClick={() => toggleSort(s.key)}
-                  className={`flex items-center gap-1 px-2 py-1 text-[10px] rounded border ${sortField === s.key ? "bg-pink-500/10 border-pink-400 text-pink-500" : "bg-white/50 border-pink-200/40 text-gray-500"}`}>
+                  className={`flex items-center gap-1 px-2 py-1 text-[10px] rounded border ${sortField === s.key ? "bg-brand/10 border-brand text-brand" : "bg-white/50 border-brand-light/40 text-gray-500"}`}>
                   {s.label} {sortField === s.key && (sortDir === "asc" ? <ArrowUp size={10} /> : <ArrowDown size={10} />)}
                 </button>
               ))}
@@ -235,7 +235,7 @@ export default function TradeLogTable({
       <div className="overflow-x-auto">
         <table className="w-full text-[11px]">
           <thead>
-            <tr className="border-b border-pink-200/40">
+            <tr className="border-b border-brand-light/40">
               <th className="text-left py-2 px-1 text-gray-400 font-medium w-14">Actions</th>
               {activeCols.map((c) => (
                 <th key={c.key} onClick={() => toggleSort(c.key)}
@@ -275,9 +275,9 @@ export default function TradeLogTable({
       {(editModalTrade || addingNew) && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={() => { setEditModalTrade(null); setAddingNew(false); }} />
-          <div className="relative bg-white/95 backdrop-blur-xl border border-pink-200/40 rounded-2xl shadow-2xl shadow-pink-500/10 w-full max-w-2xl max-h-[85vh] overflow-y-auto">
+          <div className="relative bg-white/95 backdrop-blur-xl border border-brand-light/40 rounded-2xl shadow-2xl shadow-brand/10 w-full max-w-2xl max-h-[85vh] overflow-y-auto">
             {/* Modal header */}
-            <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-xl border-b border-pink-200/30 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+            <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-xl border-b border-brand-light/30 px-6 py-4 flex items-center justify-between rounded-t-2xl">
               <div>
                 <h3 className="text-base font-semibold text-gray-900">
                   {addingNew ? "Add New Trade" : "Edit Trade"}
@@ -289,7 +289,7 @@ export default function TradeLogTable({
                 )}
               </div>
               <button onClick={() => { setEditModalTrade(null); setAddingNew(false); setNewTrade(newEmptyTrade()); }}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-pink-50 rounded-lg transition-colors">
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-brand-light rounded-lg transition-colors">
                 <X size={18} />
               </button>
             </div>
@@ -330,7 +330,7 @@ export default function TradeLogTable({
                   }}
                   rows={5}
                   placeholder="Write your trade evaluation..."
-                  className="w-full bg-white/60 border border-pink-200/40 rounded-xl px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-pink-400 resize-y leading-relaxed"
+                  className="w-full bg-white/60 border border-brand-light/40 rounded-xl px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-brand resize-y leading-relaxed"
                 />
               </div>
 
@@ -355,7 +355,7 @@ export default function TradeLogTable({
                               const setter = addingNew ? setNewTrade : setEditData;
                               setter({ ...data, custom_fields: { ...cf, [key]: e.target.value } });
                             }}
-                            className="w-full bg-white/60 border border-pink-200/40 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-pink-400"
+                            className="w-full bg-white/60 border border-brand-light/40 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-brand"
                           />
                         </div>
                       ))}
@@ -366,13 +366,13 @@ export default function TradeLogTable({
             </div>
 
             {/* Modal footer */}
-            <div className="sticky bottom-0 bg-white/95 backdrop-blur-xl border-t border-pink-200/30 px-6 py-4 flex items-center justify-end gap-3 rounded-b-2xl">
+            <div className="sticky bottom-0 bg-white/95 backdrop-blur-xl border-t border-brand-light/30 px-6 py-4 flex items-center justify-end gap-3 rounded-b-2xl">
               <button onClick={() => { setEditModalTrade(null); setAddingNew(false); setNewTrade(newEmptyTrade()); }}
                 className="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">
                 Cancel
               </button>
               <button onClick={addingNew ? addTrade : saveEdit} disabled={saving}
-                className="flex items-center gap-2 px-5 py-2 bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white text-sm font-medium rounded-xl transition-colors shadow-md shadow-pink-500/20">
+                className="flex items-center gap-2 px-5 py-2 bg-brand hover:bg-brand-dark disabled:opacity-50 text-white text-sm font-medium rounded-xl transition-colors shadow-md shadow-brand/20">
                 <Save size={14} /> {saving ? "Saving..." : addingNew ? "Add Trade" : "Save Changes"}
               </button>
             </div>
@@ -384,7 +384,7 @@ export default function TradeLogTable({
       {deleteConfirmId && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={() => setDeleteConfirmId(null)} />
-          <div className="relative bg-white/95 backdrop-blur-xl border border-pink-200/40 rounded-2xl shadow-2xl p-6 max-w-sm w-full text-center">
+          <div className="relative bg-white/95 backdrop-blur-xl border border-brand-light/40 rounded-2xl shadow-2xl p-6 max-w-sm w-full text-center">
             <div className="w-12 h-12 rounded-full bg-red-50 border border-red-200/40 flex items-center justify-center mx-auto mb-4">
               <AlertTriangle size={22} className="text-red-500" />
             </div>
@@ -394,7 +394,7 @@ export default function TradeLogTable({
             </p>
             <div className="flex gap-3 justify-center">
               <button onClick={() => setDeleteConfirmId(null)}
-                className="px-4 py-2 text-sm text-gray-500 bg-white/60 border border-pink-200/40 rounded-xl hover:bg-pink-50 transition-colors">
+                className="px-4 py-2 text-sm text-gray-500 bg-white/60 border border-brand-light/40 rounded-xl hover:bg-brand-light transition-colors">
                 Cancel
               </button>
               <button onClick={confirmDelete}
@@ -435,7 +435,7 @@ function ModalField({ col, data, setData }: {
   setData: (d: Record<string, unknown>) => void;
 }) {
   const val = data[col.key];
-  const cls = "w-full bg-white/60 border border-pink-200/40 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-pink-400 transition-colors";
+  const cls = "w-full bg-white/60 border border-brand-light/40 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-brand transition-colors";
 
   let input: React.ReactNode;
   switch (col.type) {
@@ -494,13 +494,13 @@ function TradeRow({
 }) {
   return (
     <>
-      <tr className="border-b border-pink-200/30 hover:bg-pink-50/20 transition-colors">
+      <tr className="border-b border-brand-light/30 hover:bg-brand-light/20 transition-colors">
         {/* Actions at the START */}
         <td className="py-1.5 px-1">
           <div className="flex gap-0.5">
-            <button onClick={onEdit} className="p-1 text-gray-400 hover:text-pink-500 transition-colors" title="Edit"><Pencil size={12} /></button>
+            <button onClick={onEdit} className="p-1 text-gray-400 hover:text-brand transition-colors" title="Edit"><Pencil size={12} /></button>
             <button onClick={onDelete} className="p-1 text-gray-400 hover:text-red-500 transition-colors" title="Delete"><Trash2 size={12} /></button>
-            <button onClick={onToggleExpand} className="p-1 text-gray-400 hover:text-pink-500 transition-colors" title="Expand">
+            <button onClick={onToggleExpand} className="p-1 text-gray-400 hover:text-brand transition-colors" title="Expand">
               {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
             </button>
           </div>
@@ -512,11 +512,11 @@ function TradeRow({
         ))}
       </tr>
       {isExpanded && (trade.trade_evaluation || trade.notes) && (
-        <tr className="border-b border-pink-200/30">
-          <td colSpan={cols.length + 1} className="py-3 px-4 bg-pink-50/20">
+        <tr className="border-b border-brand-light/30">
+          <td colSpan={cols.length + 1} className="py-3 px-4 bg-brand-light/20">
             {trade.trade_evaluation && (
               <div className="mb-3">
-                <div className="text-[10px] text-pink-500 font-semibold mb-1 uppercase tracking-wide">Trade Evaluation</div>
+                <div className="text-[10px] text-brand font-semibold mb-1 uppercase tracking-wide">Trade Evaluation</div>
                 <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-wrap">{trade.trade_evaluation}</p>
               </div>
             )}

@@ -51,8 +51,8 @@ export default function ProfileUploader({ onSuccess }: { onSuccess: () => void }
         <label className="block text-xs text-gray-500 mb-1.5">
           Upload Trader Profile CSV or paste content
         </label>
-        <label className="flex flex-col items-center justify-center w-full h-20 bg-white/40 border-2 border-dashed border-pink-200/50 rounded-xl cursor-pointer hover:border-pink-300 transition-colors">
-          <Upload size={18} className="text-pink-400 mb-1" />
+        <label className="flex flex-col items-center justify-center w-full h-20 bg-white/40 border-2 border-dashed border-brand-light/50 rounded-xl cursor-pointer hover:border-brand-light transition-colors">
+          <Upload size={18} className="text-brand mb-1" />
           <span className="text-xs text-gray-500">Click to upload CSV or TXT</span>
           <input type="file" accept=".csv,.txt" onChange={handleFile} className="hidden" />
         </label>
@@ -68,7 +68,7 @@ export default function ProfileUploader({ onSuccess }: { onSuccess: () => void }
           onChange={(e) => setText(e.target.value)}
           rows={6}
           placeholder="Paste the trader profile CSV content here..."
-          className="w-full bg-white/40 border border-pink-200/40 rounded-xl px-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-pink-400 resize-y"
+          className="w-full bg-white/40 border border-brand-light/40 rounded-xl px-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-brand resize-y"
         />
       </div>
 
@@ -99,7 +99,7 @@ export default function ProfileUploader({ onSuccess }: { onSuccess: () => void }
       <button
         onClick={handleUpload}
         disabled={loading || text.trim().length < 50}
-        className="flex items-center gap-2 px-4 py-2 bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white text-sm rounded-xl transition-colors"
+        className="flex items-center gap-2 px-4 py-2 bg-brand hover:bg-brand-dark disabled:opacity-50 text-white text-sm rounded-xl transition-colors"
       >
         {loading ? (
           <><Loader2 size={14} className="animate-spin" /> Parsing with AI...</>

@@ -12,7 +12,7 @@ import {
 } from "recharts";
 import type { AccountBalance } from "@/lib/types";
 
-const ACCOUNT_COLORS = ["#ec4899", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
+const ACCOUNT_COLORS = ["#e98e97", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
 
 export default function AccountBalanceLineChart({
   byAccount,

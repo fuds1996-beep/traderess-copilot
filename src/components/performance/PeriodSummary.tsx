@@ -105,7 +105,7 @@ export default function PeriodSummary({
   const sessionSuccessRate = sessionTotal > 0 ? Math.round((sessionWins / sessionTotal) * 100) : 0;
 
   return (
-    <div className="glass rounded-2xl p-5 border border-pink-200/40">
+    <div className="glass rounded-2xl p-5 border border-brand-light/40">
       <h3 className="text-sm font-semibold text-gray-900 mb-4">{label}</h3>
 
       {/* Main stats grid */}
@@ -146,7 +146,7 @@ export default function PeriodSummary({
         <div className="overflow-x-auto">
           <table className="w-full text-[11px]">
             <thead>
-              <tr className="border-b border-pink-200/30">
+              <tr className="border-b border-brand-light/30">
                 <th className="text-left py-1.5 px-2 text-gray-400 font-medium">Sessions</th>
                 <th className="text-center py-1.5 px-2 text-gray-400 font-medium">Total</th>
                 <th className="text-center py-1.5 px-2 text-gray-400 font-medium">Wins</th>
@@ -155,7 +155,7 @@ export default function PeriodSummary({
             </thead>
             <tbody>
               {stats.sessions.map((s) => (
-                <tr key={s.session} className={`border-b border-pink-200/15 ${s.total === 0 ? "opacity-40" : ""}`}>
+                <tr key={s.session} className={`border-b border-brand-light/15 ${s.total === 0 ? "opacity-40" : ""}`}>
                   <td className="py-1.5 px-2 text-gray-700 font-medium">{s.session}</td>
                   <td className="py-1.5 px-2 text-center text-gray-600">{s.total}</td>
                   <td className="py-1.5 px-2 text-center text-emerald-500 font-medium">{s.wins}</td>
@@ -171,7 +171,7 @@ export default function PeriodSummary({
                 </tr>
               ))}
               {/* Totals row */}
-              <tr className="border-t border-pink-200/40 bg-pink-50/30 font-semibold">
+              <tr className="border-t border-brand-light/40 bg-brand-light/30 font-semibold">
                 <td className="py-2 px-2 text-gray-900">Total</td>
                 <td className="py-2 px-2 text-center text-gray-900">{sessionTotal}</td>
                 <td className="py-2 px-2 text-center text-emerald-500">{sessionWins}</td>
@@ -201,7 +201,7 @@ function StatCell({
   highlight?: boolean;
 }) {
   return (
-    <div className={`p-2 rounded-lg ${highlight ? "bg-pink-100/60 border border-pink-200/40" : "bg-pink-50/40"}`}>
+    <div className={`p-2 rounded-lg ${highlight ? "bg-brand-light/60 border border-brand-light/40" : "bg-brand-light/40"}`}>
       <div className="text-[9px] text-gray-400 uppercase tracking-wide mb-0.5">{label}</div>
       <div className={`text-sm font-bold ${color}`}>{value}</div>
     </div>

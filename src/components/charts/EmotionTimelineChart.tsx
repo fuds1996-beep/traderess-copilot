@@ -37,7 +37,7 @@ export default function EmotionTimelineChart({
           formatter={(value, name) => [EMOTION_LABELS[Number(value)] || value, name]}
         />
         <Line type="monotone" dataKey="before" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 4, fill: "#8b5cf6" }} name="Before" />
-        <Line type="monotone" dataKey="during" stroke="#ec4899" strokeWidth={2} dot={{ r: 4, fill: "#ec4899" }} name="During" />
+        <Line type="monotone" dataKey="during" stroke="#e98e97" strokeWidth={2} dot={{ r: 4, fill: "#e98e97" }} name="During" />
         <Line type="monotone" dataKey="after" stroke="#10b981" strokeWidth={2} dot={{ r: 4, fill: "#10b981" }} name="After" />
       </LineChart>
     </ResponsiveContainer>

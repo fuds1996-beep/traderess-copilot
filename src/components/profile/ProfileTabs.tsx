@@ -31,14 +31,14 @@ export default function ProfileTabs({
 
   return (
     <>
-      <div className="flex gap-1 border-b border-pink-200/40 pb-0 overflow-x-auto">
+      <div className="flex gap-1 border-b border-brand-light/40 pb-0 overflow-x-auto">
         {TABS.map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               tab === t
-                ? "border-pink-400 text-pink-500"
+                ? "border-brand text-brand"
                 : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
@@ -62,7 +62,7 @@ function OverviewTab({ profile }: { profile: TraderProfile }) {
       {(profile.strengths?.length > 0 || profile.weaknesses?.length > 0) && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {profile.strengths?.length > 0 && (
-            <div className="glass rounded-2xl p-5 border border-pink-200/40">
+            <div className="glass rounded-2xl p-5 border border-brand-light/40">
               <div className="flex items-center gap-2 mb-4">
                 <CheckCircle size={16} className="text-emerald-400" />
                 <h3 className="text-sm font-semibold text-gray-900">Strengths</h3>
@@ -81,7 +81,7 @@ function OverviewTab({ profile }: { profile: TraderProfile }) {
             </div>
           )}
           {profile.weaknesses?.length > 0 && (
-            <div className="glass rounded-2xl p-5 border border-pink-200/40">
+            <div className="glass rounded-2xl p-5 border border-brand-light/40">
               <div className="flex items-center gap-2 mb-4">
                 <AlertTriangle size={16} className="text-amber-400" />
                 <h3 className="text-sm font-semibold text-gray-900">Weaknesses</h3>
@@ -102,13 +102,13 @@ function OverviewTab({ profile }: { profile: TraderProfile }) {
         </div>
       )}
       {profile.radar_scores?.length > 0 && (
-        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+        <div className="glass rounded-2xl p-5 border border-brand-light/40">
           <h3 className="text-sm font-semibold text-gray-900 mb-4">Trading Skill Radar</h3>
           <div className="flex justify-center"><SkillRadarChart data={profile.radar_scores} /></div>
         </div>
       )}
       {profile.successes?.length > 0 && (
-        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+        <div className="glass rounded-2xl p-5 border border-brand-light/40">
           <div className="flex items-center gap-2 mb-4">
             <Trophy size={16} className="text-amber-500" />
             <h3 className="text-sm font-semibold text-gray-900">Successes</h3>
@@ -127,27 +127,27 @@ function OverviewTab({ profile }: { profile: TraderProfile }) {
       {(profile.hobbies?.length > 0 || profile.expectations?.length > 0) && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {profile.hobbies?.length > 0 && (
-            <div className="glass rounded-2xl p-5 border border-pink-200/40">
+            <div className="glass rounded-2xl p-5 border border-brand-light/40">
               <div className="flex items-center gap-2 mb-3">
-                <Heart size={14} className="text-pink-500" />
+                <Heart size={14} className="text-brand" />
                 <h3 className="text-sm font-semibold text-gray-900">Hobbies & Interests</h3>
               </div>
               <div className="flex flex-wrap gap-2">
                 {profile.hobbies.map((h, i) => (
-                  <span key={i} className="text-[11px] px-2.5 py-1 bg-pink-50/80 border border-pink-200/30 rounded-lg text-gray-600">{h}</span>
+                  <span key={i} className="text-[11px] px-2.5 py-1 bg-brand-light/80 border border-brand-light/30 rounded-lg text-gray-600">{h}</span>
                 ))}
               </div>
             </div>
           )}
           {profile.expectations?.length > 0 && (
-            <div className="glass rounded-2xl p-5 border border-pink-200/40">
+            <div className="glass rounded-2xl p-5 border border-brand-light/40">
               <div className="flex items-center gap-2 mb-3">
-                <Sparkles size={14} className="text-pink-500" />
+                <Sparkles size={14} className="text-brand" />
                 <h3 className="text-sm font-semibold text-gray-900">Goals & Expectations</h3>
               </div>
               <ul className="space-y-1.5">
                 {profile.expectations.map((e, i) => (
-                  <li key={i} className="text-[11px] text-gray-600 flex items-start gap-2"><span className="text-pink-400 mt-0.5">•</span>{e}</li>
+                  <li key={i} className="text-[11px] text-gray-600 flex items-start gap-2"><span className="text-brand mt-0.5">•</span>{e}</li>
                 ))}
               </ul>
             </div>
@@ -166,7 +166,7 @@ function PsychologyTab({ profile }: { profile: TraderProfile }) {
     return (
       <div className="space-y-4 pt-4">
         {profile.space_method?.length > 0 && (
-          <div className="glass rounded-2xl p-5 border border-pink-200/40">
+          <div className="glass rounded-2xl p-5 border border-brand-light/40">
             <h3 className="text-sm font-semibold text-gray-900 mb-3">SPACE Method</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
               {profile.space_method.map((s) => (
@@ -180,11 +180,11 @@ function PsychologyTab({ profile }: { profile: TraderProfile }) {
           </div>
         )}
         {profile.behavioural_patterns?.length > 0 && (
-          <div className="glass rounded-2xl p-5 border border-pink-200/40">
+          <div className="glass rounded-2xl p-5 border border-brand-light/40">
             <h3 className="text-sm font-semibold text-gray-900 mb-3">Behavioural Patterns</h3>
             <div className="space-y-2">
               {profile.behavioural_patterns.map((p) => (
-                <div key={p.pattern} className="flex items-start gap-4 p-3 bg-pink-50/80 rounded-lg">
+                <div key={p.pattern} className="flex items-start gap-4 p-3 bg-brand-light/80 rounded-lg">
                   <AlertCircle size={16} className={`mt-0.5 shrink-0 ${p.severity === "high" ? "text-red-400" : "text-amber-400"}`} />
                   <div className="flex-1">
                     <div className="flex items-center gap-2"><span className="text-sm font-medium text-gray-900">{p.pattern}</span><Badge variant={p.severity === "high" ? "danger" : "warning"}>{p.severity}</Badge></div>
@@ -204,7 +204,7 @@ function PsychologyTab({ profile }: { profile: TraderProfile }) {
   return (
     <div className="space-y-4 pt-4">
       {profile.detailed_weaknesses.length > 0 && (
-        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+        <div className="glass rounded-2xl p-5 border border-brand-light/40">
           <div className="flex items-center gap-2 mb-4">
             <AlertTriangle size={16} className="text-amber-500" />
             <h3 className="text-sm font-semibold text-gray-900">Weaknesses</h3>
@@ -218,7 +218,7 @@ function PsychologyTab({ profile }: { profile: TraderProfile }) {
         </div>
       )}
       {profile.detailed_strengths.length > 0 && (
-        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+        <div className="glass rounded-2xl p-5 border border-brand-light/40">
           <div className="flex items-center gap-2 mb-4">
             <CheckCircle size={16} className="text-emerald-500" />
             <h3 className="text-sm font-semibold text-gray-900">Strengths</h3>
@@ -241,13 +241,13 @@ function ExpandableItem({ item, idx, expandedIdx, setExpandedIdx, type }: {
 }) {
   const isOpen = expandedIdx === idx;
   return (
-    <div className="border border-pink-200/30 rounded-xl overflow-hidden">
-      <button onClick={() => setExpandedIdx(isOpen ? null : idx)} className="w-full flex items-center justify-between p-3 text-left hover:bg-pink-50/40 transition-colors">
+    <div className="border border-brand-light/30 rounded-xl overflow-hidden">
+      <button onClick={() => setExpandedIdx(isOpen ? null : idx)} className="w-full flex items-center justify-between p-3 text-left hover:bg-brand-light/40 transition-colors">
         <span className="text-sm font-medium text-gray-900">{item.name}</span>
         {isOpen ? <ChevronUp size={14} className="text-gray-400" /> : <ChevronDown size={14} className="text-gray-400" />}
       </button>
       {isOpen && (
-        <div className="px-3 pb-3 space-y-3 border-t border-pink-200/20 pt-3">
+        <div className="px-3 pb-3 space-y-3 border-t border-brand-light/20 pt-3">
           {item.real_life_example && (
             <div>
               <div className="text-[10px] text-gray-400 font-semibold mb-1 uppercase tracking-wide">Real-life example</div>
@@ -258,7 +258,7 @@ function ExpandableItem({ item, idx, expandedIdx, setExpandedIdx, type }: {
             {[
               { label: "Learning", text: item.affects_learning, color: "bg-blue-50/60 border-blue-200/30", labelColor: "text-blue-600" },
               { label: "Planning", text: item.affects_planning, color: "bg-purple-50/60 border-purple-200/30", labelColor: "text-purple-600" },
-              { label: "Execution", text: item.affects_execution, color: "bg-pink-50/60 border-pink-200/30", labelColor: "text-pink-600" },
+              { label: "Execution", text: item.affects_execution, color: "bg-brand-light/60 border-brand-light/30", labelColor: "text-brand-dark" },
               { label: "Results", text: item.affects_results, color: "bg-amber-50/60 border-amber-200/30", labelColor: "text-amber-600" },
               { label: "Evaluation", text: item.affects_evaluation, color: "bg-emerald-50/60 border-emerald-200/30", labelColor: "text-emerald-600" },
             ].filter((c) => c.text).map((c) => (
@@ -280,13 +280,13 @@ function StrengthsTab({ profile }: { profile: TraderProfile }) {
   return (
     <div className="space-y-3 pt-4">
       {profile.successes.map((s, i) => (
-        <div key={i} className="glass rounded-2xl border border-pink-200/40 overflow-hidden">
-          <button onClick={() => setExpandedIdx(expandedIdx === i ? null : i)} className="w-full flex items-center justify-between p-4 text-left hover:bg-pink-50/40 transition-colors">
+        <div key={i} className="glass rounded-2xl border border-brand-light/40 overflow-hidden">
+          <button onClick={() => setExpandedIdx(expandedIdx === i ? null : i)} className="w-full flex items-center justify-between p-4 text-left hover:bg-brand-light/40 transition-colors">
             <div className="flex items-center gap-3"><Trophy size={16} className="text-amber-500" /><span className="text-sm font-semibold text-gray-900">{s.title}</span></div>
             {expandedIdx === i ? <ChevronUp size={14} className="text-gray-400" /> : <ChevronDown size={14} className="text-gray-400" />}
           </button>
           {expandedIdx === i && (
-            <div className="px-4 pb-4 space-y-3 border-t border-pink-200/20 pt-3">
+            <div className="px-4 pb-4 space-y-3 border-t border-brand-light/20 pt-3">
               {s.description && <div><div className="text-[10px] text-gray-400 font-semibold mb-1 uppercase tracking-wide">What happened</div><p className="text-xs text-gray-700 leading-relaxed whitespace-pre-wrap">{s.description}</p></div>}
               {s.how_benefited && <div><div className="text-[10px] text-gray-400 font-semibold mb-1 uppercase tracking-wide">How it benefited me</div><p className="text-xs text-gray-700 leading-relaxed whitespace-pre-wrap">{s.how_benefited}</p></div>}
               {s.how_achieved && <div><div className="text-[10px] text-gray-400 font-semibold mb-1 uppercase tracking-wide">How I achieved it</div><p className="text-xs text-gray-700 leading-relaxed whitespace-pre-wrap">{s.how_achieved}</p></div>}
@@ -305,13 +305,13 @@ function FearsTab({ profile }: { profile: TraderProfile }) {
   return (
     <div className="space-y-3 pt-4">
       {profile.fears.map((f, i) => (
-        <div key={i} className="glass rounded-2xl border border-pink-200/40 overflow-hidden">
-          <button onClick={() => setExpandedIdx(expandedIdx === i ? null : i)} className="w-full flex items-center justify-between p-4 text-left hover:bg-pink-50/40 transition-colors">
+        <div key={i} className="glass rounded-2xl border border-brand-light/40 overflow-hidden">
+          <button onClick={() => setExpandedIdx(expandedIdx === i ? null : i)} className="w-full flex items-center justify-between p-4 text-left hover:bg-brand-light/40 transition-colors">
             <div className="flex items-center gap-3"><ShieldAlert size={16} className="text-red-400" /><span className="text-sm font-semibold text-gray-900">{f.title}</span></div>
             {expandedIdx === i ? <ChevronUp size={14} className="text-gray-400" /> : <ChevronDown size={14} className="text-gray-400" />}
           </button>
           {expandedIdx === i && (
-            <div className="px-4 pb-4 space-y-3 border-t border-pink-200/20 pt-3">
+            <div className="px-4 pb-4 space-y-3 border-t border-brand-light/20 pt-3">
               {f.description && <div><div className="text-[10px] text-gray-400 font-semibold mb-1 uppercase tracking-wide">How it affected me</div><p className="text-xs text-gray-700 leading-relaxed whitespace-pre-wrap">{f.description}</p></div>}
               {f.how_overcome && (
                 <div className="p-3 bg-emerald-50/60 border border-emerald-200/30 rounded-xl">
@@ -320,8 +320,8 @@ function FearsTab({ profile }: { profile: TraderProfile }) {
                 </div>
               )}
               {f.plan_to_overcome && (
-                <div className="p-3 bg-pink-50/60 border border-pink-200/30 rounded-xl">
-                  <div className="text-[10px] text-pink-600 font-semibold mb-1 uppercase tracking-wide">Plan to overcome</div>
+                <div className="p-3 bg-brand-light/60 border border-brand-light/30 rounded-xl">
+                  <div className="text-[10px] text-brand-dark font-semibold mb-1 uppercase tracking-wide">Plan to overcome</div>
                   <p className="text-xs text-gray-700 leading-relaxed whitespace-pre-wrap">{f.plan_to_overcome}</p>
                 </div>
               )}
@@ -337,11 +337,11 @@ function PlanTab({ profile, propAccounts }: { profile: TraderProfile; propAccoun
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-4">
       {profile.trading_plan?.length > 0 && (
-        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+        <div className="glass rounded-2xl p-5 border border-brand-light/40">
           <h3 className="text-sm font-semibold text-gray-900 mb-3">Trading Plan</h3>
           <div className="space-y-3 text-sm">
             {profile.trading_plan.map((r) => (
-              <div key={r.label} className="flex justify-between py-1.5 border-b border-pink-200/30 last:border-0">
+              <div key={r.label} className="flex justify-between py-1.5 border-b border-brand-light/30 last:border-0">
                 <span className="text-gray-500">{r.label}</span>
                 <span className="text-gray-900 font-medium text-right">{r.value}</span>
               </div>
@@ -350,16 +350,16 @@ function PlanTab({ profile, propAccounts }: { profile: TraderProfile; propAccoun
         </div>
       )}
       {propAccounts.length > 0 && (
-        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+        <div className="glass rounded-2xl p-5 border border-brand-light/40">
           <h3 className="text-sm font-semibold text-gray-900 mb-3">Prop Firm Accounts</h3>
           <div className="space-y-3">
             {propAccounts.map((a) => (
-              <div key={a.id} className="p-3 bg-pink-50/80 rounded-lg">
+              <div key={a.id} className="p-3 bg-brand-light/80 rounded-lg">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm font-medium text-gray-900">{a.account_name}</span>
                   <div className="flex items-center gap-2"><Badge variant="info">{a.status}</Badge><span className="text-xs text-emerald-500 font-medium">{a.pnl}</span></div>
                 </div>
-                <ProgressBar value={a.progress} color="bg-pink-500" />
+                <ProgressBar value={a.progress} color="bg-brand" />
                 <span className="text-[10px] text-gray-400 mt-1 block">{a.progress}% to target</span>
               </div>
             ))}
@@ -367,7 +367,7 @@ function PlanTab({ profile, propAccounts }: { profile: TraderProfile; propAccoun
         </div>
       )}
       {profile.trader_type && (
-        <div className="lg:col-span-2 glass rounded-2xl p-5 border border-pink-200/40">
+        <div className="lg:col-span-2 glass rounded-2xl p-5 border border-brand-light/40">
           <h3 className="text-sm font-semibold text-gray-900 mb-3">Trader Type & Identity</h3>
           <p className="text-xs text-gray-700 leading-relaxed whitespace-pre-wrap">{profile.trader_type}</p>
         </div>

@@ -35,9 +35,9 @@ export default function ProfilePage() {
           <h1 className="text-2xl font-bold text-gray-900">Trader Profile</h1>
           <p className="text-sm text-gray-500 mt-1">Your comprehensive trading identity</p>
         </div>
-        <div className="glass rounded-2xl p-8 border border-pink-200/40">
+        <div className="glass rounded-2xl p-8 border border-brand-light/40">
           <div className="max-w-md mx-auto text-center mb-6">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-pink-500/20">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center mx-auto mb-4 shadow-lg shadow-brand/20">
               <User size={28} className="text-white" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Build Your Trader Profile</h3>
@@ -46,15 +46,15 @@ export default function ProfilePage() {
             </p>
             <div className="flex justify-center gap-6 text-xs text-gray-400 mb-6">
               <div className="flex flex-col items-center gap-1">
-                <span className="w-6 h-6 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center text-[10px] font-bold">1</span>
+                <span className="w-6 h-6 rounded-full bg-brand-light text-brand flex items-center justify-center text-[10px] font-bold">1</span>
                 Upload CSV
               </div>
               <div className="flex flex-col items-center gap-1">
-                <span className="w-6 h-6 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center text-[10px] font-bold">2</span>
+                <span className="w-6 h-6 rounded-full bg-brand-light text-brand flex items-center justify-center text-[10px] font-bold">2</span>
                 AI extracts data
               </div>
               <div className="flex flex-col items-center gap-1">
-                <span className="w-6 h-6 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center text-[10px] font-bold">3</span>
+                <span className="w-6 h-6 rounded-full bg-brand-light text-brand flex items-center justify-center text-[10px] font-bold">3</span>
                 Profile ready
               </div>
             </div>
@@ -92,14 +92,14 @@ export default function ProfilePage() {
               finally { setAnalyzing(false); }
             }}
             disabled={analyzing}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white text-xs rounded-xl transition-colors shadow-sm shadow-pink-500/20"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-brand hover:bg-brand-dark disabled:opacity-50 text-white text-xs rounded-xl transition-colors shadow-sm shadow-brand/20"
           >
             {analyzing ? <Loader2 size={12} className="animate-spin" /> : <Brain size={12} />}
             {analyzing ? "Analyzing..." : "Refresh Profile"}
           </button>
           <button
             onClick={() => setShowUploader(!showUploader)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/50 border border-pink-200/40 hover:bg-pink-50 text-gray-600 text-xs rounded-xl transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/50 border border-brand-light/40 hover:bg-brand-light text-gray-600 text-xs rounded-xl transition-colors"
           >
             <Upload size={12} /> Upload CSV
           </button>
@@ -113,10 +113,10 @@ export default function ProfilePage() {
 
       {/* Before/After comparison */}
       {analysisResult && showComparison && (
-        <div className="glass rounded-2xl p-5 border border-pink-300/50">
+        <div className="glass rounded-2xl p-5 border border-brand-light/50">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Brain size={16} className="text-pink-500" />
+              <Brain size={16} className="text-brand" />
               <h3 className="text-sm font-semibold text-gray-900">Profile Updated</h3>
               <span className="text-[10px] text-gray-400">Based on {analysisResult.tradeCount} trades + {analysisResult.journalCount} journals</span>
             </div>
@@ -124,7 +124,7 @@ export default function ProfilePage() {
           </div>
 
           {analysisResult.summary && (
-            <p className="text-xs text-gray-600 mb-4 p-3 bg-pink-50/60 rounded-lg italic">{analysisResult.summary}</p>
+            <p className="text-xs text-gray-600 mb-4 p-3 bg-brand-light/60 rounded-lg italic">{analysisResult.summary}</p>
           )}
 
           {/* Radar comparison */}
@@ -137,7 +137,7 @@ export default function ProfilePage() {
                   const oldVal = oldScore?.value || 0;
                   const diff = newScore.value - oldVal;
                   return (
-                    <div key={newScore.trait} className="p-2 bg-pink-50/40 rounded-lg text-center">
+                    <div key={newScore.trait} className="p-2 bg-brand-light/40 rounded-lg text-center">
                       <div className="text-[9px] text-gray-400 mb-1">{newScore.trait}</div>
                       <div className="text-lg font-bold text-gray-900">{newScore.value}</div>
                       {oldVal > 0 && (
@@ -182,15 +182,15 @@ export default function ProfilePage() {
       )}
 
       {showUploader && (
-        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+        <div className="glass rounded-2xl p-5 border border-brand-light/40">
           <h3 className="text-sm font-semibold text-gray-900 mb-3">Import Trader Profile</h3>
           <ProfileUploader onSuccess={() => { setShowUploader(false); refresh(); }} />
         </div>
       )}
 
-      <div className="glass rounded-2xl p-6 border border-pink-200/40">
+      <div className="glass rounded-2xl p-6 border border-brand-light/40">
         <div className="flex items-start gap-6">
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center text-3xl font-bold text-white shrink-0">
+          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center text-3xl font-bold text-white shrink-0">
             {profile.avatar_initial}
           </div>
           <div className="flex-1">

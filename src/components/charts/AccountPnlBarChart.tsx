@@ -12,7 +12,7 @@ import {
 } from "recharts";
 import type { Trade } from "@/lib/types";
 
-const ACCOUNT_COLORS = ["#ec4899", "#10b981", "#f59e0b", "#3b82f6", "#8b5cf6", "#ef4444"];
+const ACCOUNT_COLORS = ["#e98e97", "#10b981", "#f59e0b", "#3b82f6", "#8b5cf6", "#ef4444"];
 
 export default function AccountPnlBarChart({
   trades,
@@ -49,7 +49,7 @@ export default function AccountPnlBarChart({
           <XAxis dataKey="period" tick={{ fontSize: 10, fill: "#9ca3af" }} angle={-15} textAnchor="end" height={50} />
           <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} tickFormatter={(v: number) => `$${v}`} />
           <Tooltip contentStyle={{ background: "rgba(255,255,255,0.95)", border: "1px solid rgba(244,114,182,0.2)", borderRadius: 8, fontSize: 12 }} />
-          <Bar dataKey="All Trades" fill="#ec4899" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="All Trades" fill="#e98e97" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     );

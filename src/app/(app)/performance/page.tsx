@@ -130,15 +130,15 @@ export default function PerformancePage() {
           <h1 className="text-2xl font-bold text-gray-900">Performance Analytics</h1>
           <p className="text-sm text-gray-500 mt-1">Detailed breakdown of your trading metrics</p>
         </div>
-        <div className="flex items-center gap-1 p-1 bg-white/50 border border-pink-200/40 rounded-xl">
+        <div className="flex items-center gap-1 p-1 bg-white/50 border border-brand-light/40 rounded-xl">
           {(["weekly", "monthly", "quarterly", "all"] as PeriodView[]).map((p) => (
             <button
               key={p}
               onClick={() => setPeriodView(p)}
               className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
                 periodView === p
-                  ? "bg-pink-500 text-white shadow-sm"
-                  : "text-gray-500 hover:text-gray-700 hover:bg-pink-50"
+                  ? "bg-brand text-white shadow-sm"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-brand-light"
               }`}
             >
               {p.charAt(0).toUpperCase() + p.slice(1)}
@@ -159,11 +159,11 @@ export default function PerformancePage() {
       {/* P/L by Account + Win Rate Charts */}
       {trades.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="glass rounded-2xl p-5 border border-pink-200/40">
+          <div className="glass rounded-2xl p-5 border border-brand-light/40">
             <h3 className="text-sm font-semibold text-gray-900 mb-4">{chartPeriodLabel} P/L by Account</h3>
             <AccountPnlBarChart trades={trades} periodKeyFn={keyFn} labelFn={labelFn} />
           </div>
-          <div className="glass rounded-2xl p-5 border border-pink-200/40">
+          <div className="glass rounded-2xl p-5 border border-brand-light/40">
             <h3 className="text-sm font-semibold text-gray-900 mb-4">{chartPeriodLabel} Win Rate</h3>
             <WinRateLineChart data={winRateData} />
           </div>
@@ -174,13 +174,13 @@ export default function PerformancePage() {
       {(sessionData.length > 0 || dayData.length > 0) && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {sessionData.length > 0 && (
-            <div className="glass rounded-2xl p-5 border border-pink-200/40">
+            <div className="glass rounded-2xl p-5 border border-brand-light/40">
               <h3 className="text-sm font-semibold text-gray-900 mb-4">Performance by Session</h3>
               <SessionBarChart data={sessionData} />
             </div>
           )}
           {dayData.length > 0 && (
-            <div className="glass rounded-2xl p-5 border border-pink-200/40">
+            <div className="glass rounded-2xl p-5 border border-brand-light/40">
               <h3 className="text-sm font-semibold text-gray-900 mb-4">Trades by Day of Week</h3>
               <DayOfWeekBarChart data={dayData} />
             </div>
@@ -190,7 +190,7 @@ export default function PerformancePage() {
 
       {/* Account Balances */}
       {hasBalances && trades.length > 0 && (
-        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+        <div className="glass rounded-2xl p-5 border border-brand-light/40">
           <h3 className="text-sm font-semibold text-gray-900 mb-4">Account Balances Over Time</h3>
           <AccountBalanceLineChart byAccount={byAccount} accountNames={accountNames} />
         </div>
@@ -198,20 +198,20 @@ export default function PerformancePage() {
 
       {/* Psychology & Emotion Timeline */}
       {psych.emotionTimeline.length > 0 && (
-        <div id="journal" className="glass rounded-2xl p-5 border border-pink-200/40">
+        <div id="journal" className="glass rounded-2xl p-5 border border-brand-light/40">
           <h3 className="text-sm font-semibold text-gray-900 mb-4">Emotion & Psychology Timeline</h3>
           <EmotionTimelineChart data={psych.emotionTimeline} />
           <div className="flex justify-center gap-4 mt-3 text-[10px] text-gray-400">
             <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-purple-500" /> Before</span>
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-pink-500" /> During</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand" /> During</span>
             <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" /> After</span>
           </div>
           {psych.emotionPnlCorrelation.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-pink-200/30">
+            <div className="mt-4 pt-4 border-t border-brand-light/30">
               <h4 className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide mb-2">Emotion vs Performance</h4>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {psych.emotionPnlCorrelation.map((e) => (
-                  <div key={e.emotion} className="p-2.5 bg-pink-50/60 rounded-lg text-center">
+                  <div key={e.emotion} className="p-2.5 bg-brand-light/60 rounded-lg text-center">
                     <div className="text-[11px] text-gray-500 mb-0.5">{e.emotion}</div>
                     <div className={`text-sm font-bold ${e.avgPips >= 0 ? "text-emerald-500" : "text-red-500"}`}>
                       {e.avgPips > 0 ? "+" : ""}{e.avgPips}p
@@ -228,7 +228,7 @@ export default function PerformancePage() {
       {/* Trade Log + Journals — grouped by week */}
       <div>
         <div className="flex items-center gap-2 mb-3">
-          <BarChart3 size={16} className="text-pink-500" />
+          <BarChart3 size={16} className="text-brand" />
           <h3 className="text-sm font-semibold text-gray-900">Trade Log & Journal</h3>
           <span className="text-[10px] text-gray-400">{trades.length} trades · {journals.length} journal entries</span>
         </div>

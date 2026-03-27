@@ -4,7 +4,7 @@ import { useState } from "react";
 
 export default function ToggleSwitch({
   defaultOn = false,
-  activeColor = "bg-pink-500",
+  activeColor = "bg-brand",
 }: {
   defaultOn?: boolean;
   activeColor?: string;

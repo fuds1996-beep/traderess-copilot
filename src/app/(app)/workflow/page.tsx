@@ -69,17 +69,17 @@ export default function WorkflowPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 px-3 py-1.5 bg-pink-100/60 text-gray-600 text-xs rounded-lg hover:bg-slate-600 transition-colors">
+          <button className="flex items-center gap-2 px-3 py-1.5 bg-brand-light/60 text-gray-600 text-xs rounded-lg hover:bg-slate-600 transition-colors">
             <Timer size={12} /> Schedule
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white text-sm rounded-lg hover:bg-pink-600 transition-colors">
+          <button className="flex items-center gap-2 px-4 py-2 bg-brand text-white text-sm rounded-lg hover:bg-brand-dark transition-colors">
             <Play size={14} /> Run Full Pipeline
           </button>
         </div>
       </div>
 
       {/* Pipeline Phases */}
-      <div className="glass rounded-2xl p-5 border border-pink-200/40">
+      <div className="glass rounded-2xl p-5 border border-brand-light/40">
         <h3 className="text-sm font-semibold text-gray-900 mb-4">
           Pipeline Phases
         </h3>
@@ -95,18 +95,18 @@ export default function WorkflowPage() {
                     className={`w-10 h-10 rounded-xl flex items-center justify-center ${
                       isManual
                         ? "bg-amber-900/30 border border-amber-800/50"
-                        : "bg-pink-100/50 border border-pink-300/50"
+                        : "bg-brand-light/50 border border-brand-light/50"
                     }`}
                   >
                     <Icon
                       size={18}
                       className={
-                        isManual ? "text-amber-400" : "text-pink-500"
+                        isManual ? "text-amber-400" : "text-brand"
                       }
                     />
                   </div>
                   {i < WORKFLOW_STEPS.length - 1 && (
-                    <div className="w-px h-8 bg-pink-100/60 mt-2" />
+                    <div className="w-px h-8 bg-brand-light/60 mt-2" />
                   )}
                 </div>
 
@@ -131,7 +131,7 @@ export default function WorkflowPage() {
                       {s.agents.map((a) => (
                         <span
                           key={a}
-                          className="text-[10px] px-2 py-0.5 bg-pink-100/60 rounded text-gray-600 flex items-center gap-1"
+                          className="text-[10px] px-2 py-0.5 bg-brand-light/60 rounded text-gray-600 flex items-center gap-1"
                         >
                           <Bot size={10} /> {a}
                         </span>
@@ -148,7 +148,7 @@ export default function WorkflowPage() {
       {/* Data Sources + Schedule */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Data Sources */}
-        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+        <div className="glass rounded-2xl p-5 border border-brand-light/40">
           <h3 className="text-sm font-semibold text-gray-900 mb-3">
             Data Sources
           </h3>
@@ -158,7 +158,7 @@ export default function WorkflowPage() {
               return (
                 <div
                   key={s.name}
-                  className="flex items-center justify-between p-2 bg-pink-50/80 rounded"
+                  className="flex items-center justify-between p-2 bg-brand-light/80 rounded"
                 >
                   <div className="flex items-center gap-2">
                     <SIcon size={14} className="text-gray-500" />
@@ -182,13 +182,13 @@ export default function WorkflowPage() {
         </div>
 
         {/* Schedule Configuration */}
-        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+        <div className="glass rounded-2xl p-5 border border-brand-light/40">
           <h3 className="text-sm font-semibold text-gray-900 mb-3">
             Schedule Configuration
           </h3>
           <div className="space-y-3">
             {SCHEDULE_CONFIGS.map((cfg) => (
-              <div key={cfg.name} className="p-3 bg-pink-50/80 rounded-lg">
+              <div key={cfg.name} className="p-3 bg-brand-light/80 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs text-gray-900 font-medium">
                     {cfg.name}

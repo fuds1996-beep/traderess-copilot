@@ -125,13 +125,13 @@ export default function GroupedTradeLog({
     <div className="space-y-3">
       {/* Controls */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex items-center gap-1 p-0.5 bg-white/50 border border-pink-200/40 rounded-lg">
+        <div className="flex items-center gap-1 p-0.5 bg-white/50 border border-brand-light/40 rounded-lg">
           {(["week", "month", "quarter"] as GroupMode[]).map((m) => (
             <button
               key={m}
               onClick={() => setGroupMode(m)}
               className={`px-2.5 py-1 text-[10px] font-medium rounded-md transition-colors ${
-                groupMode === m ? "bg-pink-500 text-white" : "text-gray-500 hover:text-gray-700"
+                groupMode === m ? "bg-brand text-white" : "text-gray-500 hover:text-gray-700"
               }`}
             >
               {m === "week" ? "Weekly" : m === "month" ? "Monthly" : "Quarterly"}
@@ -142,7 +142,7 @@ export default function GroupedTradeLog({
         <div className="relative">
           <button
             onClick={() => setShowColumnPicker(!showColumnPicker)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] text-gray-500 bg-white/50 border border-pink-200/40 rounded-lg hover:bg-white/70 transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] text-gray-500 bg-white/50 border border-brand-light/40 rounded-lg hover:bg-white/70 transition-colors"
           >
             {showColumnPicker ? <EyeOff size={11} /> : <Eye size={11} />}
             Columns ({visibleColumns.size})
@@ -151,14 +151,14 @@ export default function GroupedTradeLog({
           {showColumnPicker && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setShowColumnPicker(false)} />
-              <div className="absolute right-0 top-full mt-1 z-50 w-56 max-h-80 overflow-y-auto bg-white/95 backdrop-blur-xl border border-pink-200/40 rounded-xl shadow-lg p-2">
+              <div className="absolute right-0 top-full mt-1 z-50 w-56 max-h-80 overflow-y-auto bg-white/95 backdrop-blur-xl border border-brand-light/40 rounded-xl shadow-lg p-2">
                 <div className="flex items-center justify-between px-2 py-1 mb-1">
                   <span className="text-[10px] text-gray-400">Toggle columns</span>
-                  <button onClick={() => setVisibleColumns(DEFAULT_VISIBLE)} className="text-[9px] text-pink-500 hover:text-pink-600">Reset</button>
+                  <button onClick={() => setVisibleColumns(DEFAULT_VISIBLE)} className="text-[9px] text-brand hover:text-brand-dark">Reset</button>
                 </div>
                 {allColumnLabels.map(({ key, label }) => (
-                  <label key={key} className="flex items-center gap-2 px-2 py-1 text-[10px] text-gray-600 hover:bg-pink-50/50 rounded cursor-pointer">
-                    <input type="checkbox" checked={visibleColumns.has(key)} onChange={() => toggleColumn(key)} className="accent-pink-500 w-3 h-3" />
+                  <label key={key} className="flex items-center gap-2 px-2 py-1 text-[10px] text-gray-600 hover:bg-brand-light/50 rounded cursor-pointer">
+                    <input type="checkbox" checked={visibleColumns.has(key)} onChange={() => toggleColumn(key)} className="accent-brand w-3 h-3" />
                     {label}
                   </label>
                 ))}
@@ -175,10 +175,10 @@ export default function GroupedTradeLog({
         const weekJournals = journalsByGroup.get(group.key) || [];
 
         return (
-          <div key={group.key} className="glass rounded-2xl border border-pink-200/40 overflow-hidden">
-            <button onClick={() => toggleGroup(group.key)} className="w-full flex items-center justify-between px-5 py-3 hover:bg-pink-50/40 transition-colors">
+          <div key={group.key} className="glass rounded-2xl border border-brand-light/40 overflow-hidden">
+            <button onClick={() => toggleGroup(group.key)} className="w-full flex items-center justify-between px-5 py-3 hover:bg-brand-light/40 transition-colors">
               <div className="flex items-center gap-3">
-                <Calendar size={14} className="text-pink-500" />
+                <Calendar size={14} className="text-brand" />
                 <span className="text-sm font-semibold text-gray-900">{group.label}</span>
                 <span className="text-[10px] text-gray-400">{group.trades.length} trades</span>
                 {weekJournals.length > 0 && (
@@ -204,7 +204,7 @@ export default function GroupedTradeLog({
               </div>
             </button>
             {!isCollapsed && (
-              <div className="border-t border-pink-200/30">
+              <div className="border-t border-brand-light/30">
                 {/* Journal entries for this period */}
                 {weekJournals.length > 0 && (
                   <div className="px-5 pt-3 pb-1">
@@ -240,7 +240,7 @@ export default function GroupedTradeLog({
 // ─── Sub-group trades by account within each time period ─────────────────────
 
 const ACCOUNT_COLORS = [
-  "border-l-pink-400",
+  "border-l-brand",
   "border-l-emerald-400",
   "border-l-amber-400",
   "border-l-blue-400",
@@ -274,7 +274,7 @@ function AccountSubGroups({ trades, onRefresh, visibleColumns }: {
   }
 
   return (
-    <div className="divide-y divide-pink-200/20">
+    <div className="divide-y divide-brand-light/20">
       {accountGroups.map(([accountName, accountTrades], idx) => {
         const stats = computeGroupStats(accountTrades);
         const colorClass = ACCOUNT_COLORS[idx % ACCOUNT_COLORS.length];
@@ -282,7 +282,7 @@ function AccountSubGroups({ trades, onRefresh, visibleColumns }: {
         return (
           <div key={accountName} className={`border-l-3 ${colorClass}`}>
             {/* Account sub-header */}
-            <div className="flex items-center justify-between px-5 py-2.5 bg-pink-50/30">
+            <div className="flex items-center justify-between px-5 py-2.5 bg-brand-light/30">
               <div className="flex items-center gap-2">
                 <div className={`w-2 h-2 rounded-full ${colorClass.replace("border-l-", "bg-")}`} />
                 <span className="text-xs font-semibold text-gray-800">{accountName}</span>
@@ -331,8 +331,8 @@ function JournalMiniCard({ journal: j, isExpanded, onToggle }: {
   const EmIcon = EMOTION_ICONS[emotionNum] || Meh;
 
   return (
-    <div className={`border rounded-xl overflow-hidden transition-all ${isExpanded ? "border-purple-200/60 bg-purple-50/20 col-span-full" : "border-pink-200/30 bg-white/30"}`}>
-      <button onClick={onToggle} className="w-full flex items-center justify-between p-2.5 text-left hover:bg-pink-50/30 transition-colors">
+    <div className={`border rounded-xl overflow-hidden transition-all ${isExpanded ? "border-purple-200/60 bg-purple-50/20 col-span-full" : "border-brand-light/30 bg-white/30"}`}>
+      <button onClick={onToggle} className="w-full flex items-center justify-between p-2.5 text-left hover:bg-brand-light/30 transition-colors">
         <div className="flex items-center gap-2">
           <div className="text-center w-8">
             <div className="text-[10px] font-bold text-gray-900">{(j.day_of_week || "").slice(0, 3)}</div>
@@ -354,7 +354,7 @@ function JournalMiniCard({ journal: j, isExpanded, onToggle }: {
       </button>
 
       {isExpanded && (
-        <div className="px-3 pb-3 border-t border-pink-200/20 pt-2 space-y-2">
+        <div className="px-3 pb-3 border-t border-brand-light/20 pt-2 space-y-2">
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 text-[10px]">
             <div className="p-1.5 bg-white/40 rounded">
               <span className="text-gray-400">Mood</span>

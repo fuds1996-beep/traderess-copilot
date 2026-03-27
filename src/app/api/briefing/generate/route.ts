@@ -120,7 +120,7 @@ Generate a comprehensive weekly briefing. Return ONLY valid JSON:
     {"value": "${winRate}%", "label": "Win Rate", "color": "text-emerald-400"},
     {"value": "${tradeCount}", "label": "Trades Taken", "color": "text-gray-900"},
     {"value": "${totalPips > 0 ? '+' : ''}$${Math.round(totalDollars)}", "label": "Net P/L", "color": "${totalDollars >= 0 ? 'text-emerald-400' : 'text-red-400'}"},
-    {"value": "${totalRs > 0 ? '+' : ''}${Math.round(totalRs * 100) / 100}R", "label": "R-Value", "color": "${totalRs >= 0 ? 'text-pink-500' : 'text-red-400'}"}
+    {"value": "${totalRs > 0 ? '+' : ''}${Math.round(totalRs * 100) / 100}R", "label": "R-Value", "color": "${totalRs >= 0 ? 'text-brand' : 'text-red-400'}"}
   ],
   "what_went_well": "2-4 sentences about what the student did well this week based on ACTUAL trades and journals. Reference specific trades and decisions. Be genuine, not generic.",
   "watch_out_for": "2-4 sentences about patterns to watch, based on ACTUAL journal emotions and trade mistakes. Reference the student's known weaknesses if they appeared this week.",

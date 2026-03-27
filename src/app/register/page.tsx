@@ -38,7 +38,7 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-pink-50/0 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-brand-light/0 flex items-center justify-center px-4">
         <div className="w-full max-w-sm text-center">
           <div className="w-12 h-12 rounded-xl bg-emerald-600 flex items-center justify-center mx-auto mb-4">
             <Mail size={24} className="text-gray-900" />
@@ -53,7 +53,7 @@ export default function RegisterPage() {
           </p>
           <Link
             href="/login"
-            className="text-sm text-pink-500 hover:text-pink-400 transition-colors"
+            className="text-sm text-brand hover:text-brand transition-colors"
           >
             Back to sign in
           </Link>
@@ -63,11 +63,11 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-pink-50/0 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-brand-light/0 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         {/* Branding */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 rounded-xl bg-pink-500 flex items-center justify-center mb-4">
+          <div className="w-12 h-12 rounded-xl bg-brand flex items-center justify-center mb-4">
             <Zap size={24} className="text-gray-900" />
           </div>
           <h1 className="text-xl font-bold text-gray-900 tracking-tight">
@@ -103,7 +103,7 @@ export default function RegisterPage() {
                 onChange={(e) => setName(e.target.value)}
                 required
                 placeholder="Your name"
-                className="w-full bg-white/50 border border-pink-200/40 rounded-lg pl-9 pr-3 py-2.5 text-sm text-gray-900 placeholder-slate-500 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                className="w-full bg-white/50 border border-brand-light/40 rounded-lg pl-9 pr-3 py-2.5 text-sm text-gray-900 placeholder-slate-500 focus:outline-none focus:border-brand focus:ring-1 focus:ring-indigo-500 transition-colors"
               />
             </div>
           </div>
@@ -127,7 +127,7 @@ export default function RegisterPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 placeholder="you@example.com"
-                className="w-full bg-white/50 border border-pink-200/40 rounded-lg pl-9 pr-3 py-2.5 text-sm text-gray-900 placeholder-slate-500 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                className="w-full bg-white/50 border border-brand-light/40 rounded-lg pl-9 pr-3 py-2.5 text-sm text-gray-900 placeholder-slate-500 focus:outline-none focus:border-brand focus:ring-1 focus:ring-indigo-500 transition-colors"
               />
             </div>
           </div>
@@ -152,7 +152,7 @@ export default function RegisterPage() {
                 required
                 minLength={6}
                 placeholder="Min. 6 characters"
-                className="w-full bg-white/50 border border-pink-200/40 rounded-lg pl-9 pr-3 py-2.5 text-sm text-gray-900 placeholder-slate-500 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                className="w-full bg-white/50 border border-brand-light/40 rounded-lg pl-9 pr-3 py-2.5 text-sm text-gray-900 placeholder-slate-500 focus:outline-none focus:border-brand focus:ring-1 focus:ring-indigo-500 transition-colors"
               />
             </div>
           </div>
@@ -160,7 +160,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 bg-pink-500 hover:bg-pink-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg py-2.5 transition-colors"
+            className="w-full flex items-center justify-center gap-2 bg-brand hover:bg-brand-dark disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg py-2.5 transition-colors"
           >
             {loading ? (
               <Loader2 size={16} className="animate-spin" />
@@ -175,7 +175,7 @@ export default function RegisterPage() {
           Already have an account?{" "}
           <Link
             href="/login"
-            className="text-pink-500 hover:text-pink-400 transition-colors"
+            className="text-brand hover:text-brand transition-colors"
           >
             Sign in
           </Link>

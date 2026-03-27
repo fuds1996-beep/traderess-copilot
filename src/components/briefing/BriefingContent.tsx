@@ -58,9 +58,9 @@ export default function BriefingContent() {
   if (loading) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="h-8 bg-pink-100/50 rounded w-48" />
-        <div className="glass rounded-2xl h-48 border border-pink-200/40" />
-        <div className="glass rounded-2xl h-64 border border-pink-200/40" />
+        <div className="h-8 bg-brand-light/50 rounded w-48" />
+        <div className="glass rounded-2xl h-48 border border-brand-light/40" />
+        <div className="glass rounded-2xl h-64 border border-brand-light/40" />
       </div>
     );
   }
@@ -72,9 +72,9 @@ export default function BriefingContent() {
           <h1 className="text-2xl font-bold text-gray-900">Weekly Briefing</h1>
           <p className="text-sm text-gray-500 mt-1">AI-generated analysis of your trading week</p>
         </div>
-        <div className="glass rounded-2xl p-8 border border-pink-200/40">
+        <div className="glass rounded-2xl p-8 border border-brand-light/40">
           <div className="max-w-lg mx-auto text-center">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-pink-500/20">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center mx-auto mb-4 shadow-lg shadow-brand/20">
               <Newspaper size={28} className="text-white" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Generate Your Briefing</h3>
@@ -87,11 +87,11 @@ export default function BriefingContent() {
               <div>
                 <label className="block text-[10px] text-gray-400 mb-1">Week starting</label>
                 <input type="date" value={genWeek} onChange={(e) => setGenWeek(e.target.value)}
-                  className="bg-white/60 border border-pink-200/40 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-pink-400" />
+                  className="bg-white/60 border border-brand-light/40 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-brand" />
               </div>
               <div className="pt-4">
                 <button onClick={handleGenerate} disabled={generating}
-                  className="flex items-center gap-2 px-5 py-2 bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white text-sm font-medium rounded-xl shadow-md shadow-pink-500/20 transition-colors">
+                  className="flex items-center gap-2 px-5 py-2 bg-brand hover:bg-brand-dark disabled:opacity-50 text-white text-sm font-medium rounded-xl shadow-md shadow-brand/20 transition-colors">
                   {generating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
                   {generating ? "Generating..." : "Generate Briefing"}
                 </button>
@@ -120,9 +120,9 @@ export default function BriefingContent() {
         </div>
         <div className="flex items-center gap-2">
           <input type="date" value={genWeek} onChange={(e) => setGenWeek(e.target.value)}
-            className="bg-white/60 border border-pink-200/40 rounded-lg px-2 py-1.5 text-xs text-gray-900 focus:outline-none focus:border-pink-400" />
+            className="bg-white/60 border border-brand-light/40 rounded-lg px-2 py-1.5 text-xs text-gray-900 focus:outline-none focus:border-brand" />
           <button onClick={handleGenerate} disabled={generating}
-            className="flex items-center gap-2 px-3 py-1.5 bg-pink-500 text-white text-xs rounded-lg hover:bg-pink-600 disabled:opacity-50 transition-colors">
+            className="flex items-center gap-2 px-3 py-1.5 bg-brand text-white text-xs rounded-lg hover:bg-brand-dark disabled:opacity-50 transition-colors">
             {generating ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
             {generating ? "Generating..." : "Regenerate"}
           </button>
@@ -131,9 +131,9 @@ export default function BriefingContent() {
 
       {/* Week in Review */}
       {b.review_stats?.length > 0 && (
-        <div className="bg-gradient-to-r from-slate-800 to-slate-800/50 rounded-xl p-5 border border-pink-200/40">
+        <div className="bg-gradient-to-r from-slate-800 to-slate-800/50 rounded-xl p-5 border border-brand-light/40">
           <div className="flex items-center gap-2 mb-3">
-            <Eye size={16} className="text-pink-500" />
+            <Eye size={16} className="text-brand" />
             <h3 className="text-sm font-semibold text-gray-900">Your Week in Review</h3>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
@@ -231,7 +231,7 @@ function MarketContext({
               </div>
               <div className="space-y-1.5">
                 {eurusdArticles.map((a, i) => (
-                  <div key={i} className="flex items-start gap-2 p-2 bg-pink-50/80 rounded text-xs">
+                  <div key={i} className="flex items-start gap-2 p-2 bg-brand-light/80 rounded text-xs">
                     <SentimentDot sentiment={a.sentiment} />
                     <div className="flex-1">
                       <div className="text-gray-700">{a.title}</div>
@@ -251,7 +251,7 @@ function MarketContext({
               </div>
               <div className="space-y-1.5">
                 {dxyArticles.map((a, i) => (
-                  <div key={i} className="flex items-start gap-2 p-2 bg-pink-50/80 rounded text-xs">
+                  <div key={i} className="flex items-start gap-2 p-2 bg-brand-light/80 rounded text-xs">
                     <SentimentDot sentiment={a.sentiment} />
                     <div className="flex-1">
                       <div className="text-gray-700">{a.title}</div>
@@ -264,8 +264,8 @@ function MarketContext({
           )}
         </div>
         {keyInsight && (
-          <div className="p-3 bg-pink-50/80 border border-pink-300/30 rounded-lg">
-            <div className="flex items-center gap-1.5 mb-1 text-pink-500 font-medium text-xs">
+          <div className="p-3 bg-brand-light/80 border border-brand-light/30 rounded-lg">
+            <div className="flex items-center gap-1.5 mb-1 text-brand font-medium text-xs">
               <Lightbulb size={12} /> Key Insight from Deep Research
             </div>
             <p className="text-xs text-gray-600 leading-relaxed">{keyInsight}</p>
@@ -288,11 +288,11 @@ function EconomicCalendar({
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
         {WEEKDAYS.map((day) => (
           <div key={day} className="space-y-1.5">
-            <div className={`text-xs font-semibold text-center py-1 rounded ${day === "Wed" ? "bg-red-900/40 text-red-400" : "bg-pink-100/60 text-gray-600"}`}>
+            <div className={`text-xs font-semibold text-center py-1 rounded ${day === "Wed" ? "bg-red-900/40 text-red-400" : "bg-brand-light/60 text-gray-600"}`}>
               {day}
             </div>
             {events.filter((e) => e.day === day).map((e, i) => (
-              <div key={i} className={`p-2 rounded text-[10px] border ${e.impact === "high" ? "bg-red-900/20 border-red-800/40" : e.impact === "medium" ? "bg-amber-900/20 border-amber-800/40" : "bg-pink-50/80 border-pink-200/50/40"}`}>
+              <div key={i} className={`p-2 rounded text-[10px] border ${e.impact === "high" ? "bg-red-900/20 border-red-800/40" : e.impact === "medium" ? "bg-amber-900/20 border-amber-800/40" : "bg-brand-light/80 border-brand-light/50/40"}`}>
                 <div className="text-gray-500">{e.time}</div>
                 <div className="text-gray-700 leading-tight mt-0.5">{e.event}</div>
                 <div className="mt-1"><Badge variant={e.impact}>{e.impact}</Badge></div>
@@ -307,9 +307,9 @@ function EconomicCalendar({
 
 function CopilotGuidance({ noTradeZones, dailyRisk, quote }: { noTradeZones: string; dailyRisk: { day: string; risk: string; note: string; color: string }[]; quote: string }) {
   return (
-    <div className="glass rounded-2xl p-5 border border-pink-200/40">
+    <div className="glass rounded-2xl p-5 border border-brand-light/40">
       <div className="flex items-center gap-2 mb-4">
-        <Shield size={16} className="text-pink-500" />
+        <Shield size={16} className="text-brand" />
         <h3 className="text-sm font-semibold text-gray-900">Copilot Guidance for This Week</h3>
       </div>
       {noTradeZones && (
@@ -330,8 +330,8 @@ function CopilotGuidance({ noTradeZones, dailyRisk, quote }: { noTradeZones: str
         </div>
       )}
       {quote && (
-        <div className="mt-4 p-3 bg-pink-50/80 border border-pink-300/30 rounded-lg">
-          <p className="text-xs text-pink-400 italic">&quot;{quote}&quot;</p>
+        <div className="mt-4 p-3 bg-brand-light/80 border border-brand-light/30 rounded-lg">
+          <p className="text-xs text-brand italic">&quot;{quote}&quot;</p>
         </div>
       )}
     </div>
@@ -340,15 +340,15 @@ function CopilotGuidance({ noTradeZones, dailyRisk, quote }: { noTradeZones: str
 
 function DailyChecklist({ items }: { items: string[] }) {
   return (
-    <div className="glass rounded-2xl p-5 border border-pink-200/40">
+    <div className="glass rounded-2xl p-5 border border-brand-light/40">
       <div className="flex items-center gap-2 mb-3">
         <BookOpen size={16} className="text-emerald-400" />
         <h3 className="text-sm font-semibold text-gray-900">Daily Pre-Session Checklist</h3>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {items.map((item, i) => (
-          <label key={i} className="flex items-center gap-2 p-2 bg-pink-50/80 rounded text-xs text-gray-600 cursor-pointer hover:bg-pink-50/60 transition-colors">
-            <input type="checkbox" className="accent-pink-500 w-3.5 h-3.5" />
+          <label key={i} className="flex items-center gap-2 p-2 bg-brand-light/80 rounded text-xs text-gray-600 cursor-pointer hover:bg-brand-light/60 transition-colors">
+            <input type="checkbox" className="accent-brand w-3.5 h-3.5" />
             {item}
           </label>
         ))}

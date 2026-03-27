@@ -1,27 +1,33 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-background: #fdf2f8;
-  --color-foreground: #1f2937;
+  --color-background: #faf5f5;
+  --color-foreground: #252525;
   --color-surface: rgba(255, 255, 255, 0.7);
   --color-surface-hover: rgba(255, 255, 255, 0.85);
   --color-card: rgba(255, 255, 255, 0.55);
-  --color-card-inner: rgba(251, 207, 232, 0.25);
-  --color-border: rgba(244, 114, 182, 0.2);
-  --color-border-strong: rgba(244, 114, 182, 0.35);
-  --color-accent: #ec4899;
-  --color-accent-hover: #db2777;
-  --color-accent-soft: rgba(236, 72, 153, 0.12);
+  --color-card-inner: rgba(233, 142, 151, 0.15);
+  --color-border: rgba(233, 142, 151, 0.2);
+  --color-border-strong: rgba(233, 142, 151, 0.35);
+  --color-accent: #e98e97;
+  --color-accent-hover: #7d0e3b;
+  --color-accent-soft: rgba(233, 142, 151, 0.12);
   --color-muted: #9ca3af;
   --color-muted-soft: #d1d5db;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Custom brand colors for Tailwind */
+  --color-brand: #e98e97;
+  --color-brand-dark: #7d0e3b;
+  --color-brand-light: #f5d0d3;
+  --color-dark: #252525;
 }
 
 body {
-  background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 30%, #fbcfe8 60%, #fdf2f8 100%);
+  background: linear-gradient(135deg, #faf5f5 0%, #f5e1e3 30%, #f0d0d4 60%, #faf5f5 100%);
   background-attachment: fixed;
-  color: var(--color-foreground);
+  color: #252525;
   font-family: "Inter", system-ui, sans-serif;
   min-height: 100vh;
 }
@@ -31,28 +37,28 @@ body {
   background: rgba(255, 255, 255, 0.55);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(244, 114, 182, 0.18);
+  border: 1px solid rgba(233, 142, 151, 0.18);
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.04),
-    0 4px 24px rgba(236, 72, 153, 0.06);
+    0 4px 24px rgba(233, 142, 151, 0.06);
 }
 
 .glass-strong {
   background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(244, 114, 182, 0.22);
+  border: 1px solid rgba(233, 142, 151, 0.22);
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.04),
-    0 8px 32px rgba(236, 72, 153, 0.08);
+    0 8px 32px rgba(233, 142, 151, 0.08);
 }
 
 .glass-sidebar {
-  background: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border-right: 1px solid rgba(244, 114, 182, 0.15);
-  box-shadow: 4px 0 24px rgba(236, 72, 153, 0.04);
+  border-right: 1px solid rgba(233, 142, 151, 0.15);
+  box-shadow: 4px 0 24px rgba(233, 142, 151, 0.04);
 }
 
 /* Safe area for mobile bottom nav */
@@ -69,13 +75,13 @@ body {
   animation: slideInFromBottom 0.2s ease-out;
 }
 
-/* Override dark Recharts tooltips to match theme */
+/* Override Recharts tooltips */
 .recharts-default-tooltip {
-  background: rgba(255, 255, 255, 0.92) !important;
-  border: 1px solid rgba(244, 114, 182, 0.2) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(233, 142, 151, 0.2) !important;
   border-radius: 12px !important;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
-  color: #1f2937 !important;
+  color: #252525 !important;
 }
 
 /* Scrollbar */
@@ -87,14 +93,14 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(244, 114, 182, 0.25);
+  background: rgba(233, 142, 151, 0.3);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(244, 114, 182, 0.4);
+  background: rgba(233, 142, 151, 0.5);
 }
 
-/* Smooth transitions (exclude Recharts SVG to prevent animation issues) */
+/* Smooth transitions (exclude SVG) */
 *:not(svg *):not(path):not(circle):not(line):not(polyline):not(rect) {
   transition-property: background-color, border-color, color, opacity;
   transition-duration: 150ms;
@@ -106,7 +112,7 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Page fade-in animation */
+/* Page fade-in */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
@@ -115,14 +121,14 @@ main > * {
   animation: fadeIn 0.2s ease-out;
 }
 
-/* Focus visible styling for keyboard navigation */
+/* Focus visible */
 :focus-visible {
-  outline: 2px solid #ec4899;
+  outline: 2px solid #e98e97;
   outline-offset: 2px;
   border-radius: 8px;
 }
 
-/* Reduce motion for accessibility */
+/* Reduce motion */
 @media (prefers-reduced-motion: reduce) {
   *, html { animation: none !important; scroll-behavior: auto !important; transition-duration: 0ms !important; }
 }

@@ -172,13 +172,13 @@ export default function SheetsConnector({ onSyncComplete }: { onSyncComplete?: (
               value={sheetUrl}
               onChange={(e) => { setSheetUrl(e.target.value); reset(); }}
               placeholder="https://docs.google.com/spreadsheets/d/..."
-              className="w-full bg-white/60 border border-pink-200/40 rounded-lg pl-9 pr-3 py-2.5 text-sm text-gray-900 placeholder-slate-500 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-indigo-500 transition-colors"
+              className="w-full bg-white/60 border border-brand-light/40 rounded-lg pl-9 pr-3 py-2.5 text-sm text-gray-900 placeholder-slate-500 focus:outline-none focus:border-brand focus:ring-1 focus:ring-indigo-500 transition-colors"
             />
           </div>
           <button
             onClick={handlePreview}
             disabled={loading || !sheetUrl.trim()}
-            className="flex items-center gap-2 px-4 py-2 bg-pink-100/60 hover:bg-slate-600 disabled:opacity-40 text-gray-900 text-sm rounded-lg transition-colors shrink-0"
+            className="flex items-center gap-2 px-4 py-2 bg-brand-light/60 hover:bg-slate-600 disabled:opacity-40 text-gray-900 text-sm rounded-lg transition-colors shrink-0"
           >
             {loading ? <Loader2 size={14} className="animate-spin" /> : <FileSpreadsheet size={14} />}
             Preview
@@ -195,7 +195,7 @@ export default function SheetsConnector({ onSyncComplete }: { onSyncComplete?: (
             value={range}
             onChange={(e) => setRange(e.target.value)}
             placeholder="March 2-6"
-            className="w-full bg-white/60 border border-pink-200/40 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-slate-500 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-indigo-500 transition-colors"
+            className="w-full bg-white/60 border border-brand-light/40 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-slate-500 focus:outline-none focus:border-brand focus:ring-1 focus:ring-indigo-500 transition-colors"
           />
         </div>
         <div>
@@ -204,7 +204,7 @@ export default function SheetsConnector({ onSyncComplete }: { onSyncComplete?: (
             type="date"
             value={weekStart}
             onChange={(e) => setWeekStart(e.target.value)}
-            className="w-full bg-white/60 border border-pink-200/40 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-indigo-500 transition-colors"
+            className="w-full bg-white/60 border border-brand-light/40 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-brand focus:ring-1 focus:ring-indigo-500 transition-colors"
           />
         </div>
         <div>
@@ -214,8 +214,8 @@ export default function SheetsConnector({ onSyncComplete }: { onSyncComplete?: (
               onClick={() => setSyncMode("comprehensive")}
               className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs rounded-lg border transition-colors ${
                 syncMode === "comprehensive"
-                  ? "bg-pink-500/10 border-pink-400 text-pink-500"
-                  : "bg-white/60 border-pink-200/40 text-gray-500 hover:border-pink-200/50"
+                  ? "bg-brand/10 border-brand text-brand"
+                  : "bg-white/60 border-brand-light/40 text-gray-500 hover:border-brand-light/50"
               }`}
             >
               <Zap size={12} /> Full Sync
@@ -224,8 +224,8 @@ export default function SheetsConnector({ onSyncComplete }: { onSyncComplete?: (
               onClick={() => setSyncMode("trades_only")}
               className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs rounded-lg border transition-colors ${
                 syncMode === "trades_only"
-                  ? "bg-pink-500/10 border-pink-400 text-pink-500"
-                  : "bg-white/60 border-pink-200/40 text-gray-500 hover:border-pink-200/50"
+                  ? "bg-brand/10 border-brand text-brand"
+                  : "bg-white/60 border-brand-light/40 text-gray-500 hover:border-brand-light/50"
               }`}
             >
               <Sparkles size={12} /> Trades Only
@@ -244,14 +244,14 @@ export default function SheetsConnector({ onSyncComplete }: { onSyncComplete?: (
 
       {/* Preview table */}
       {preview && (
-        <div className="bg-white/60 border border-pink-200/40 rounded-lg overflow-hidden">
-          <div className="flex items-center justify-between px-3 py-2 border-b border-pink-200/40">
+        <div className="bg-white/60 border border-brand-light/40 rounded-lg overflow-hidden">
+          <div className="flex items-center justify-between px-3 py-2 border-b border-brand-light/40">
             <span className="text-xs text-gray-500">Data preview (auto-detected headers)</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="border-b border-pink-200/40">
+                <tr className="border-b border-brand-light/40">
                   {preview[0]?.map((h, i) => (
                     <th key={i} className="text-left py-1.5 px-2 text-gray-500 font-medium whitespace-nowrap">
                       {h || <span className="text-gray-300">—</span>}
@@ -261,7 +261,7 @@ export default function SheetsConnector({ onSyncComplete }: { onSyncComplete?: (
               </thead>
               <tbody>
                 {preview.slice(1).map((row, ri) => (
-                  <tr key={ri} className="border-b border-pink-200/30 last:border-0">
+                  <tr key={ri} className="border-b border-brand-light/30 last:border-0">
                     {row.map((cell, ci) => (
                       <td key={ci} className="py-1.5 px-2 text-gray-600 truncate max-w-[120px]">
                         {cell || <span className="text-slate-700">—</span>}
@@ -274,10 +274,10 @@ export default function SheetsConnector({ onSyncComplete }: { onSyncComplete?: (
           </div>
 
           {/* Sync button */}
-          <div className="px-3 py-3 border-t border-pink-200/40 bg-white/40">
+          <div className="px-3 py-3 border-t border-brand-light/40 bg-white/40">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs text-gray-500">
-                <Brain size={14} className="text-pink-500" />
+                <Brain size={14} className="text-brand" />
                 <span>
                   {syncMode === "comprehensive"
                     ? "AI will extract trades, journals, chart time, balances, goals & more"
@@ -287,7 +287,7 @@ export default function SheetsConnector({ onSyncComplete }: { onSyncComplete?: (
               <button
                 onClick={handleSync}
                 disabled={syncing}
-                className="flex items-center gap-2 px-4 py-2 bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white text-sm rounded-lg transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-brand hover:bg-brand-dark disabled:opacity-50 text-white text-sm rounded-lg transition-colors"
               >
                 {syncing ? (
                   <>
@@ -400,13 +400,13 @@ function SyncProgressOverlay({ mode }: { mode: "trades_only" | "comprehensive" }
 
   return (
     <div className="py-6">
-      <div className="glass rounded-2xl border border-pink-200/40 p-8 max-w-md mx-auto text-center">
+      <div className="glass rounded-2xl border border-brand-light/40 p-8 max-w-md mx-auto text-center">
         {/* Animated icon */}
         <div className="relative w-20 h-20 mx-auto mb-6">
           {/* Outer spinning ring */}
-          <div className="absolute inset-0 rounded-full border-2 border-pink-200/40 border-t-pink-500 animate-spin" />
+          <div className="absolute inset-0 rounded-full border-2 border-brand-light/40 border-t-brand animate-spin" />
           {/* Inner pulsing circle */}
-          <div className="absolute inset-2 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center shadow-lg shadow-pink-500/30 animate-pulse">
+          <div className="absolute inset-2 rounded-full bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center shadow-lg shadow-brand/30 animate-pulse">
             {(() => { const StepIcon = steps[currentStep].icon; return <StepIcon size={24} className="text-white" />; })()}
           </div>
         </div>
@@ -420,9 +420,9 @@ function SyncProgressOverlay({ mode }: { mode: "trades_only" | "comprehensive" }
         </p>
 
         {/* Progress bar */}
-        <div className="w-full bg-pink-100/50 rounded-full h-2 mb-3">
+        <div className="w-full bg-brand-light/50 rounded-full h-2 mb-3">
           <div
-            className="h-2 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 transition-all duration-1000 ease-out"
+            className="h-2 rounded-full bg-gradient-to-r from-brand to-brand-dark transition-all duration-1000 ease-out"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
@@ -433,9 +433,9 @@ function SyncProgressOverlay({ mode }: { mode: "trades_only" | "comprehensive" }
             <div
               key={i}
               className={`w-1.5 h-1.5 rounded-full transition-all duration-500 ${
-                i < currentStep ? "bg-pink-500" :
-                i === currentStep ? "bg-pink-500 scale-125" :
-                "bg-pink-200"
+                i < currentStep ? "bg-brand" :
+                i === currentStep ? "bg-brand scale-125" :
+                "bg-brand-light"
               }`}
             />
           ))}

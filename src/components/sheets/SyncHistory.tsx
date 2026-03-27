@@ -36,7 +36,7 @@ interface SyncRecord {
 }
 
 const DATA_TYPE_META: Record<string, { icon: typeof Database; label: string; color: string }> = {
-  trades: { icon: BarChart3, label: "Trades", color: "text-pink-500" },
+  trades: { icon: BarChart3, label: "Trades", color: "text-brand" },
   journals: { icon: BookOpen, label: "Journals", color: "text-purple-500" },
   chart_time: { icon: Clock, label: "Chart Time", color: "text-blue-500" },
   account_balances: { icon: Database, label: "Balances", color: "text-emerald-500" },
@@ -140,7 +140,7 @@ export default function SyncHistory({ refreshKey }: { refreshKey?: number }) {
   if (loading) {
     return (
       <div className="animate-pulse space-y-3">
-        {[...Array(3)].map((_, i) => <div key={i} className="h-16 bg-pink-100/30 rounded-xl" />)}
+        {[...Array(3)].map((_, i) => <div key={i} className="h-16 bg-brand-light/30 rounded-xl" />)}
       </div>
     );
   }
@@ -165,10 +165,10 @@ export default function SyncHistory({ refreshKey }: { refreshKey?: number }) {
         const timeAgo = getTimeAgo(date);
 
         return (
-          <div key={r.id} className="border border-pink-200/30 rounded-xl overflow-hidden bg-white/30">
+          <div key={r.id} className="border border-brand-light/30 rounded-xl overflow-hidden bg-white/30">
             <button
               onClick={() => setExpandedId(isExpanded ? null : r.id)}
-              className="w-full flex items-center justify-between px-4 py-3 hover:bg-pink-50/30 transition-colors text-left"
+              className="w-full flex items-center justify-between px-4 py-3 hover:bg-brand-light/30 transition-colors text-left"
             >
               <div className="flex items-center gap-3">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
@@ -188,9 +188,9 @@ export default function SyncHistory({ refreshKey }: { refreshKey?: number }) {
                       {r.sync_mode === "comprehensive" ? "Full Sync" : "Trades Only"}
                     </span>
                     {r.sync_mode === "comprehensive" ? (
-                      <Zap size={10} className="text-pink-500" />
+                      <Zap size={10} className="text-brand" />
                     ) : (
-                      <Sparkles size={10} className="text-pink-400" />
+                      <Sparkles size={10} className="text-brand" />
                     )}
                     {r.confidence && (
                       <span className={`text-[9px] px-1.5 py-0.5 rounded-full border ${CONFIDENCE_COLORS[r.confidence] || "bg-gray-50 text-gray-500"}`}>
@@ -216,7 +216,7 @@ export default function SyncHistory({ refreshKey }: { refreshKey?: number }) {
             </button>
 
             {isExpanded && (
-              <div className="px-4 pb-4 border-t border-pink-200/20 pt-3 space-y-3">
+              <div className="px-4 pb-4 border-t border-brand-light/20 pt-3 space-y-3">
                 {/* Data breakdown */}
                 {syncedEntries.length > 0 && (
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -224,7 +224,7 @@ export default function SyncHistory({ refreshKey }: { refreshKey?: number }) {
                       const meta = DATA_TYPE_META[key];
                       const Icon = meta?.icon || Database;
                       return (
-                        <div key={key} className="flex items-center gap-2 p-2.5 bg-pink-50/60 rounded-lg">
+                        <div key={key} className="flex items-center gap-2 p-2.5 bg-brand-light/60 rounded-lg">
                           <Icon size={14} className={meta?.color || "text-gray-500"} />
                           <div>
                             <div className="text-xs font-semibold text-gray-900">{count}</div>
@@ -258,10 +258,10 @@ export default function SyncHistory({ refreshKey }: { refreshKey?: number }) {
 
                 {/* AI message */}
                 {r.message && (
-                  <div className="p-3 bg-pink-50/60 rounded-lg">
+                  <div className="p-3 bg-brand-light/60 rounded-lg">
                     <div className="flex items-center gap-1.5 mb-1">
-                      <Brain size={11} className="text-pink-500" />
-                      <span className="text-[9px] text-pink-500 font-semibold uppercase tracking-wide">AI Notes</span>
+                      <Brain size={11} className="text-brand" />
+                      <span className="text-[9px] text-brand font-semibold uppercase tracking-wide">AI Notes</span>
                     </div>
                     <p className="text-[11px] text-gray-600 leading-relaxed">{r.message}</p>
                   </div>
@@ -286,7 +286,7 @@ export default function SyncHistory({ refreshKey }: { refreshKey?: number }) {
       {deleteConfirmId && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={() => setDeleteConfirmId(null)} />
-          <div className="relative bg-white/95 backdrop-blur-xl border border-pink-200/40 rounded-2xl shadow-2xl p-6 max-w-sm w-full text-center">
+          <div className="relative bg-white/95 backdrop-blur-xl border border-brand-light/40 rounded-2xl shadow-2xl p-6 max-w-sm w-full text-center">
             <div className="w-12 h-12 rounded-full bg-red-50 border border-red-200/40 flex items-center justify-center mx-auto mb-4">
               <AlertTriangle size={22} className="text-red-500" />
             </div>
@@ -304,7 +304,7 @@ export default function SyncHistory({ refreshKey }: { refreshKey?: number }) {
               <div>• This sync history record</div>
             </div>
             <div className="flex gap-3 justify-center">
-              <button onClick={() => setDeleteConfirmId(null)} className="px-4 py-2 text-sm text-gray-500 bg-white/60 border border-pink-200/40 rounded-xl hover:bg-pink-50">Cancel</button>
+              <button onClick={() => setDeleteConfirmId(null)} className="px-4 py-2 text-sm text-gray-500 bg-white/60 border border-brand-light/40 rounded-xl hover:bg-brand-light">Cancel</button>
               <button
                 onClick={() => {
                   const rec = records.find((r) => r.id === deleteConfirmId);

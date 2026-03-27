@@ -143,19 +143,19 @@ export default function DashboardPage() {
           </div>
           <p className="text-sm text-gray-500">{formatToday()}</p>
         </div>
-        <div className="glass rounded-2xl border border-pink-200/40">
+        <div className="glass rounded-2xl border border-brand-light/40">
           <EmptyState
             icon={LayoutDashboard}
             title="No trading data yet"
             description="Connect your Google Sheet trading tracker to see your performance dashboard with charts, stats, and insights."
           />
         </div>
-        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+        <div className="glass rounded-2xl p-5 border border-brand-light/40">
           <h3 className="text-sm font-semibold text-gray-900 mb-3">Copilot Quick Actions</h3>
           <div className="grid grid-cols-2 gap-2">
             {QUICK_ACTIONS.map((a) => (
-              <button key={a.label} className="flex flex-col items-start p-3 bg-pink-50/60 rounded-lg hover:bg-pink-100/60 transition-colors text-left">
-                <a.icon size={16} className="text-pink-500 mb-1.5" />
+              <button key={a.label} className="flex flex-col items-start p-3 bg-brand-light/60 rounded-lg hover:bg-brand-light/60 transition-colors text-left">
+                <a.icon size={16} className="text-brand mb-1.5" />
                 <span className="text-xs font-medium text-gray-900">{a.label}</span>
                 <span className="text-[10px] text-gray-400">{a.desc}</span>
               </button>
@@ -197,7 +197,7 @@ export default function DashboardPage() {
             finally { setGenBriefing(false); }
           }}
           disabled={genBriefing}
-          className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white text-sm rounded-xl hover:bg-pink-600 disabled:opacity-50 transition-colors shadow-md shadow-pink-500/20"
+          className="flex items-center gap-2 px-4 py-2 bg-brand text-white text-sm rounded-xl hover:bg-brand-dark disabled:opacity-50 transition-colors shadow-md shadow-brand/20"
         >
           {genBriefing ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
           {genBriefing ? "Generating..." : "Run Briefing"}
@@ -243,7 +243,7 @@ export default function DashboardPage() {
           icon={Clock}
           label="Chart Time"
           value={totalHours > 0 ? `${totalHours}h` : "—"}
-          color="text-pink-500"
+          color="text-brand"
         />
         <StatCard
           icon={Shield}
@@ -255,9 +255,9 @@ export default function DashboardPage() {
 
       {/* AI Insights */}
       {insights.length > 0 && (
-        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+        <div className="glass rounded-2xl p-5 border border-brand-light/40">
           <div className="flex items-center gap-2 mb-4">
-            <Sparkles size={16} className="text-pink-500" />
+            <Sparkles size={16} className="text-brand" />
             <h3 className="text-sm font-semibold text-gray-900">AI Insights</h3>
             <span className="text-[10px] text-gray-400">Computed from your trade data</span>
           </div>
@@ -280,7 +280,7 @@ export default function DashboardPage() {
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 glass rounded-2xl p-5 border border-pink-200/40">
+        <div className="lg:col-span-2 glass rounded-2xl p-5 border border-brand-light/40">
           <h3 className="text-sm font-semibold text-gray-900 mb-4">Cumulative P/L Curve</h3>
           {stats.cumPnl.length > 0 ? (
             <PnlAreaChart data={stats.cumPnl} />
@@ -288,7 +288,7 @@ export default function DashboardPage() {
             <p className="text-xs text-gray-400 py-16 text-center">No performance data yet</p>
           )}
         </div>
-        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+        <div className="glass rounded-2xl p-5 border border-brand-light/40">
           <h3 className="text-sm font-semibold text-gray-900 mb-4">Win / Loss / BE</h3>
           {stats.winLossData.some((d) => d.value > 0) ? (
             <WinLossPieChart data={stats.winLossData} />
@@ -300,21 +300,21 @@ export default function DashboardPage() {
 
       {/* Trading Accounts — auto-computed from trade data */}
       {trades.length > 0 && (
-        <div id="account-section" className="glass rounded-2xl p-5 border border-pink-200/40">
+        <div id="account-section" className="glass rounded-2xl p-5 border border-brand-light/40">
           <AccountDashboard trades={trades} />
         </div>
       )}
 
       {/* Events + Quick Actions Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+        <div className="glass rounded-2xl p-5 border border-brand-light/40">
           <h3 className="text-sm font-semibold text-gray-900 mb-3">
             This Week&apos;s High Impact Events
           </h3>
           {highImpactEvents.length > 0 ? (
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {highImpactEvents.map((e, i) => (
-                <div key={i} className="flex items-center justify-between py-1.5 border-b border-pink-200/30 last:border-0">
+                <div key={i} className="flex items-center justify-between py-1.5 border-b border-brand-light/30 last:border-0">
                   <div className="flex items-center gap-3">
                     <span className="text-xs text-gray-400 w-8">{e.day}</span>
                     <span className="text-xs text-gray-500 w-12">{e.time}</span>
@@ -329,12 +329,12 @@ export default function DashboardPage() {
           )}
         </div>
 
-        <div className="glass rounded-2xl p-5 border border-pink-200/40">
+        <div className="glass rounded-2xl p-5 border border-brand-light/40">
           <h3 className="text-sm font-semibold text-gray-900 mb-3">Copilot Quick Actions</h3>
           <div className="grid grid-cols-2 gap-2">
             {QUICK_ACTIONS.map((a) => (
-              <button key={a.label} className="flex flex-col items-start p-3 bg-pink-50/60 rounded-xl hover:bg-pink-100/60 transition-colors text-left">
-                <a.icon size={16} className="text-pink-500 mb-1.5" />
+              <button key={a.label} className="flex flex-col items-start p-3 bg-brand-light/60 rounded-xl hover:bg-brand-light/60 transition-colors text-left">
+                <a.icon size={16} className="text-brand mb-1.5" />
                 <span className="text-xs font-medium text-gray-900">{a.label}</span>
                 <span className="text-[10px] text-gray-400">{a.desc}</span>
               </button>

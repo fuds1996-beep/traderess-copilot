@@ -204,7 +204,7 @@ export default function AccountDashboard({ trades }: { trades: Trade[] }) {
                   <span>Progress to {target}% target</span>
                   <span>{progressPct}%</span>
                 </div>
-                <ProgressBar value={progressPct} color={progressPct >= 100 ? "bg-emerald-500" : "bg-pink-500"} />
+                <ProgressBar value={progressPct} color={progressPct >= 100 ? "bg-emerald-500" : "bg-brand"} />
               </div>
             )}
 
@@ -237,7 +237,7 @@ function SummaryCard({ label, count, active, passed, failed, icon: Icon, color }
   icon: typeof Trophy; color: string;
 }) {
   if (count === 0) return (
-    <div className="p-2.5 bg-pink-50/30 rounded-xl text-center">
+    <div className="p-2.5 bg-brand-light/30 rounded-xl text-center">
       <Icon size={14} className="text-gray-300 mx-auto mb-1" />
       <div className="text-[10px] text-gray-400">{label}</div>
       <div className="text-xs text-gray-300">None</div>
@@ -245,7 +245,7 @@ function SummaryCard({ label, count, active, passed, failed, icon: Icon, color }
   );
 
   return (
-    <div className="p-2.5 bg-pink-50/40 rounded-xl text-center">
+    <div className="p-2.5 bg-brand-light/40 rounded-xl text-center">
       <Icon size={14} className={`${color} mx-auto mb-1`} />
       <div className="text-[10px] text-gray-400">{label}</div>
       <div className="text-lg font-bold text-gray-900">{count}</div>

@@ -3,7 +3,7 @@ const BADGE_STYLES = {
   success: "bg-emerald-50 text-emerald-600 border border-emerald-200/60",
   danger: "bg-red-50 text-red-600 border border-red-200/60",
   warning: "bg-amber-50 text-amber-600 border border-amber-200/60",
-  info: "bg-pink-50 text-pink-600 border border-pink-200/60",
+  info: "bg-brand-light text-brand-dark border border-brand-light/60",
   high: "bg-red-50 text-red-600",
   medium: "bg-amber-50 text-amber-600",
   low: "bg-gray-100 text-gray-500",

@@ -20,8 +20,8 @@ export default function PnlAreaChart({
       <AreaChart data={data}>
         <defs>
           <linearGradient id="pnlGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#ec4899" stopOpacity={0.3} />
-            <stop offset="95%" stopColor="#ec4899" stopOpacity={0} />
+            <stop offset="5%" stopColor="#e98e97" stopOpacity={0.3} />
+            <stop offset="95%" stopColor="#e98e97" stopOpacity={0} />
           </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(244,114,182,0.15)" />
@@ -44,7 +44,7 @@ export default function PnlAreaChart({
         <Area
           type="monotone"
           dataKey="pnl"
-          stroke="#ec4899"
+          stroke="#e98e97"
           fill="url(#pnlGrad)"
           strokeWidth={2}
         />

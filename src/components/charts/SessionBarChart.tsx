@@ -37,7 +37,7 @@ export default function SessionBarChart({
         />
         <Bar dataKey="pips" radius={[0, 4, 4, 0]}>
           {data.map((d, i) => (
-            <Cell key={i} fill={d.pips >= 0 ? "#ec4899" : "#ef4444"} />
+            <Cell key={i} fill={d.pips >= 0 ? "#e98e97" : "#ef4444"} />
           ))}
         </Bar>
       </BarChart>

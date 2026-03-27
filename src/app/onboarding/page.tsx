@@ -175,11 +175,11 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-pink-50/0 flex flex-col">
+    <div className="min-h-screen bg-brand-light/0 flex flex-col">
       {/* Header */}
-      <div className="border-b border-pink-200/30 px-6 py-4">
+      <div className="border-b border-brand-light/30 px-6 py-4">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-pink-500 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-brand flex items-center justify-center">
             <Zap size={16} className="text-gray-900" />
           </div>
           <div>
@@ -199,8 +199,8 @@ export default function OnboardingPage() {
                   i < step
                     ? "bg-emerald-600 text-white"
                     : i === step
-                      ? "bg-pink-500 text-white"
-                      : "bg-white/50 text-gray-400 border border-pink-200/40"
+                      ? "bg-brand text-white"
+                      : "bg-white/50 text-gray-400 border border-brand-light/40"
                 }`}
               >
                 {i < step ? <Check size={14} /> : i + 1}
@@ -222,7 +222,7 @@ export default function OnboardingPage() {
 
       {/* Step content */}
       <div className="flex-1 max-w-2xl mx-auto w-full px-6 pb-8">
-        <div className="bg-white/40 border border-pink-200/40 rounded-xl p-6">
+        <div className="bg-white/40 border border-brand-light/40 rounded-xl p-6">
           {step === 0 && <Step1 form={form} update={update} />}
           {step === 1 && <Step2 form={form} update={update} />}
           {step === 2 && <Step3 form={form} update={update} />}
@@ -235,7 +235,7 @@ export default function OnboardingPage() {
           )}
 
           {/* Navigation */}
-          <div className="flex items-center justify-between mt-8 pt-4 border-t border-pink-200/40">
+          <div className="flex items-center justify-between mt-8 pt-4 border-t border-brand-light/40">
             <div>
               {step > 0 && (
                 <button
@@ -259,7 +259,7 @@ export default function OnboardingPage() {
               {step < STEPS.length - 1 ? (
                 <button
                   onClick={next}
-                  className="flex items-center gap-1 px-5 py-2 bg-pink-500 hover:bg-pink-600 text-white text-sm rounded-lg transition-colors"
+                  className="flex items-center gap-1 px-5 py-2 bg-brand hover:bg-brand-dark text-white text-sm rounded-lg transition-colors"
                 >
                   Continue <ChevronRight size={14} />
                 </button>
@@ -267,7 +267,7 @@ export default function OnboardingPage() {
                 <button
                   onClick={finish}
                   disabled={saving}
-                  className="flex items-center gap-2 px-5 py-2 bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white text-sm rounded-lg transition-colors"
+                  className="flex items-center gap-2 px-5 py-2 bg-brand hover:bg-brand-dark disabled:opacity-50 text-white text-sm rounded-lg transition-colors"
                 >
                   {saving ? (
                     <Loader2 size={14} className="animate-spin" />
@@ -310,7 +310,7 @@ function TextInput({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full bg-white/60 border border-pink-200/40 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-slate-500 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-indigo-500 transition-colors"
+      className="w-full bg-white/60 border border-brand-light/40 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-slate-500 focus:outline-none focus:border-brand focus:ring-1 focus:ring-indigo-500 transition-colors"
     />
   );
 }
@@ -328,7 +328,7 @@ function Select({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full bg-white/60 border border-pink-200/40 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-indigo-500 transition-colors"
+      className="w-full bg-white/60 border border-brand-light/40 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand focus:ring-1 focus:ring-indigo-500 transition-colors"
     >
       {options.map((o) => (
         <option key={o} value={o}>
@@ -377,8 +377,8 @@ function Step1({
               onClick={() => update("experience", lvl.value)}
               className={`p-3 rounded-lg border text-left transition-colors ${
                 form.experience === lvl.value
-                  ? "bg-pink-500/10 border-pink-400 text-pink-500"
-                  : "bg-white/60 border-pink-200/40 text-gray-500 hover:border-pink-200/50"
+                  ? "bg-brand/10 border-brand text-brand"
+                  : "bg-white/60 border-brand-light/40 text-gray-500 hover:border-brand-light/50"
               }`}
             >
               <div className="text-xs font-medium text-gray-900">
@@ -509,7 +509,7 @@ function Step3({
           onChange={(e) => update("journal_data", e.target.value)}
           rows={8}
           placeholder={"Date, Pair, Direction, Entry, SL, TP, Result, Pips, Notes\nMar 10, EUR/USD, Long, 1.0842, 1.0822, 1.0882, Win, 40, Clean level bounce"}
-          className="w-full bg-white/60 border border-pink-200/40 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-slate-500 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-indigo-500 transition-colors font-mono resize-none"
+          className="w-full bg-white/60 border border-brand-light/40 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-slate-500 focus:outline-none focus:border-brand focus:ring-1 focus:ring-indigo-500 transition-colors font-mono resize-none"
         />
       </div>
 
@@ -517,7 +517,7 @@ function Step3({
 
       <div>
         <Label>Upload CSV file</Label>
-        <label className="flex flex-col items-center justify-center w-full h-24 bg-white/60 border-2 border-dashed border-pink-200/40 rounded-lg cursor-pointer hover:border-pink-400/50 transition-colors">
+        <label className="flex flex-col items-center justify-center w-full h-24 bg-white/60 border-2 border-dashed border-brand-light/40 rounded-lg cursor-pointer hover:border-brand/50 transition-colors">
           <Upload size={20} className="text-gray-400 mb-1" />
           <span className="text-xs text-gray-500">
             Click to upload CSV
@@ -596,12 +596,12 @@ function Step4({
                 value={acc.name}
                 onChange={(e) => updateAccount(i, "name", e.target.value)}
                 placeholder="e.g. FTMO 10K"
-                className="flex-1 bg-white/60 border border-pink-200/40 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-slate-500 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                className="flex-1 bg-white/60 border border-brand-light/40 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-slate-500 focus:outline-none focus:border-brand focus:ring-1 focus:ring-indigo-500 transition-colors"
               />
               <select
                 value={acc.status}
                 onChange={(e) => updateAccount(i, "status", e.target.value)}
-                className="bg-white/60 border border-pink-200/40 rounded-lg px-2 py-2 text-sm text-gray-900 focus:outline-none focus:border-pink-400 transition-colors"
+                className="bg-white/60 border border-brand-light/40 rounded-lg px-2 py-2 text-sm text-gray-900 focus:outline-none focus:border-brand transition-colors"
               >
                 <option>Challenge</option>
                 <option>Verification</option>
@@ -619,7 +619,7 @@ function Step4({
           ))}
           <button
             onClick={addAccount}
-            className="text-xs text-pink-500 hover:text-pink-400 transition-colors"
+            className="text-xs text-brand hover:text-brand transition-colors"
           >
             + Add another account
           </button>
@@ -633,7 +633,7 @@ function Step4({
           onChange={(e) => update("challenges", e.target.value)}
           rows={3}
           placeholder="e.g. Overtrading during news events, managing multiple accounts, patience with entries..."
-          className="w-full bg-white/60 border border-pink-200/40 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-slate-500 focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-indigo-500 transition-colors resize-none"
+          className="w-full bg-white/60 border border-brand-light/40 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-slate-500 focus:outline-none focus:border-brand focus:ring-1 focus:ring-indigo-500 transition-colors resize-none"
         />
       </div>
     </div>

@@ -40,7 +40,7 @@ export default function EffortScatterChart({
           contentStyle={{ background: "rgba(255,255,255,0.95)", border: "1px solid rgba(244,114,182,0.2)", borderRadius: 8, fontSize: 12 }}
           formatter={(value, name) => [value, name]}
         />
-        <Scatter data={data} fill="#ec4899" />
+        <Scatter data={data} fill="#e98e97" />
       </ScatterChart>
     </ResponsiveContainer>
   );
