@@ -26,7 +26,7 @@ interface SyncResult {
   message: string;
 }
 
-export default function SheetsConnector() {
+export default function SheetsConnector({ onSyncComplete }: { onSyncComplete?: () => void } = {}) {
   const [sheetUrl, setSheetUrl] = useState("");
   const [range, setRange] = useState("Sheet1");
   const [syncMode, setSyncMode] = useState<SyncMode>("comprehensive");
@@ -79,6 +79,7 @@ export default function SheetsConnector() {
     const id = extractSpreadsheetId(sheetUrl);
     if (!id) return;
 
+    const startTime = Date.now();
     setSyncing(true);
     try {
       const res = await fetch("/api/sheets/sync", {
@@ -92,8 +93,32 @@ export default function SheetsConnector() {
         }),
       });
       const data = await res.json();
+      const durationSec = Math.round((Date.now() - startTime) / 1000);
+
       if (!res.ok) { setError(data.error || "Sync failed"); return; }
       setSyncResult(data);
+
+      // Save to sync history
+      try {
+        const { createClient } = await import("@/lib/supabase/client");
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase.from("sync_history").insert({
+            user_id: user.id,
+            sync_mode: syncMode,
+            sheet_name: range || "Sheet1",
+            week_start: weekStart || "",
+            status: "success",
+            confidence: data.confidence || "",
+            message: data.message || "",
+            synced: data.synced || {},
+            duration_seconds: durationSec,
+          });
+        }
+      } catch { /* history save is non-critical */ }
+
+      onSyncComplete?.();
     } catch {
       setError("Sync request failed");
     } finally {
