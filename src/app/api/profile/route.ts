@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { parseProfileWithAI } from "@/lib/ai-profile-parser";
 
+export const maxDuration = 300;
+
 /**
  * POST /api/profile
  * Body: { text: string } — raw CSV/pasted text of the trader profile

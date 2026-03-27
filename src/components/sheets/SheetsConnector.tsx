@@ -82,6 +82,9 @@ export default function SheetsConnector({ onSyncComplete }: { onSyncComplete?: (
     const startTime = Date.now();
     setSyncing(true);
     try {
+      // 5 minute timeout for AI parsing
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5 * 60 * 1000);
       const res = await fetch("/api/sheets/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -91,7 +94,9 @@ export default function SheetsConnector({ onSyncComplete }: { onSyncComplete?: (
           mode: syncMode,
           weekStart: weekStart || undefined,
         }),
+        signal: controller.signal,
       });
+      clearTimeout(timeout);
       const data = await res.json();
       const durationSec = Math.round((Date.now() - startTime) / 1000);
 
@@ -119,8 +124,12 @@ export default function SheetsConnector({ onSyncComplete }: { onSyncComplete?: (
       } catch { /* history save is non-critical */ }
 
       onSyncComplete?.();
-    } catch {
-      setError("Sync request failed");
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        setError("Sync timed out after 5 minutes. Try syncing a smaller sheet range or use 'Trades Only' mode.");
+      } else {
+        setError("Sync request failed. This may be a timeout issue — try 'Trades Only' mode for faster syncing, or check that the sheet is shared publicly.");
+      }
     } finally {
       setSyncing(false);
     }

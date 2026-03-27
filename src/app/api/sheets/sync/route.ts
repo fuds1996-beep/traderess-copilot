@@ -4,6 +4,9 @@ import { fetchSheetRows } from "@/lib/sheets";
 import { parseSheetWithAI } from "@/lib/ai-sheet-parser";
 import { parseSheetComprehensive } from "@/lib/ai-comprehensive-parser";
 
+// Allow up to 5 minutes for AI parsing on Vercel
+export const maxDuration = 300;
+
 /**
  * POST /api/sheets/sync
  * Body: { spreadsheetId, range?, mode?: "trades_only" | "comprehensive", weekStart? }
