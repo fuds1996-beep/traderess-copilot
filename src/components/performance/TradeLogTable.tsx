@@ -17,62 +17,18 @@ import {
 } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 import type { Trade } from "@/lib/types";
+import { TRADE_COLUMNS, getDefaultValue, type ColumnDef } from "@/lib/trade-columns";
 import { createClient } from "@/lib/supabase/client";
-
-// ─── Column definitions ──────────────────────────────────────────────────────
-
-const COLUMNS = [
-  { key: "account_name", label: "Account", width: "w-20" },
-  { key: "day", label: "Day", width: "w-16" },
-  { key: "trade_date", label: "Date", width: "w-24" },
-  { key: "scenario", label: "Scenario", width: "w-20" },
-  { key: "pair", label: "Pair", width: "w-20" },
-  { key: "session", label: "Session", width: "w-24" },
-  { key: "time_of_entry", label: "Entry Time", width: "w-20" },
-  { key: "time_of_exit", label: "Exit Time", width: "w-20" },
-  { key: "entry_price", label: "Entry", width: "w-22" },
-  { key: "sl_price", label: "SL", width: "w-22" },
-  { key: "tp_price", label: "TP", width: "w-22" },
-  { key: "direction", label: "Dir", width: "w-16" },
-  { key: "entry_strategy", label: "Entry Strat", width: "w-28" },
-  { key: "sl_strategy", label: "SL Strat", width: "w-28" },
-  { key: "tp_strategy", label: "TP Strat", width: "w-28" },
-  { key: "entry_conf_1", label: "Conf 1", width: "w-24" },
-  { key: "entry_conf_2", label: "Conf 2", width: "w-24" },
-  { key: "entry_conf_3", label: "Conf 3", width: "w-24" },
-  { key: "fundamental_check", label: "Fund?", width: "w-14" },
-  { key: "event_within_2h", label: "Event?", width: "w-14" },
-  { key: "safe_window", label: "Safe?", width: "w-14" },
-  { key: "result", label: "Result", width: "w-16" },
-  { key: "overall_pips", label: "Pips", width: "w-16" },
-  { key: "rs_gained", label: "R's", width: "w-14" },
-  { key: "risk_reward", label: "R2R", width: "w-16" },
-  { key: "dollar_result", label: "$ Result", width: "w-20" },
-  { key: "percent_risked", label: "% Risk", width: "w-16" },
-  { key: "before_picture", label: "Before", width: "w-14" },
-  { key: "after_picture", label: "After", width: "w-14" },
-  { key: "trade_quality", label: "Quality", width: "w-20" },
-  { key: "forecasted", label: "Forecast?", width: "w-24" },
-] as const;
-
-type TradeKey = (typeof COLUMNS)[number]["key"];
-
-const BOOL_FIELDS = new Set(["fundamental_check", "event_within_2h", "safe_window"]);
-const NUM_FIELDS = new Set(["entry_price", "sl_price", "tp_price", "overall_pips", "rs_gained", "pips"]);
 
 type SortDir = "asc" | "desc";
 
-function newEmptyTrade(): Partial<Trade> {
-  return {
-    account_name: "", day: "", trade_date: new Date().toISOString().split("T")[0],
-    scenario: "", pair: "EUR/USD", session: "London", time_of_entry: "", time_of_exit: "",
-    entry_price: 0, sl_price: 0, tp_price: 0, entry_strategy: "", sl_strategy: "", tp_strategy: "",
-    direction: "Long", entry_conf_1: "", entry_conf_2: "", entry_conf_3: "",
-    fundamental_check: false, event_within_2h: false, safe_window: true,
-    result: "Win", overall_pips: 0, pips: 0, rs_gained: 0, risk_reward: "", dollar_result: "",
-    percent_risked: "", before_picture: "", after_picture: "", trade_quality: "",
-    forecasted: "", trade_evaluation: "", notes: "",
-  };
+function newEmptyTrade(): Record<string, unknown> {
+  const obj: Record<string, unknown> = {};
+  for (const col of TRADE_COLUMNS) {
+    obj[col.key] = getDefaultValue(col);
+  }
+  obj.trade_date = new Date().toISOString().split("T")[0];
+  return obj;
 }
 
 // ─── Main component ──────────────────────────────────────────────────────────
@@ -87,9 +43,8 @@ export default function TradeLogTable({
   compact?: boolean;
   visibleColumns?: Set<string>;
 }) {
-  // Filter columns based on visibility prop
   const activeCols = useMemo(
-    () => visibleColsProp ? COLUMNS.filter((c) => visibleColsProp.has(c.key)) : COLUMNS,
+    () => visibleColsProp ? TRADE_COLUMNS.filter((c) => visibleColsProp.has(c.key)) : TRADE_COLUMNS,
     [visibleColsProp],
   );
 
@@ -105,11 +60,10 @@ export default function TradeLogTable({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState<Record<string, unknown>>({});
   const [addingNew, setAddingNew] = useState(false);
-  const [newTrade, setNewTrade] = useState<Partial<Trade>>(newEmptyTrade());
+  const [newTrade, setNewTrade] = useState<Record<string, unknown>>(newEmptyTrade());
   const [saving, setSaving] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  // Derive unique values for filters
   const accounts = useMemo(() => [...new Set(trades.map((t) => t.account_name).filter(Boolean))], [trades]);
   const sessions = useMemo(() => [...new Set(trades.map((t) => t.session).filter(Boolean))], [trades]);
 
@@ -119,35 +73,23 @@ export default function TradeLogTable({
     if (accountFilter !== "all") list = list.filter((t) => t.account_name === accountFilter);
     if (sessionFilter !== "all") list = list.filter((t) => t.session === sessionFilter);
     if (resultFilter !== "all") list = list.filter((t) => t.result === resultFilter);
-
     list.sort((a, b) => {
-      const aVal = a[sortField as keyof Trade];
-      const bVal = b[sortField as keyof Trade];
-      const aStr = String(aVal || "");
-      const bStr = String(bVal || "");
+      const aStr = String((a as unknown as Record<string, unknown>)[sortField] || "");
+      const bStr = String((b as unknown as Record<string, unknown>)[sortField] || "");
       const cmp = aStr.localeCompare(bStr, undefined, { numeric: true });
       return sortDir === "asc" ? cmp : -cmp;
     });
-
     return list;
   }, [trades, accountFilter, sessionFilter, resultFilter, sortField, sortDir]);
 
   function toggleSort(field: string) {
-    if (sortField === field) {
-      setSortDir(sortDir === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortDir("desc");
-    }
+    if (sortField === field) setSortDir(sortDir === "asc" ? "desc" : "asc");
+    else { setSortField(field); setSortDir("desc"); }
   }
 
-  // ─── CRUD handlers ──────────────────────────────────────────────────────────
+  // ─── CRUD ─────────────────────────────────────────────────────────────────
 
-  function startEdit(trade: Trade) {
-    setEditingId(trade.id);
-    setEditData({ ...trade });
-  }
-
+  function startEdit(trade: Trade) { setEditingId(trade.id); setEditData({ ...(trade as unknown as Record<string, unknown>) }); }
   function cancelEdit() { setEditingId(null); setEditData({}); }
 
   async function saveEdit() {
@@ -156,6 +98,12 @@ export default function TradeLogTable({
     const supabase = createClient();
     const updates = { ...editData };
     delete updates.id; delete updates.user_id; delete updates.created_at;
+    // Convert Yes/No selects back to booleans for DB
+    for (const col of TRADE_COLUMNS) {
+      if (["fundamental_check", "event_within_2h", "safe_window"].includes(col.key)) {
+        updates[col.key] = updates[col.key] === "Yes" || updates[col.key] === true;
+      }
+    }
     await supabase.from("trade_log").update(updates).eq("id", editingId);
     setSaving(false); cancelEdit(); onRefresh();
   }
@@ -171,60 +119,91 @@ export default function TradeLogTable({
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setSaving(false); return; }
-    await supabase.from("trade_log").insert({ user_id: user.id, ...newTrade });
+    const insert = { ...newTrade };
+    // Convert Yes/No to booleans
+    for (const col of TRADE_COLUMNS) {
+      if (["fundamental_check", "event_within_2h", "safe_window"].includes(col.key)) {
+        insert[col.key] = insert[col.key] === "Yes" || insert[col.key] === true;
+      }
+    }
+    await supabase.from("trade_log").insert({ user_id: user.id, ...insert });
     setSaving(false); setAddingNew(false); setNewTrade(newEmptyTrade()); onRefresh();
   }
 
-  // ─── Cell renderers ─────────────────────────────────────────────────────────
+  // ─── Cell renderers ───────────────────────────────────────────────────────
 
-  function renderCell(trade: Trade, key: TradeKey) {
-    const val = trade[key as keyof Trade];
+  function renderCell(trade: Trade, col: ColumnDef) {
+    const val = (trade as unknown as Record<string, unknown>)[col.key];
 
-    if (key === "direction") {
+    if (col.key === "direction") {
       return (
-        <span className={`flex items-center gap-1 ${val === "Long" ? "text-emerald-400" : "text-red-400"}`}>
+        <span className={`flex items-center gap-1 ${val === "Long" ? "text-emerald-500" : "text-red-500"}`}>
           {val === "Long" ? <ArrowUp size={10} /> : <ArrowDown size={10} />}{String(val)}
         </span>
       );
     }
-    if (key === "result") {
+    if (col.key === "result") {
       return <Badge variant={val === "Win" ? "success" : val === "Loss" ? "danger" : "warning"}>{String(val)}</Badge>;
     }
-    if (BOOL_FIELDS.has(key)) {
-      return <span className={val ? "text-emerald-400" : "text-gray-300"}>{val ? "Yes" : "No"}</span>;
-    }
-    if (key === "before_picture" || key === "after_picture") {
+    if (col.type === "url") {
       const url = String(val || "");
       if (!url) return <span className="text-gray-300">—</span>;
       return <a href={url} target="_blank" rel="noopener noreferrer" className="text-pink-500 hover:text-pink-400"><ExternalLink size={12} /></a>;
     }
-    if (key === "overall_pips" || key === "rs_gained") {
+    if (["fundamental_check", "event_within_2h", "safe_window"].includes(col.key)) {
+      const isYes = val === true || val === "Yes";
+      return <span className={isYes ? "text-emerald-500" : "text-gray-300"}>{isYes ? "Yes" : "No"}</span>;
+    }
+    if (col.type === "number" || col.type === "money" || col.type === "percent") {
       const n = Number(val) || 0;
-      return <span className={n > 0 ? "text-emerald-400" : n < 0 ? "text-red-400" : "text-gray-500"}>{n}</span>;
+      if (col.key === "sl_price") return <span className="text-red-400">{n || "—"}</span>;
+      if (col.key === "tp_price") return <span className="text-emerald-400">{n || "—"}</span>;
+      if (col.key === "overall_pips" || col.key === "rs_gained") {
+        return <span className={n > 0 ? "text-emerald-500" : n < 0 ? "text-red-500" : "text-gray-500"}>{n}</span>;
+      }
+      return <span className="text-gray-600">{String(val || "—")}</span>;
     }
-    if (key === "sl_price") return <span className="text-red-400">{String(val || "—")}</span>;
-    if (key === "tp_price") return <span className="text-emerald-400">{String(val || "—")}</span>;
-    return <span className="text-gray-600">{String(val || "—")}</span>;
+    return <span className="text-gray-600 truncate">{String(val || "—")}</span>;
   }
 
-  function renderEditCell(key: TradeKey, data: Record<string, unknown>, setData: (d: Record<string, unknown>) => void) {
-    const val = data[key];
-    if (BOOL_FIELDS.has(key)) {
-      return <input type="checkbox" checked={!!val} onChange={(e) => setData({ ...data, [key]: e.target.checked })} className="accent-pink-500 w-3 h-3" />;
+  function renderEditCell(col: ColumnDef, data: Record<string, unknown>, setData: (d: Record<string, unknown>) => void) {
+    const val = data[col.key];
+    const cls = "bg-white/60 border border-pink-200/50 rounded px-1.5 py-0.5 text-[10px] text-gray-900 w-full focus:outline-none focus:border-pink-400";
+
+    switch (col.type) {
+      case "select": {
+        // For boolean fields, map true/false to Yes/No
+        let currentVal = String(val || "");
+        if (["fundamental_check", "event_within_2h", "safe_window"].includes(col.key)) {
+          currentVal = val === true ? "Yes" : val === false ? "No" : String(val || "");
+        }
+        return (
+          <select value={currentVal} onChange={(e) => setData({ ...data, [col.key]: e.target.value })} className={cls}>
+            <option value="">—</option>
+            {col.options?.map((o) => <option key={o} value={o}>{o}</option>)}
+          </select>
+        );
+      }
+      case "date":
+        return <input type="date" value={String(val || "")} onChange={(e) => setData({ ...data, [col.key]: e.target.value })} className={cls} />;
+      case "time":
+        return <input type="time" value={String(val || "")} onChange={(e) => setData({ ...data, [col.key]: e.target.value })} className={cls} />;
+      case "number":
+      case "money":
+      case "percent":
+        return <input type="number" step="any" value={val === undefined || val === null ? "" : String(val)} onChange={(e) => setData({ ...data, [col.key]: parseFloat(e.target.value) || 0 })} className={cls} placeholder={col.placeholder} />;
+      case "ratio":
+        return <input type="text" value={String(val || "")} onChange={(e) => setData({ ...data, [col.key]: e.target.value })} className={cls} placeholder={col.placeholder || "1:1"} />;
+      case "url":
+        return <input type="url" value={String(val || "")} onChange={(e) => setData({ ...data, [col.key]: e.target.value })} className={cls} placeholder={col.placeholder || "https://..."} />;
+      case "textarea":
+        return <input type="text" value={String(val || "")} onChange={(e) => setData({ ...data, [col.key]: e.target.value })} className={cls} placeholder="..." />;
+      default:
+        return <input type="text" value={String(val || "")} onChange={(e) => setData({ ...data, [col.key]: e.target.value })} className={cls} />;
     }
-    if (key === "direction") {
-      return <select value={String(val || "Long")} onChange={(e) => setData({ ...data, [key]: e.target.value })} className="bg-white/60 border border-pink-200/50 rounded px-1 py-0.5 text-[10px] text-gray-900 w-full"><option>Long</option><option>Short</option></select>;
-    }
-    if (key === "result") {
-      return <select value={String(val || "Win")} onChange={(e) => setData({ ...data, [key]: e.target.value })} className="bg-white/60 border border-pink-200/50 rounded px-1 py-0.5 text-[10px] text-gray-900 w-full"><option>Win</option><option>Loss</option><option>BE</option></select>;
-    }
-    if (NUM_FIELDS.has(key)) {
-      return <input type="number" step="any" value={val === undefined || val === null ? "" : String(val)} onChange={(e) => setData({ ...data, [key]: parseFloat(e.target.value) || 0 })} className="bg-white/60 border border-pink-200/50 rounded px-1 py-0.5 text-[10px] text-gray-900 w-full" />;
-    }
-    return <input type={key === "trade_date" ? "date" : "text"} value={String(val || "")} onChange={(e) => setData({ ...data, [key]: e.target.value })} className="bg-white/60 border border-pink-200/50 rounded px-1 py-0.5 text-[10px] text-gray-900 w-full" />;
   }
 
-  // ─── Render ─────────────────────────────────────────────────────────────────
+  // ─── Render ───────────────────────────────────────────────────────────────
 
   const activeFilters = [accountFilter, sessionFilter, resultFilter].filter((f) => f !== "all").length;
 
@@ -237,16 +216,11 @@ export default function TradeLogTable({
           className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition-colors ${
             showFilters || activeFilters > 0
               ? "bg-pink-500/10 border-pink-400 text-pink-500"
-              : "bg-pink-100/60 border-pink-200/50 text-gray-600 hover:bg-slate-600"
+              : "bg-pink-100/60 border-pink-200/50 text-gray-600 hover:bg-pink-100"
           }`}
         >
-          <Filter size={12} />
-          Filters
-          {activeFilters > 0 && (
-            <span className="bg-pink-500 text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center">
-              {activeFilters}
-            </span>
-          )}
+          <Filter size={12} /> Filters
+          {activeFilters > 0 && <span className="bg-pink-500 text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center">{activeFilters}</span>}
         </button>
 
         <div className="flex items-center gap-2 text-[10px] text-gray-400">
@@ -257,8 +231,8 @@ export default function TradeLogTable({
             </button>
           ) : (
             <div className="flex gap-2">
-              <button onClick={addTrade} disabled={saving} className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs rounded-lg transition-colors"><Save size={12} /> Save</button>
-              <button onClick={() => { setAddingNew(false); setNewTrade(newEmptyTrade()); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-pink-100/60 hover:bg-slate-600 text-gray-900 text-xs rounded-lg transition-colors"><X size={12} /> Cancel</button>
+              <button onClick={addTrade} disabled={saving} className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs rounded-lg"><Save size={12} /> Save</button>
+              <button onClick={() => { setAddingNew(false); setNewTrade(newEmptyTrade()); }} className="flex items-center gap-1.5 px-3 py-1.5 bg-pink-100/60 text-gray-600 text-xs rounded-lg"><X size={12} /> Cancel</button>
             </div>
           )}
         </div>
@@ -293,35 +267,17 @@ export default function TradeLogTable({
           <div>
             <label className="block text-[10px] text-gray-400 mb-1">Sort by</label>
             <div className="flex gap-1">
-              {[
-                { key: "trade_date", label: "Date" },
-                { key: "overall_pips", label: "Pips" },
-                { key: "rs_gained", label: "R's" },
-                { key: "result", label: "Result" },
-              ].map((s) => (
-                <button
-                  key={s.key}
-                  onClick={() => toggleSort(s.key)}
-                  className={`flex items-center gap-1 px-2 py-1 text-[10px] rounded border transition-colors ${
-                    sortField === s.key
-                      ? "bg-pink-500/10 border-pink-400 text-pink-500"
-                      : "bg-white/50 border-pink-200/40 text-gray-500 hover:border-pink-200/50"
-                  }`}
-                >
-                  {s.label}
-                  {sortField === s.key && (sortDir === "asc" ? <ArrowUp size={10} /> : <ArrowDown size={10} />)}
+              {[{ key: "trade_date", label: "Date" }, { key: "overall_pips", label: "Pips" }, { key: "rs_gained", label: "R's" }, { key: "result", label: "Result" }].map((s) => (
+                <button key={s.key} onClick={() => toggleSort(s.key)}
+                  className={`flex items-center gap-1 px-2 py-1 text-[10px] rounded border transition-colors ${sortField === s.key ? "bg-pink-500/10 border-pink-400 text-pink-500" : "bg-white/50 border-pink-200/40 text-gray-500"}`}>
+                  {s.label} {sortField === s.key && (sortDir === "asc" ? <ArrowUp size={10} /> : <ArrowDown size={10} />)}
                 </button>
               ))}
             </div>
           </div>
           {activeFilters > 0 && (
             <div className="flex items-end">
-              <button
-                onClick={() => { setAccountFilter("all"); setSessionFilter("all"); setResultFilter("all"); }}
-                className="text-[10px] text-gray-400 hover:text-gray-900 transition-colors underline"
-              >
-                Clear all
-              </button>
+              <button onClick={() => { setAccountFilter("all"); setSessionFilter("all"); setResultFilter("all"); }} className="text-[10px] text-gray-500 hover:text-gray-900 underline">Clear all</button>
             </div>
           )}
         </div>
@@ -333,32 +289,23 @@ export default function TradeLogTable({
           <thead>
             <tr className="border-b border-pink-200/40">
               {activeCols.map((c) => (
-                <th
-                  key={c.key}
-                  onClick={() => toggleSort(c.key)}
-                  className={`text-left py-2 px-1.5 text-gray-500 font-medium whitespace-nowrap cursor-pointer hover:text-gray-700 transition-colors ${c.width}`}
-                >
+                <th key={c.key} onClick={() => toggleSort(c.key)}
+                  className={`text-left py-2 px-1.5 text-gray-400 font-medium whitespace-nowrap cursor-pointer hover:text-gray-600 transition-colors ${c.width}`}>
                   <span className="flex items-center gap-0.5">
                     {c.label}
-                    {sortField === c.key ? (
-                      sortDir === "asc" ? <ArrowUp size={9} /> : <ArrowDown size={9} />
-                    ) : (
-                      <ArrowUpDown size={9} className="text-gray-300" />
-                    )}
+                    {sortField === c.key ? (sortDir === "asc" ? <ArrowUp size={9} /> : <ArrowDown size={9} />) : <ArrowUpDown size={9} className="text-gray-300" />}
                   </span>
                 </th>
               ))}
-              <th className="text-left py-2 px-1.5 text-gray-500 font-medium w-16">Actions</th>
+              <th className="text-left py-2 px-1.5 text-gray-400 font-medium w-16">Actions</th>
             </tr>
           </thead>
           <tbody>
             {/* New trade row */}
             {addingNew && (
-              <tr className="border-b border-pink-300/50 bg-pink-50/60">
+              <tr className="border-b border-pink-300/30 bg-pink-50/30">
                 {activeCols.map((c) => (
-                  <td key={c.key} className="py-1 px-1">
-                    {renderEditCell(c.key, newTrade as Record<string, unknown>, (d) => setNewTrade(d as Partial<Trade>))}
-                  </td>
+                  <td key={c.key} className="py-1 px-1">{renderEditCell(c, newTrade, setNewTrade)}</td>
                 ))}
                 <td className="py-1 px-1" />
               </tr>
@@ -366,51 +313,23 @@ export default function TradeLogTable({
 
             {/* Existing trades */}
             {filtered.map((t) => (
-              <>
-                <tr key={t.id} className="border-b border-pink-200/30 hover:bg-pink-50/40 transition-colors">
-                  {activeCols.map((c) => (
-                    <td key={c.key} className="py-1.5 px-1.5 max-w-[160px] truncate">
-                      {editingId === t.id ? renderEditCell(c.key, editData, setEditData) : renderCell(t, c.key)}
-                    </td>
-                  ))}
-                  <td className="py-1.5 px-1.5">
-                    {editingId === t.id ? (
-                      <div className="flex gap-1">
-                        <button onClick={saveEdit} disabled={saving} className="p-1 text-emerald-400 hover:text-emerald-300" title="Save"><Save size={12} /></button>
-                        <button onClick={cancelEdit} className="p-1 text-gray-500 hover:text-gray-900" title="Cancel"><X size={12} /></button>
-                      </div>
-                    ) : (
-                      <div className="flex gap-1">
-                        <button onClick={() => setExpandedId(expandedId === t.id ? null : t.id)} className="p-1 text-gray-400 hover:text-pink-500 transition-colors" title="Expand evaluation">
-                          {expandedId === t.id ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                        </button>
-                        <button onClick={() => startEdit(t)} className="p-1 text-gray-400 hover:text-pink-500 transition-colors" title="Edit"><Pencil size={12} /></button>
-                        <button onClick={() => deleteTrade(t.id)} className="p-1 text-gray-400 hover:text-red-400 transition-colors" title="Delete"><Trash2 size={12} /></button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-
-                {/* Expanded evaluation row */}
-                {expandedId === t.id && (t.trade_evaluation || t.notes) && (
-                  <tr key={`${t.id}-eval`} className="border-b border-pink-200/30">
-                    <td colSpan={activeCols.length + 1} className="py-3 px-4 bg-white/60/30">
-                      {t.trade_evaluation && (
-                        <div className="mb-3">
-                          <div className="text-[10px] text-pink-500 font-semibold mb-1 uppercase tracking-wide">Trade Evaluation</div>
-                          <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-wrap">{t.trade_evaluation}</p>
-                        </div>
-                      )}
-                      {t.notes && t.notes !== t.trade_evaluation && (
-                        <div>
-                          <div className="text-[10px] text-gray-400 font-semibold mb-1 uppercase tracking-wide">Notes</div>
-                          <p className="text-xs text-gray-500 leading-relaxed whitespace-pre-wrap">{t.notes}</p>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                )}
-              </>
+              <TradeRow
+                key={t.id}
+                trade={t}
+                cols={activeCols}
+                isEditing={editingId === t.id}
+                isExpanded={expandedId === t.id}
+                editData={editData}
+                saving={saving}
+                onStartEdit={() => startEdit(t)}
+                onCancelEdit={cancelEdit}
+                onSaveEdit={saveEdit}
+                onDelete={() => deleteTrade(t.id)}
+                onToggleExpand={() => setExpandedId(expandedId === t.id ? null : t.id)}
+                onEditDataChange={setEditData}
+                renderCell={renderCell}
+                renderEditCell={renderEditCell}
+              />
             ))}
           </tbody>
         </table>
@@ -422,5 +341,74 @@ export default function TradeLogTable({
         </p>
       )}
     </div>
+  );
+}
+
+// ─── Trade Row (extracted to avoid React key issues with fragments) ─────────
+
+function TradeRow({
+  trade, cols, isEditing, isExpanded, editData, saving,
+  onStartEdit, onCancelEdit, onSaveEdit, onDelete, onToggleExpand, onEditDataChange,
+  renderCell, renderEditCell,
+}: {
+  trade: Trade;
+  cols: ColumnDef[];
+  isEditing: boolean;
+  isExpanded: boolean;
+  editData: Record<string, unknown>;
+  saving: boolean;
+  onStartEdit: () => void;
+  onCancelEdit: () => void;
+  onSaveEdit: () => void;
+  onDelete: () => void;
+  onToggleExpand: () => void;
+  onEditDataChange: (d: Record<string, unknown>) => void;
+  renderCell: (trade: Trade, col: ColumnDef) => React.ReactNode;
+  renderEditCell: (col: ColumnDef, data: Record<string, unknown>, setData: (d: Record<string, unknown>) => void) => React.ReactNode;
+}) {
+  return (
+    <>
+      <tr className="border-b border-pink-200/30 hover:bg-pink-50/20 transition-colors">
+        {cols.map((c) => (
+          <td key={c.key} className="py-1.5 px-1.5 max-w-[160px] truncate">
+            {isEditing ? renderEditCell(c, editData, onEditDataChange) : renderCell(trade, c)}
+          </td>
+        ))}
+        <td className="py-1.5 px-1.5">
+          {isEditing ? (
+            <div className="flex gap-1">
+              <button onClick={onSaveEdit} disabled={saving} className="p-1 text-emerald-500 hover:text-emerald-400" title="Save"><Save size={12} /></button>
+              <button onClick={onCancelEdit} className="p-1 text-gray-400 hover:text-gray-600" title="Cancel"><X size={12} /></button>
+            </div>
+          ) : (
+            <div className="flex gap-1">
+              <button onClick={onToggleExpand} className="p-1 text-gray-400 hover:text-pink-500 transition-colors" title="Expand">
+                {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+              </button>
+              <button onClick={onStartEdit} className="p-1 text-gray-400 hover:text-pink-500 transition-colors" title="Edit"><Pencil size={12} /></button>
+              <button onClick={onDelete} className="p-1 text-gray-400 hover:text-red-500 transition-colors" title="Delete"><Trash2 size={12} /></button>
+            </div>
+          )}
+        </td>
+      </tr>
+      {isExpanded && (trade.trade_evaluation || trade.notes) && (
+        <tr className="border-b border-pink-200/30">
+          <td colSpan={cols.length + 1} className="py-3 px-4 bg-pink-50/20">
+            {trade.trade_evaluation && (
+              <div className="mb-3">
+                <div className="text-[10px] text-pink-500 font-semibold mb-1 uppercase tracking-wide">Trade Evaluation</div>
+                <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-wrap">{trade.trade_evaluation}</p>
+              </div>
+            )}
+            {trade.notes && trade.notes !== trade.trade_evaluation && (
+              <div>
+                <div className="text-[10px] text-gray-400 font-semibold mb-1 uppercase tracking-wide">Notes</div>
+                <p className="text-xs text-gray-500 leading-relaxed whitespace-pre-wrap">{trade.notes}</p>
+              </div>
+            )}
+          </td>
+        </tr>
+      )}
+    </>
   );
 }
