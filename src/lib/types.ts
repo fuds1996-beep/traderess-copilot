@@ -268,6 +268,40 @@ export interface TradingGoal {
   intention_text: string;
 }
 
+// trading_accounts
+export interface TradingAccount {
+  id: string;
+  user_id: string;
+  account_name: string;
+  firm_name: string;
+  account_size: number;
+  account_type: "challenge" | "verification" | "funded";
+  status: "active" | "passed" | "failed" | "completed";
+  profit_target_pct: number;
+  max_drawdown_pct: number;
+  current_balance: number;
+  starting_balance: number;
+  current_pnl: number;
+  profit_split_pct: number;
+  phase: string;
+  notes: string;
+  started_at: string | null;
+  ended_at: string | null;
+}
+
+// account_payouts
+export interface AccountPayout {
+  id: string;
+  user_id: string;
+  account_id: string;
+  payout_date: string;
+  gross_amount: number;
+  profit_split_pct: number;
+  net_amount: number;
+  status: "pending" | "paid" | "rejected";
+  notes: string;
+}
+
 // ─── Computed / view types ───────────────────────────────────────────────────
 
 export interface DashboardStats {
