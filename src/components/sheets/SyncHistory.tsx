@@ -127,8 +127,9 @@ export default function SyncHistory({ refreshKey }: { refreshKey?: number }) {
       // Delete the sync history record itself
       await supabase.from("sync_history").delete().eq("id", record.id);
 
+      // Remove from local state immediately for instant UI update
+      setRecords((prev) => prev.filter((r) => r.id !== record.id));
       setDeleteConfirmId(null);
-      fetchHistory();
     } catch {
       // Silent fail
     } finally {
