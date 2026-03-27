@@ -38,6 +38,7 @@ export async function updateSession(request: NextRequest) {
 
   // Public routes that don't require auth.
   const isPublic =
+    pathname === "/" ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/register") ||
     pathname.startsWith("/auth");
@@ -49,10 +50,10 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // If user exists and on auth pages (not onboarding), redirect to dashboard.
+  // If user exists and on public pages, redirect to dashboard.
   if (
     user &&
-    (pathname.startsWith("/login") || pathname.startsWith("/register"))
+    (pathname === "/" || pathname.startsWith("/login") || pathname.startsWith("/register"))
   ) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
