@@ -122,6 +122,16 @@ export default function SyncHistory({ refreshKey }: { refreshKey?: number }) {
           await supabase.from("weekly_summaries").delete()
             .eq("user_id", user.id).eq("week_start", ws);
         }
+        // Delete missed trades in this date range
+        if (record.synced.missed_trades) {
+          await supabase.from("missed_trades").delete()
+            .eq("user_id", user.id).gte("trade_date", from).lte("trade_date", to);
+        }
+        // Delete trading goals for this month
+        if (record.synced.goals) {
+          await supabase.from("trading_goals").delete()
+            .eq("user_id", user.id).eq("period_start", ws.slice(0, 7) + "-01");
+        }
       }
 
       // Delete the sync history record itself

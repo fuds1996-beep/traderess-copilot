@@ -133,39 +133,28 @@ export default function DisciplinePage() {
         </div>
       )}
 
-      {/* Missed trades */}
+      {/* Missed trades summary — full list is on Performance tab */}
       {missedTrades.length > 0 && (
         <div className="glass rounded-2xl p-5 border border-brand-light/40">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold text-gray-900">Missed & Avoided Trades</h3>
-            <div className="flex gap-2 text-xs">
-              <span className="text-emerald-400">{avoidedLosses} losses avoided</span>
-              <span className="text-amber-400">{avoidedWins} wins missed</span>
-            </div>
+            <a href="/performance" className="text-[10px] text-brand hover:text-brand-dark transition-colors">
+              View full details &rarr;
+            </a>
           </div>
-          <div className="space-y-2">
-            {missedTrades.map((m) => (
-              <div key={m.id} className="flex items-center justify-between p-3 bg-brand-light/80 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-gray-400 w-16">{m.trade_date.slice(5)}</span>
-                  <span className="text-xs text-gray-900 font-medium">{m.pair}</span>
-                  <span className={`flex items-center gap-1 text-xs ${m.direction === "Long" ? "text-emerald-400" : "text-red-400"}`}>
-                    {m.direction === "Long" ? <ArrowUp size={10} /> : <ArrowDown size={10} />}
-                    {m.direction}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {m.would_have_result && (
-                    <Badge variant={m.would_have_result === "Win" ? "success" : m.would_have_result === "Loss" ? "danger" : "warning"}>
-                      Would: {m.would_have_result}
-                    </Badge>
-                  )}
-                  {m.reason_missed && (
-                    <span className="text-[10px] text-gray-400 max-w-[200px] truncate">{m.reason_missed}</span>
-                  )}
-                </div>
-              </div>
-            ))}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="p-3 bg-amber-50/80 rounded-xl border border-amber-200/40 text-center">
+              <div className="text-lg font-bold text-amber-600">{avoidedWins}</div>
+              <div className="text-[10px] text-amber-500">Wins Missed</div>
+            </div>
+            <div className="p-3 bg-emerald-50/80 rounded-xl border border-emerald-200/40 text-center">
+              <div className="text-lg font-bold text-emerald-600">{avoidedLosses}</div>
+              <div className="text-[10px] text-emerald-500">Losses Avoided</div>
+            </div>
+            <div className="p-3 bg-brand-light/60 rounded-xl border border-brand-light/40 text-center">
+              <div className="text-lg font-bold text-gray-900">{missedTrades.length}</div>
+              <div className="text-[10px] text-gray-500">Total Missed</div>
+            </div>
           </div>
         </div>
       )}

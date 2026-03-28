@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { BarChart3 } from "lucide-react";
+import { BarChart3, ArrowUp, ArrowDown, EyeOff, AlertTriangle, TrendingUp, Ban } from "lucide-react";
 import { PerformanceSkeleton } from "@/components/ui/Skeleton";
 import {
   LazyAccountPnlBarChart as AccountPnlBarChart,
@@ -18,7 +18,9 @@ import { useTrades } from "@/hooks/use-trades";
 import { useAccountBalances } from "@/hooks/use-account-balances";
 import { useJournals } from "@/hooks/use-journals";
 import { usePsychology } from "@/hooks/use-psychology";
-import type { Trade, DailyJournal } from "@/lib/types";
+import { useMissedTrades } from "@/hooks/use-missed-trades";
+import Badge from "@/components/ui/Badge";
+import type { Trade, DailyJournal, MissedTrade } from "@/lib/types";
 import {
   getWeekStart,
   getMonthKey,
@@ -108,10 +110,11 @@ export default function PerformancePage() {
   const { trades, loading: tradesLoading, refresh: refreshTrades } = useTrades();
   const { byAccount, accountNames, hasData: hasBalances, loading: balLoading } = useAccountBalances();
   const { journals, loading: jLoading, refresh: refreshJournals } = useJournals();
+  const { trades: missedTrades, avoidedWins, avoidedLosses, loading: mLoading } = useMissedTrades();
   const psych = usePsychology(journals, trades);
   const [periodView, setPeriodView] = useState<PeriodView>("weekly");
 
-  const loading = perfLoading || tradesLoading || balLoading || jLoading;
+  const loading = perfLoading || tradesLoading || balLoading || jLoading || mLoading;
 
   const periodGroups = useMemo(() => groupTrades(trades, periodView), [trades, periodView]);
   const chartPeriod = periodView === "all" ? "monthly" : periodView;
@@ -225,6 +228,17 @@ export default function PerformancePage() {
         </div>
       )}
 
+      {/* Missed & Avoided Trades */}
+      {missedTrades.length > 0 && (
+        <MissedTradesSection
+          missedTrades={missedTrades}
+          actualTrades={trades}
+          avoidedWins={avoidedWins}
+          avoidedLosses={avoidedLosses}
+          periodView={periodView}
+        />
+      )}
+
       {/* Trade Log + Journals — grouped by week */}
       <div>
         <div className="flex items-center gap-2 mb-3">
@@ -233,6 +247,136 @@ export default function PerformancePage() {
           <span className="text-[10px] text-gray-400">{trades.length} trades · {journals.length} journal entries</span>
         </div>
         <GroupedTradeLog trades={trades} journals={journals} onRefresh={() => { refreshTrades(); refreshJournals(); }} />
+      </div>
+    </div>
+  );
+}
+
+// ─── Missed Trades Section ───────────────────────────────────────────────────
+
+function MissedTradesSection({
+  missedTrades,
+  actualTrades,
+  avoidedWins,
+  avoidedLosses,
+  periodView,
+}: {
+  missedTrades: MissedTrade[];
+  actualTrades: Trade[];
+  avoidedWins: number;
+  avoidedLosses: number;
+  periodView: PeriodView;
+}) {
+  // Compute side-by-side stats
+  const totalActual = actualTrades.length;
+  const totalMissed = missedTrades.length;
+  const missedWinPips = missedTrades
+    .filter((m) => m.would_have_result === "Win")
+    .reduce((s, m) => s + (m.would_have_pips || 0), 0);
+  const missedLossPips = missedTrades
+    .filter((m) => m.would_have_result === "Loss")
+    .reduce((s, m) => s + Math.abs(m.would_have_pips || 0), 0);
+
+  // Group missed trades by period
+  const keyFn = periodView === "quarterly" ? getQuarterKey
+    : periodView === "monthly" ? getMonthKey
+    : getWeekStart;
+  const labelFn = (k: string) =>
+    periodView === "quarterly" ? formatQuarterLabel(k)
+    : periodView === "monthly" ? formatMonthLabel(k)
+    : formatWeekLabel(k);
+
+  const grouped = new Map<string, MissedTrade[]>();
+  for (const m of missedTrades) {
+    const k = periodView === "all" ? "all" : keyFn(m.trade_date);
+    if (!grouped.has(k)) grouped.set(k, []);
+    grouped.get(k)!.push(m);
+  }
+  const groups = periodView === "all"
+    ? [{ key: "all", label: "All Time", trades: missedTrades }]
+    : [...grouped.entries()]
+        .sort(([a], [b]) => b.localeCompare(a))
+        .map(([key, trades]) => ({ key, label: labelFn(key), trades }));
+
+  return (
+    <div className="glass rounded-2xl p-5 border border-brand-light/40">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <EyeOff size={16} className="text-brand" />
+          <h3 className="text-sm font-semibold text-gray-900">Missed & Avoided Trades</h3>
+          <span className="text-[10px] text-gray-400">{totalMissed} missed vs {totalActual} taken</span>
+        </div>
+      </div>
+
+      {/* Summary stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+        <div className="p-3 bg-amber-50/80 rounded-xl border border-amber-200/40 text-center">
+          <div className="text-lg font-bold text-amber-600">{avoidedWins}</div>
+          <div className="text-[10px] text-amber-500">Wins Missed</div>
+          {missedWinPips > 0 && <div className="text-[9px] text-amber-400 mt-0.5">+{Math.round(missedWinPips)} pips left on table</div>}
+        </div>
+        <div className="p-3 bg-emerald-50/80 rounded-xl border border-emerald-200/40 text-center">
+          <div className="text-lg font-bold text-emerald-600">{avoidedLosses}</div>
+          <div className="text-[10px] text-emerald-500">Losses Avoided</div>
+          {missedLossPips > 0 && <div className="text-[9px] text-emerald-400 mt-0.5">{Math.round(missedLossPips)} pips saved</div>}
+        </div>
+        <div className="p-3 bg-brand-light/60 rounded-xl border border-brand-light/40 text-center">
+          <div className="text-lg font-bold text-gray-900">{totalMissed + totalActual}</div>
+          <div className="text-[10px] text-gray-500">Total Setups Identified</div>
+          <div className="text-[9px] text-gray-400 mt-0.5">{totalActual} taken, {totalMissed} missed</div>
+        </div>
+        <div className="p-3 bg-brand-light/60 rounded-xl border border-brand-light/40 text-center">
+          <div className="text-lg font-bold text-gray-900">
+            {totalMissed + totalActual > 0
+              ? Math.round((totalActual / (totalMissed + totalActual)) * 100)
+              : 0}%
+          </div>
+          <div className="text-[10px] text-gray-500">Execution Rate</div>
+          <div className="text-[9px] text-gray-400 mt-0.5">Setups taken vs identified</div>
+        </div>
+      </div>
+
+      {/* Grouped missed trades */}
+      <div className="space-y-4">
+        {groups.map((group) => (
+          <div key={group.key}>
+            {periodView !== "all" && (
+              <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">{group.label}</div>
+            )}
+            <div className="space-y-1.5">
+              {group.trades.map((m) => (
+                <div key={m.id} className="flex items-center justify-between p-3 bg-white/60 rounded-lg border border-brand-light/30 hover:border-brand/30 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] text-gray-400 font-mono w-14">{m.trade_date.slice(5)}</span>
+                    <span className="text-xs text-gray-900 font-semibold">{m.pair}</span>
+                    <span className={`flex items-center gap-0.5 text-[10px] font-medium ${m.direction === "Long" ? "text-emerald-500" : "text-red-500"}`}>
+                      {m.direction === "Long" ? <ArrowUp size={10} /> : <ArrowDown size={10} />}
+                      {m.direction}
+                    </span>
+                    {m.session && <span className="text-[10px] px-1.5 py-0.5 bg-brand-light/60 rounded text-gray-500">{m.session}</span>}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {m.would_have_pips !== 0 && (
+                      <span className={`text-[10px] font-semibold ${m.would_have_pips > 0 ? "text-emerald-500" : "text-red-500"}`}>
+                        {m.would_have_pips > 0 ? "+" : ""}{m.would_have_pips}p
+                      </span>
+                    )}
+                    {m.would_have_result && (
+                      <Badge variant={m.would_have_result === "Win" ? "success" : m.would_have_result === "Loss" ? "danger" : "warning"}>
+                        {m.would_have_result}
+                      </Badge>
+                    )}
+                    {m.reason_missed && (
+                      <span className="text-[10px] text-gray-400 max-w-[200px] truncate hidden sm:inline" title={m.reason_missed}>
+                        {m.reason_missed}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
