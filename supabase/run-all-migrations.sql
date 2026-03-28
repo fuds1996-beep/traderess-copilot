@@ -186,18 +186,21 @@ DO $$ BEGIN
   BEGIN CREATE POLICY "ct_select" ON public.chart_time_log FOR SELECT USING (auth.uid() = user_id); EXCEPTION WHEN duplicate_object THEN NULL; END;
   BEGIN CREATE POLICY "ct_insert" ON public.chart_time_log FOR INSERT WITH CHECK (auth.uid() = user_id); EXCEPTION WHEN duplicate_object THEN NULL; END;
   BEGIN CREATE POLICY "ct_update" ON public.chart_time_log FOR UPDATE USING (auth.uid() = user_id); EXCEPTION WHEN duplicate_object THEN NULL; END;
+  BEGIN CREATE POLICY "ct_delete" ON public.chart_time_log FOR DELETE USING (auth.uid() = user_id); EXCEPTION WHEN duplicate_object THEN NULL; END;
 
   -- weekly_summaries
   ALTER TABLE public.weekly_summaries ENABLE ROW LEVEL SECURITY;
   BEGIN CREATE POLICY "ws_select" ON public.weekly_summaries FOR SELECT USING (auth.uid() = user_id); EXCEPTION WHEN duplicate_object THEN NULL; END;
   BEGIN CREATE POLICY "ws_insert" ON public.weekly_summaries FOR INSERT WITH CHECK (auth.uid() = user_id); EXCEPTION WHEN duplicate_object THEN NULL; END;
   BEGIN CREATE POLICY "ws_update" ON public.weekly_summaries FOR UPDATE USING (auth.uid() = user_id); EXCEPTION WHEN duplicate_object THEN NULL; END;
+  BEGIN CREATE POLICY "ws_delete" ON public.weekly_summaries FOR DELETE USING (auth.uid() = user_id); EXCEPTION WHEN duplicate_object THEN NULL; END;
 
   -- account_balances
   ALTER TABLE public.account_balances ENABLE ROW LEVEL SECURITY;
   BEGIN CREATE POLICY "ab_select" ON public.account_balances FOR SELECT USING (auth.uid() = user_id); EXCEPTION WHEN duplicate_object THEN NULL; END;
   BEGIN CREATE POLICY "ab_insert" ON public.account_balances FOR INSERT WITH CHECK (auth.uid() = user_id); EXCEPTION WHEN duplicate_object THEN NULL; END;
   BEGIN CREATE POLICY "ab_update" ON public.account_balances FOR UPDATE USING (auth.uid() = user_id); EXCEPTION WHEN duplicate_object THEN NULL; END;
+  BEGIN CREATE POLICY "ab_delete" ON public.account_balances FOR DELETE USING (auth.uid() = user_id); EXCEPTION WHEN duplicate_object THEN NULL; END;
 
   -- missed_trades
   ALTER TABLE public.missed_trades ENABLE ROW LEVEL SECURITY;
@@ -211,6 +214,7 @@ DO $$ BEGIN
   BEGIN CREATE POLICY "tg_select" ON public.trading_goals FOR SELECT USING (auth.uid() = user_id); EXCEPTION WHEN duplicate_object THEN NULL; END;
   BEGIN CREATE POLICY "tg_insert" ON public.trading_goals FOR INSERT WITH CHECK (auth.uid() = user_id); EXCEPTION WHEN duplicate_object THEN NULL; END;
   BEGIN CREATE POLICY "tg_update" ON public.trading_goals FOR UPDATE USING (auth.uid() = user_id); EXCEPTION WHEN duplicate_object THEN NULL; END;
+  BEGIN CREATE POLICY "tg_delete" ON public.trading_goals FOR DELETE USING (auth.uid() = user_id); EXCEPTION WHEN duplicate_object THEN NULL; END;
 
   -- sync_history
   ALTER TABLE public.sync_history ENABLE ROW LEVEL SECURITY;
