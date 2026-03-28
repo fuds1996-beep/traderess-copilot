@@ -65,7 +65,7 @@ export default function SheetsConnector({ onSyncComplete }: { onSyncComplete?: (
       if (!res.ok) { setError(data.error || "Failed to fetch sheet"); return; }
       if (!data.rows || data.rows.length === 0) { setError("Sheet is empty or inaccessible"); return; }
       const headerIdx = data.headerIdx ?? 0;
-      setPreview(data.rows.slice(headerIdx, headerIdx + 6));
+      setPreview(data.rows.slice(headerIdx));
     } catch {
       setError("Failed to connect to Google Sheets");
     } finally {
@@ -257,11 +257,13 @@ export default function SheetsConnector({ onSyncComplete }: { onSyncComplete?: (
         <div className="bg-white/60 border border-brand-light/40 rounded-lg overflow-hidden">
           <div className="flex items-center justify-between px-3 py-2 border-b border-brand-light/40">
             <span className="text-xs text-gray-500">Data preview (auto-detected headers)</span>
+            <span className="text-[10px] text-gray-400">{preview.length - 1} rows</span>
           </div>
-          <div className="overflow-x-auto">
+          <div className="overflow-auto max-h-[400px]">
             <table className="w-full text-xs">
-              <thead>
+              <thead className="sticky top-0 bg-white/90 backdrop-blur-sm z-10">
                 <tr className="border-b border-brand-light/40">
+                  <th className="text-left py-1.5 px-2 text-gray-400 font-medium w-8">#</th>
                   {preview[0]?.map((h, i) => (
                     <th key={i} className="text-left py-1.5 px-2 text-gray-500 font-medium whitespace-nowrap">
                       {h || <span className="text-gray-300">—</span>}
@@ -271,9 +273,10 @@ export default function SheetsConnector({ onSyncComplete }: { onSyncComplete?: (
               </thead>
               <tbody>
                 {preview.slice(1).map((row, ri) => (
-                  <tr key={ri} className="border-b border-brand-light/30 last:border-0">
+                  <tr key={ri} className="border-b border-brand-light/30 last:border-0 hover:bg-brand/5">
+                    <td className="py-1.5 px-2 text-gray-300 text-[10px]">{ri + 1}</td>
                     {row.map((cell, ci) => (
-                      <td key={ci} className="py-1.5 px-2 text-gray-600 truncate max-w-[120px]">
+                      <td key={ci} className="py-1.5 px-2 text-gray-600 truncate max-w-[160px]" title={cell}>
                         {cell || <span className="text-slate-700">—</span>}
                       </td>
                     ))}
