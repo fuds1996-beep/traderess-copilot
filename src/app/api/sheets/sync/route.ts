@@ -3,13 +3,14 @@ import { createClient } from "@/lib/supabase/server";
 import { fetchSheetRows } from "@/lib/sheets";
 import { parseSheetWithAI } from "@/lib/ai-sheet-parser";
 import { parseSheetComprehensive } from "@/lib/ai-comprehensive-parser";
+import { parseSheetJournalsOnly } from "@/lib/ai-journal-parser";
 
 // Allow up to 5 minutes for AI parsing on Vercel
 export const maxDuration = 300;
 
 /**
  * POST /api/sheets/sync
- * Body: { spreadsheetId, range?, mode?: "trades_only" | "comprehensive", weekStart? }
+ * Body: { spreadsheetId, range?, mode?: "trades_only" | "comprehensive" | "journals_only", weekStart? }
  */
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
   const { spreadsheetId, range, mode = "trades_only", weekStart } = body as {
     spreadsheetId: string;
     range?: string;
-    mode?: "trades_only" | "comprehensive";
+    mode?: "trades_only" | "comprehensive" | "journals_only";
     weekStart?: string;
   };
 
@@ -44,6 +45,8 @@ export async function POST(request: Request) {
 
     if (mode === "comprehensive") {
       return await syncComprehensive(supabase, user.id, rows, ws);
+    } else if (mode === "journals_only") {
+      return await syncJournalsOnly(supabase, user.id, rows, ws);
     } else {
       return await syncTradesOnly(supabase, user.id, rows);
     }
@@ -249,6 +252,79 @@ async function syncComprehensive(supabase: any, userId: string, rows: string[][]
   // Build summary message
   const parts = Object.entries(counts).map(([k, v]) => `${v} ${k.replace("_", " ")}`);
   const message = `Full sync complete: ${parts.join(", ")}. ${parsed.notes}`;
+
+  return NextResponse.json({
+    synced: counts,
+    confidence: parsed.confidence,
+    message,
+  });
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function syncJournalsOnly(supabase: any, userId: string, rows: string[][], weekStart: string) {
+  const parsed = await parseSheetJournalsOnly(rows, weekStart);
+  const counts: Record<string, number> = {};
+  const promises: Promise<void>[] = [];
+
+  // 1. Upsert daily journals
+  if (parsed.journals.length > 0) {
+    counts.journals = parsed.journals.length;
+    promises.push(
+      supabase.from("daily_journals").upsert(
+        parsed.journals.map((j) => ({
+          user_id: userId,
+          week_start: weekStart,
+          ...j,
+        })),
+        { onConflict: "user_id,journal_date" },
+      ).then(({ error }: { error: { message: string } | null }) => {
+        if (error) console.warn("daily_journals upsert:", error.message);
+      }),
+    );
+  }
+
+  // 2. Match trade evaluations to existing trades and update them
+  if (parsed.trade_updates.length > 0) {
+    let matched = 0;
+    for (const update of parsed.trade_updates) {
+      // Find matching trade by date, pair, direction, and approximate entry price
+      const { data: candidates } = await supabase.from("trade_log")
+        .select("id, entry_price")
+        .eq("user_id", userId)
+        .eq("trade_date", update.trade_date)
+        .eq("pair", update.pair)
+        .eq("direction", update.direction);
+
+      if (candidates && candidates.length > 0) {
+        // Pick the closest match by entry price
+        let best = candidates[0];
+        let bestDiff = Math.abs(best.entry_price - update.entry_price);
+        for (const c of candidates) {
+          const diff = Math.abs(c.entry_price - update.entry_price);
+          if (diff < bestDiff) { best = c; bestDiff = diff; }
+        }
+
+        const updateFields: Record<string, string> = {};
+        if (update.trade_evaluation) updateFields.trade_evaluation = update.trade_evaluation;
+        if (update.notes) updateFields.notes = update.notes;
+        if (update.trade_quality) updateFields.trade_quality = update.trade_quality;
+
+        if (Object.keys(updateFields).length > 0) {
+          const { error } = await supabase.from("trade_log")
+            .update(updateFields)
+            .eq("id", best.id);
+          if (!error) matched++;
+          else console.warn("trade_log update:", error.message);
+        }
+      }
+    }
+    counts.trade_evaluations = matched;
+  }
+
+  await Promise.all(promises);
+
+  const parts = Object.entries(counts).map(([k, v]) => `${v} ${k.replace("_", " ")}`);
+  const message = `Journal sync complete: ${parts.join(", ")}. ${parsed.notes}`;
 
   return NextResponse.json({
     synced: counts,

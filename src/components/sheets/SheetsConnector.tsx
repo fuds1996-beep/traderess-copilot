@@ -18,7 +18,7 @@ import {
   Shield,
 } from "lucide-react";
 
-type SyncMode = "trades_only" | "comprehensive";
+type SyncMode = "trades_only" | "comprehensive" | "journals_only";
 
 interface SyncResult {
   synced: Record<string, number> | number;
@@ -187,7 +187,7 @@ export default function SheetsConnector({ onSyncComplete }: { onSyncComplete?: (
       </div>
 
       {/* Options row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
         <div>
           <label className="block text-xs text-gray-500 mb-1.5">Sheet Name / Range</label>
           <input
@@ -207,9 +207,29 @@ export default function SheetsConnector({ onSyncComplete }: { onSyncComplete?: (
             className="w-full bg-white/60 border border-brand-light/40 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-brand focus:ring-1 focus:ring-indigo-500 transition-colors"
           />
         </div>
-        <div>
+        <div className="sm:col-span-2">
           <label className="block text-xs text-gray-500 mb-1.5">Sync Mode</label>
           <div className="flex gap-1">
+            <button
+              onClick={() => setSyncMode("trades_only")}
+              className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs rounded-lg border transition-colors ${
+                syncMode === "trades_only"
+                  ? "bg-brand/10 border-brand text-brand"
+                  : "bg-white/60 border-brand-light/40 text-gray-500 hover:border-brand-light/50"
+              }`}
+            >
+              <Sparkles size={12} /> Trades
+            </button>
+            <button
+              onClick={() => setSyncMode("journals_only")}
+              className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs rounded-lg border transition-colors ${
+                syncMode === "journals_only"
+                  ? "bg-brand/10 border-brand text-brand"
+                  : "bg-white/60 border-brand-light/40 text-gray-500 hover:border-brand-light/50"
+              }`}
+            >
+              <BookOpen size={12} /> Journals
+            </button>
             <button
               onClick={() => setSyncMode("comprehensive")}
               className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs rounded-lg border transition-colors ${
@@ -219,16 +239,6 @@ export default function SheetsConnector({ onSyncComplete }: { onSyncComplete?: (
               }`}
             >
               <Zap size={12} /> Full Sync
-            </button>
-            <button
-              onClick={() => setSyncMode("trades_only")}
-              className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs rounded-lg border transition-colors ${
-                syncMode === "trades_only"
-                  ? "bg-brand/10 border-brand text-brand"
-                  : "bg-white/60 border-brand-light/40 text-gray-500 hover:border-brand-light/50"
-              }`}
-            >
-              <Sparkles size={12} /> Trades Only
             </button>
           </div>
         </div>
@@ -281,6 +291,8 @@ export default function SheetsConnector({ onSyncComplete }: { onSyncComplete?: (
                 <span>
                   {syncMode === "comprehensive"
                     ? "AI will extract trades, journals, chart time, balances, goals & more"
+                    : syncMode === "journals_only"
+                    ? "AI will extract journals & match evaluations to existing trades"
                     : "AI will extract trade entries only"}
                 </span>
               </div>
@@ -292,12 +304,12 @@ export default function SheetsConnector({ onSyncComplete }: { onSyncComplete?: (
                 {syncing ? (
                   <>
                     <Loader2 size={14} className="animate-spin" />
-                    {syncMode === "comprehensive" ? "Full sync..." : "Parsing..."}
+                    {syncMode === "comprehensive" ? "Full sync..." : syncMode === "journals_only" ? "Syncing journals..." : "Parsing..."}
                   </>
                 ) : (
                   <>
-                    {syncMode === "comprehensive" ? <Zap size={14} /> : <Sparkles size={14} />}
-                    {syncMode === "comprehensive" ? "Full Sync with AI" : "Sync Trades"}
+                    {syncMode === "comprehensive" ? <Zap size={14} /> : syncMode === "journals_only" ? <BookOpen size={14} /> : <Sparkles size={14} />}
+                    {syncMode === "comprehensive" ? "Full Sync with AI" : syncMode === "journals_only" ? "Sync Journals" : "Sync Trades"}
                   </>
                 )}
               </button>
@@ -335,10 +347,13 @@ export default function SheetsConnector({ onSyncComplete }: { onSyncComplete?: (
       <div className="text-[10px] text-gray-300 space-y-1">
         <p>Your Google Sheet must be shared with &quot;Anyone with the link&quot; (Viewer access).</p>
         <p>
-          <strong>Full Sync</strong> extracts trades, daily journals (emotions, market mood, summaries), chart time tracking, account balances, missed trades, goals, and weekly summaries.
+          <strong>Trades</strong> — extracts trade entries only (fastest, ~30-60s).
         </p>
         <p>
-          <strong>Trades Only</strong> extracts just the trade entries (faster, lower API cost).
+          <strong>Journals</strong> — extracts daily journals, emotions, and trade evaluations, then matches them to your existing trades (~1-2 min). Sync trades first, then journals.
+        </p>
+        <p>
+          <strong>Full Sync</strong> — extracts everything in one pass: trades, journals, chart time, balances, goals, summaries (~2-5 min).
         </p>
       </div>
       </>)}
@@ -368,15 +383,24 @@ const SYNC_STEPS_TRADES = [
   { icon: Sparkles, label: "Almost there...", detail: "Finalizing..." },
 ];
 
-function SyncProgressOverlay({ mode }: { mode: "trades_only" | "comprehensive" }) {
-  const steps = mode === "comprehensive" ? SYNC_STEPS_FULL : SYNC_STEPS_TRADES;
+const SYNC_STEPS_JOURNALS = [
+  { icon: FileSpreadsheet, label: "Reading spreadsheet data", detail: "Fetching rows from Google Sheets..." },
+  { icon: Brain, label: "AI is reading journals", detail: "Claude is extracting emotions, moods, and reflections..." },
+  { icon: BookOpen, label: "Parsing daily journals", detail: "Extracting evaluations and daily summaries..." },
+  { icon: Database, label: "Matching to trades", detail: "Linking evaluations to your existing trade log..." },
+  { icon: Shield, label: "Saving journals", detail: "Writing to your journal and trade tables..." },
+  { icon: Sparkles, label: "Almost there...", detail: "Finalizing..." },
+];
+
+function SyncProgressOverlay({ mode }: { mode: SyncMode }) {
+  const steps = mode === "comprehensive" ? SYNC_STEPS_FULL : mode === "journals_only" ? SYNC_STEPS_JOURNALS : SYNC_STEPS_TRADES;
   const [currentStep, setCurrentStep] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval>>(undefined);
 
   useEffect(() => {
     // Simulate progress through steps
-    const stepInterval = mode === "comprehensive" ? 15000 : 8000; // ms per step
+    const stepInterval = mode === "comprehensive" ? 15000 : mode === "journals_only" ? 10000 : 8000; // ms per step
     const totalSteps = steps.length;
 
     intervalRef.current = setInterval(() => {
@@ -450,6 +474,8 @@ function SyncProgressOverlay({ mode }: { mode: "trades_only" | "comprehensive" }
           <span>
             {mode === "comprehensive"
               ? "Full sync takes 2–5 minutes"
+              : mode === "journals_only"
+              ? "Usually takes 1–2 minutes"
               : "Usually takes 30–60 seconds"}
           </span>
         </div>
