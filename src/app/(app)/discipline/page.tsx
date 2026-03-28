@@ -459,6 +459,41 @@ function DataSourcesSection({
   );
 }
 
+// ─── Bulk Selection Bar ──────────────────────────────────────────────────────
+
+function BulkBar({ selected, total, onSelectAll, onClear, onDelete, deleting }: {
+  selected: Set<string>; total: number; onSelectAll: () => void; onClear: () => void; onDelete: () => void; deleting: boolean;
+}) {
+  if (selected.size === 0) return null;
+  return (
+    <div className="flex items-center justify-between p-2 mb-2 bg-red-50/80 border border-red-200/50 rounded-lg">
+      <div className="flex items-center gap-2 text-[10px]">
+        <span className="font-semibold text-red-600">{selected.size} selected</span>
+        <button onClick={onSelectAll} className="text-brand hover:text-brand-dark underline">Select all ({total})</button>
+        <button onClick={onClear} className="text-gray-500 hover:text-gray-700 underline">Clear</button>
+      </div>
+      <button
+        onClick={onDelete}
+        disabled={deleting}
+        className="flex items-center gap-1 px-3 py-1 bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white text-[10px] rounded transition-colors"
+      >
+        <Trash2 size={11} /> {deleting ? "Deleting..." : `Delete ${selected.size}`}
+      </button>
+    </div>
+  );
+}
+
+function SelectCheckbox({ checked, onChange }: { checked: boolean; onChange: () => void }) {
+  return (
+    <input
+      type="checkbox"
+      checked={checked}
+      onChange={onChange}
+      className="w-3.5 h-3.5 rounded border-gray-300 text-brand focus:ring-brand/50 shrink-0 cursor-pointer accent-brand"
+    />
+  );
+}
+
 // ─── Chart Time Data Table ───────────────────────────────────────────────────
 
 function ChartTimeDataTable({ entries, onRefresh }: { entries: ChartTimeEntry[]; onRefresh: () => void }) {
@@ -467,6 +502,22 @@ function ChartTimeDataTable({ entries, onRefresh }: { entries: ChartTimeEntry[];
   const [adding, setAdding] = useState(false);
   const [newDate, setNewDate] = useState("");
   const [newMinutes, setNewMinutes] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [deleting, setDeleting] = useState(false);
+
+  function toggle(id: string) {
+    setSelected((prev) => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
+  }
+
+  async function bulkDelete() {
+    if (!confirm(`Delete ${selected.size} chart time entries?`)) return;
+    setDeleting(true);
+    const supabase = createClient();
+    await supabase.from("chart_time_log").delete().in("id", [...selected]);
+    setSelected(new Set());
+    setDeleting(false);
+    onRefresh();
+  }
 
   async function handleSave(id: string) {
     const supabase = createClient();
@@ -474,13 +525,6 @@ function ChartTimeDataTable({ entries, onRefresh }: { entries: ChartTimeEntry[];
     if (isNaN(mins)) return;
     await supabase.from("chart_time_log").update({ total_minutes: mins, chart_time_minutes: mins }).eq("id", id);
     setEditId(null);
-    onRefresh();
-  }
-
-  async function handleDelete(id: string) {
-    if (!confirm("Delete this chart time entry?")) return;
-    const supabase = createClient();
-    await supabase.from("chart_time_log").delete().eq("id", id);
     onRefresh();
   }
 
@@ -525,12 +569,22 @@ function ChartTimeDataTable({ entries, onRefresh }: { entries: ChartTimeEntry[];
         </div>
       )}
 
+      <BulkBar
+        selected={selected}
+        total={entries.length}
+        onSelectAll={() => setSelected(new Set(entries.map((e) => e.id)))}
+        onClear={() => setSelected(new Set())}
+        onDelete={bulkDelete}
+        deleting={deleting}
+      />
+
       <div className="max-h-[300px] overflow-y-auto space-y-1">
         {entries.length === 0 ? (
           <p className="text-xs text-gray-400 text-center py-8">No chart time entries. Use Full Sync or add manually.</p>
         ) : entries.map((e) => (
-          <div key={e.id} className="flex items-center justify-between p-2 bg-white/60 rounded-lg border border-brand-light/30 hover:border-brand/30 transition-colors group">
+          <div key={e.id} className={`flex items-center justify-between p-2 rounded-lg border transition-colors group ${selected.has(e.id) ? "bg-red-50/60 border-red-200/50" : "bg-white/60 border-brand-light/30 hover:border-brand/30"}`}>
             <div className="flex items-center gap-3">
+              <SelectCheckbox checked={selected.has(e.id)} onChange={() => toggle(e.id)} />
               <span className="text-[10px] text-gray-400 font-mono w-20">{e.log_date}</span>
               {editId === e.id ? (
                 <input type="number" value={editMinutes} onChange={(ev) => setEditMinutes(ev.target.value)} className="text-[10px] px-2 py-0.5 bg-white border border-brand rounded w-16" autoFocus />
@@ -545,10 +599,7 @@ function ChartTimeDataTable({ entries, onRefresh }: { entries: ChartTimeEntry[];
                   <button onClick={() => setEditId(null)} className="p-1 text-gray-400 hover:text-gray-600"><X size={12} /></button>
                 </>
               ) : (
-                <>
-                  <button onClick={() => { setEditId(e.id); setEditMinutes(String(e.total_minutes)); }} className="p-1 text-gray-400 hover:text-brand"><Pencil size={12} /></button>
-                  <button onClick={() => handleDelete(e.id)} className="p-1 text-gray-400 hover:text-red-500"><Trash2 size={12} /></button>
-                </>
+                <button onClick={() => { setEditId(e.id); setEditMinutes(String(e.total_minutes)); }} className="p-1 text-gray-400 hover:text-brand"><Pencil size={12} /></button>
               )}
             </div>
           </div>
@@ -565,6 +616,22 @@ function JournalDataTable({ journals, onRefresh }: { journals: DailyJournal[]; o
   const [editBefore, setEditBefore] = useState("");
   const [editDuring, setEditDuring] = useState("");
   const [editAfter, setEditAfter] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [deleting, setDeleting] = useState(false);
+
+  function toggle(id: string) {
+    setSelected((prev) => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
+  }
+
+  async function bulkDelete() {
+    if (!confirm(`Delete ${selected.size} journal entries? This will affect your Emotional Control score.`)) return;
+    setDeleting(true);
+    const supabase = createClient();
+    await supabase.from("daily_journals").delete().in("id", [...selected]);
+    setSelected(new Set());
+    setDeleting(false);
+    onRefresh();
+  }
 
   async function handleSave(id: string) {
     const supabase = createClient();
@@ -577,25 +644,29 @@ function JournalDataTable({ journals, onRefresh }: { journals: DailyJournal[]; o
     onRefresh();
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm("Delete this journal entry? This will affect your Emotional Control score.")) return;
-    const supabase = createClient();
-    await supabase.from("daily_journals").delete().eq("id", id);
-    onRefresh();
-  }
-
   const EMOTIONS = ["Confident", "Calm", "Neutral", "Focused", "Anxious", "Stressed", "Frustrated", "Fear", "Panic"];
 
   return (
     <div>
       <p className="text-[10px] text-gray-400 mb-3">Journal emotion fields used to compute <span className="font-semibold text-gray-600">Emotional Control Score</span> — days with stress/frustration/fear/panic during trading lower the score</p>
+
+      <BulkBar
+        selected={selected}
+        total={journals.length}
+        onSelectAll={() => setSelected(new Set(journals.map((j) => j.id)))}
+        onClear={() => setSelected(new Set())}
+        onDelete={bulkDelete}
+        deleting={deleting}
+      />
+
       <div className="max-h-[300px] overflow-y-auto space-y-1">
         {journals.length === 0 ? (
           <p className="text-xs text-gray-400 text-center py-8">No journal entries. Use Full Sync or Journals sync to import.</p>
         ) : journals.map((j) => (
-          <div key={j.id} className="p-2.5 bg-white/60 rounded-lg border border-brand-light/30 hover:border-brand/30 transition-colors group">
+          <div key={j.id} className={`p-2.5 rounded-lg border transition-colors group ${selected.has(j.id) ? "bg-red-50/60 border-red-200/50" : "bg-white/60 border-brand-light/30 hover:border-brand/30"}`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
+                <SelectCheckbox checked={selected.has(j.id)} onChange={() => toggle(j.id)} />
                 <span className="text-[10px] text-gray-400 font-mono w-20">{j.journal_date}</span>
                 {editId === j.id ? (
                   <div className="flex items-center gap-1.5">
@@ -624,10 +695,7 @@ function JournalDataTable({ journals, onRefresh }: { journals: DailyJournal[]; o
                     <button onClick={() => setEditId(null)} className="p-1 text-gray-400 hover:text-gray-600"><X size={12} /></button>
                   </>
                 ) : (
-                  <>
-                    <button onClick={() => { setEditId(j.id); setEditBefore(j.emotion_before); setEditDuring(j.emotion_during); setEditAfter(j.emotion_after); }} className="p-1 text-gray-400 hover:text-brand"><Pencil size={12} /></button>
-                    <button onClick={() => handleDelete(j.id)} className="p-1 text-gray-400 hover:text-red-500"><Trash2 size={12} /></button>
-                  </>
+                  <button onClick={() => { setEditId(j.id); setEditBefore(j.emotion_before); setEditDuring(j.emotion_during); setEditAfter(j.emotion_after); }} className="p-1 text-gray-400 hover:text-brand"><Pencil size={12} /></button>
                 )}
               </div>
             </div>
@@ -657,6 +725,22 @@ function EmotionChip({ label, value }: { label: string; value: string }) {
 function TradeRiskDataTable({ trades, onRefresh }: { trades: Trade[]; onRefresh: () => void }) {
   const [editId, setEditId] = useState<string | null>(null);
   const [editRisk, setEditRisk] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [deleting, setDeleting] = useState(false);
+
+  function toggle(id: string) {
+    setSelected((prev) => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
+  }
+
+  async function bulkDelete() {
+    if (!confirm(`Delete ${selected.size} trades? This cannot be undone.`)) return;
+    setDeleting(true);
+    const supabase = createClient();
+    await supabase.from("trade_log").delete().in("id", [...selected]);
+    setSelected(new Set());
+    setDeleting(false);
+    onRefresh();
+  }
 
   async function handleSave(id: string) {
     const supabase = createClient();
@@ -671,22 +755,38 @@ function TradeRiskDataTable({ trades, onRefresh }: { trades: Trade[]; onRefresh:
         <span className="font-semibold text-gray-600">Risk Discipline</span> = % of trades with % Risked &le; 3.6% &nbsp;|&nbsp;
         <span className="font-semibold text-gray-600">Plan Adherence</span> = % of trades with confirmation + screenshot + evaluation filled
       </p>
+
+      <BulkBar
+        selected={selected}
+        total={trades.length}
+        onSelectAll={() => setSelected(new Set(trades.map((t) => t.id)))}
+        onClear={() => setSelected(new Set())}
+        onDelete={bulkDelete}
+        deleting={deleting}
+      />
+
       <div className="max-h-[300px] overflow-y-auto">
         <table className="w-full text-[10px]">
           <thead className="sticky top-0 bg-white/90 backdrop-blur-sm">
             <tr className="border-b border-brand-light/40">
+              <th className="py-1.5 px-2 w-8">
+                <SelectCheckbox
+                  checked={selected.size === trades.length && trades.length > 0}
+                  onChange={() => selected.size === trades.length ? setSelected(new Set()) : setSelected(new Set(trades.map((t) => t.id)))}
+                />
+              </th>
               <th className="text-left py-1.5 px-2 text-gray-400 font-medium">Date</th>
               <th className="text-left py-1.5 px-2 text-gray-400 font-medium">Pair</th>
               <th className="text-left py-1.5 px-2 text-gray-400 font-medium">% Risked</th>
               <th className="text-center py-1.5 px-2 text-gray-400 font-medium">Conf</th>
               <th className="text-center py-1.5 px-2 text-gray-400 font-medium">Screenshot</th>
               <th className="text-center py-1.5 px-2 text-gray-400 font-medium">Evaluation</th>
-              <th className="text-right py-1.5 px-2 text-gray-400 font-medium w-16"></th>
+              <th className="text-right py-1.5 px-2 text-gray-400 font-medium w-12"></th>
             </tr>
           </thead>
           <tbody>
             {trades.length === 0 ? (
-              <tr><td colSpan={7} className="text-center py-8 text-gray-400">No trades. Sync your Google Sheet to import.</td></tr>
+              <tr><td colSpan={8} className="text-center py-8 text-gray-400">No trades. Sync your Google Sheet to import.</td></tr>
             ) : trades.map((t) => {
               const riskPct = parseFloat((t.percent_risked || "").replace(/[^0-9.]/g, ""));
               const overRisk = !isNaN(riskPct) && riskPct > 3.6;
@@ -694,7 +794,8 @@ function TradeRiskDataTable({ trades, onRefresh }: { trades: Trade[]; onRefresh:
               const hasScreenshot = !!t.before_picture;
               const hasEval = !!t.trade_evaluation;
               return (
-                <tr key={t.id} className="border-b border-brand-light/20 hover:bg-brand/5 group">
+                <tr key={t.id} className={`border-b border-brand-light/20 group ${selected.has(t.id) ? "bg-red-50/60" : "hover:bg-brand/5"}`}>
+                  <td className="py-1.5 px-2"><SelectCheckbox checked={selected.has(t.id)} onChange={() => toggle(t.id)} /></td>
                   <td className="py-1.5 px-2 font-mono text-gray-400">{t.trade_date}</td>
                   <td className="py-1.5 px-2 font-semibold text-gray-700">{t.pair}</td>
                   <td className="py-1.5 px-2">
@@ -737,6 +838,22 @@ function TradeRiskDataTable({ trades, onRefresh }: { trades: Trade[]; onRefresh:
 function MissedTradeDataTable({ missedTrades, onRefresh }: { missedTrades: MissedTrade[]; onRefresh: () => void }) {
   const [adding, setAdding] = useState(false);
   const [form, setForm] = useState({ trade_date: "", pair: "EUR/USD", direction: "Long" as "Long" | "Short", session: "", reason_missed: "", would_have_result: "Win", would_have_pips: "" });
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [deleting, setDeleting] = useState(false);
+
+  function toggle(id: string) {
+    setSelected((prev) => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
+  }
+
+  async function bulkDelete() {
+    if (!confirm(`Delete ${selected.size} missed trade entries?`)) return;
+    setDeleting(true);
+    const supabase = createClient();
+    await supabase.from("missed_trades").delete().in("id", [...selected]);
+    setSelected(new Set());
+    setDeleting(false);
+    onRefresh();
+  }
 
   async function handleAdd() {
     if (!form.trade_date || !form.pair) return;
@@ -759,13 +876,6 @@ function MissedTradeDataTable({ missedTrades, onRefresh }: { missedTrades: Misse
     });
     setAdding(false);
     setForm({ trade_date: "", pair: "EUR/USD", direction: "Long", session: "", reason_missed: "", would_have_result: "Win", would_have_pips: "" });
-    onRefresh();
-  }
-
-  async function handleDelete(id: string) {
-    if (!confirm("Delete this missed trade entry?")) return;
-    const supabase = createClient();
-    await supabase.from("missed_trades").delete().eq("id", id);
     onRefresh();
   }
 
@@ -805,12 +915,22 @@ function MissedTradeDataTable({ missedTrades, onRefresh }: { missedTrades: Misse
         </div>
       )}
 
+      <BulkBar
+        selected={selected}
+        total={missedTrades.length}
+        onSelectAll={() => setSelected(new Set(missedTrades.map((m) => m.id)))}
+        onClear={() => setSelected(new Set())}
+        onDelete={bulkDelete}
+        deleting={deleting}
+      />
+
       <div className="max-h-[300px] overflow-y-auto space-y-1">
         {missedTrades.length === 0 ? (
           <p className="text-xs text-gray-400 text-center py-8">No missed trades logged. Add them manually or use Full Sync.</p>
         ) : missedTrades.map((m) => (
-          <div key={m.id} className="flex items-center justify-between p-2 bg-white/60 rounded-lg border border-brand-light/30 hover:border-brand/30 transition-colors group">
+          <div key={m.id} className={`flex items-center justify-between p-2 rounded-lg border transition-colors group ${selected.has(m.id) ? "bg-red-50/60 border-red-200/50" : "bg-white/60 border-brand-light/30 hover:border-brand/30"}`}>
             <div className="flex items-center gap-3">
+              <SelectCheckbox checked={selected.has(m.id)} onChange={() => toggle(m.id)} />
               <span className="text-[10px] text-gray-400 font-mono w-20">{m.trade_date}</span>
               <span className="text-[10px] font-semibold text-gray-700">{m.pair}</span>
               <span className={`text-[10px] ${m.direction === "Long" ? "text-emerald-500" : "text-red-500"}`}>{m.direction}</span>
@@ -820,9 +940,6 @@ function MissedTradeDataTable({ missedTrades, onRefresh }: { missedTrades: Misse
               </span>
               {m.reason_missed && <span className="text-[9px] text-gray-400 truncate max-w-[150px]">{m.reason_missed}</span>}
             </div>
-            <button onClick={() => handleDelete(m.id)} className="p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Trash2 size={12} />
-            </button>
           </div>
         ))}
       </div>
