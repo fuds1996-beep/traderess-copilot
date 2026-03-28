@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { fetchSheetRows } from "@/lib/sheets";
 import { parseSheetWithAI } from "@/lib/ai-sheet-parser";
-import { parseSheetComprehensive } from "@/lib/ai-comprehensive-parser";
 import { parseSheetJournalsOnly } from "@/lib/ai-journal-parser";
+import { parseSheetExtras } from "@/lib/ai-extras-parser";
 
 // Allow up to 5 minutes for AI parsing on Vercel
 export const maxDuration = 300;
@@ -107,42 +107,46 @@ function getDateRange(trades: { trade_date: string }[]): { minDate: string; maxD
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function syncComprehensive(supabase: any, userId: string, rows: string[][], weekStart: string) {
-  const parsed = await parseSheetComprehensive(rows, weekStart);
   const counts: Record<string, number> = {};
+  const notes: string[] = [];
 
-  // Run all inserts in parallel
-  const promises: Promise<void>[] = [];
+  // ── Pass 1: Trades (fast — focused prompt, 16K tokens) ──
+  const tradeParsed = await parseSheetWithAI(rows);
+  notes.push(tradeParsed.notes || "");
 
-  // 1. Trades — delete existing for the date range first, then insert
-  if (parsed.trades.length > 0) {
-    counts.trades = parsed.trades.length;
-    const dateRange = getDateRange(parsed.trades);
-    promises.push(
-      (async () => {
-        // Delete existing trades for this date range to prevent duplicates
-        if (dateRange) {
-          await supabase.from("trade_log")
-            .delete()
-            .eq("user_id", userId)
-            .gte("trade_date", dateRange.minDate)
-            .lte("trade_date", dateRange.maxDate);
-        }
-        const { error } = await supabase.from("trade_log").insert(
-          parsed.trades.map((t) => ({ user_id: userId, ...t })),
-        );
-        if (error && !error.message.includes("duplicate") && error.code !== "23505") {
-          console.warn("trade_log insert:", error.message);
-        }
-      })(),
+  if (tradeParsed.trades.length > 0) {
+    counts.trades = tradeParsed.trades.length;
+    const dateRange = getDateRange(tradeParsed.trades);
+    if (dateRange) {
+      await supabase.from("trade_log")
+        .delete()
+        .eq("user_id", userId)
+        .gte("trade_date", dateRange.minDate)
+        .lte("trade_date", dateRange.maxDate);
+    }
+    const { error } = await supabase.from("trade_log").insert(
+      tradeParsed.trades.map((t) => ({ user_id: userId, ...t })),
     );
+    if (error && !error.message.includes("duplicate") && error.code !== "23505") {
+      console.warn("trade_log insert:", error.message);
+    }
   }
 
-  // 2. Journals
-  if (parsed.journals.length > 0) {
-    counts.journals = parsed.journals.length;
-    promises.push(
+  // ── Pass 2 & 3: Journals + Extras in parallel (each is a small, focused AI call) ──
+  const [journalParsed, extrasParsed] = await Promise.all([
+    parseSheetJournalsOnly(rows, weekStart),
+    parseSheetExtras(rows, weekStart),
+  ]);
+  notes.push(journalParsed.notes || "", extrasParsed.notes || "");
+
+  // Save journals
+  const dbPromises: Promise<void>[] = [];
+
+  if (journalParsed.journals.length > 0) {
+    counts.journals = journalParsed.journals.length;
+    dbPromises.push(
       supabase.from("daily_journals").upsert(
-        parsed.journals.map((j) => ({
+        journalParsed.journals.map((j) => ({
           user_id: userId,
           week_start: weekStart,
           ...j,
@@ -154,16 +158,47 @@ async function syncComprehensive(supabase: any, userId: string, rows: string[][]
     );
   }
 
-  // 3. Chart time
-  if (parsed.chart_time.length > 0) {
-    counts.chart_time = parsed.chart_time.length;
-    promises.push(
+  // Match trade evaluations to the trades we just inserted
+  if (journalParsed.trade_updates.length > 0) {
+    let matched = 0;
+    for (const update of journalParsed.trade_updates) {
+      const { data: candidates } = await supabase.from("trade_log")
+        .select("id, entry_price")
+        .eq("user_id", userId)
+        .eq("trade_date", update.trade_date)
+        .eq("pair", update.pair)
+        .eq("direction", update.direction);
+
+      if (candidates && candidates.length > 0) {
+        let best = candidates[0];
+        let bestDiff = Math.abs(best.entry_price - update.entry_price);
+        for (const c of candidates) {
+          const diff = Math.abs(c.entry_price - update.entry_price);
+          if (diff < bestDiff) { best = c; bestDiff = diff; }
+        }
+        const updateFields: Record<string, string> = {};
+        if (update.trade_evaluation) updateFields.trade_evaluation = update.trade_evaluation;
+        if (update.notes) updateFields.notes = update.notes;
+        if (update.trade_quality) updateFields.trade_quality = update.trade_quality;
+        if (Object.keys(updateFields).length > 0) {
+          const { error } = await supabase.from("trade_log").update(updateFields).eq("id", best.id);
+          if (!error) matched++;
+        }
+      }
+    }
+    if (matched > 0) counts.trade_evaluations = matched;
+  }
+
+  // Save extras: chart time, balances, missed trades, goals, weekly summary
+  if (extrasParsed.chart_time.length > 0) {
+    counts.chart_time = extrasParsed.chart_time.length;
+    dbPromises.push(
       supabase.from("chart_time_log").upsert(
-        parsed.chart_time.map((c) => ({
+        extrasParsed.chart_time.map((c) => ({
           user_id: userId,
           week_start: weekStart,
           total_minutes: c.total_minutes,
-          chart_time_minutes: c.total_minutes, // default: all counted as chart time
+          chart_time_minutes: c.total_minutes,
           logging_time_minutes: 0,
           education_time_minutes: 0,
           log_date: c.log_date,
@@ -176,12 +211,11 @@ async function syncComprehensive(supabase: any, userId: string, rows: string[][]
     );
   }
 
-  // 4. Account balances
-  if (parsed.account_balances.length > 0) {
-    counts.account_balances = parsed.account_balances.length;
-    promises.push(
+  if (extrasParsed.account_balances.length > 0) {
+    counts.account_balances = extrasParsed.account_balances.length;
+    dbPromises.push(
       supabase.from("account_balances").upsert(
-        parsed.account_balances.map((a) => ({
+        extrasParsed.account_balances.map((a) => ({
           user_id: userId,
           week_start: weekStart,
           ...a,
@@ -193,28 +227,26 @@ async function syncComprehensive(supabase: any, userId: string, rows: string[][]
     );
   }
 
-  // 5. Missed trades
-  if (parsed.missed_trades.length > 0) {
-    counts.missed_trades = parsed.missed_trades.length;
-    promises.push(
+  if (extrasParsed.missed_trades.length > 0) {
+    counts.missed_trades = extrasParsed.missed_trades.length;
+    dbPromises.push(
       supabase.from("missed_trades").insert(
-        parsed.missed_trades.map((m) => ({ user_id: userId, ...m })),
+        extrasParsed.missed_trades.map((m) => ({ user_id: userId, ...m })),
       ).then(({ error }: { error: { message: string } | null }) => {
         if (error) console.warn("missed_trades insert:", error.message);
       }),
     );
   }
 
-  // 6. Goals
-  if (parsed.goals) {
+  if (extrasParsed.goals) {
     counts.goals = 1;
-    promises.push(
+    dbPromises.push(
       supabase.from("trading_goals").upsert(
         {
           user_id: userId,
-          period_start: weekStart.slice(0, 7) + "-01", // first of month
+          period_start: weekStart.slice(0, 7) + "-01",
           period_type: "monthly",
-          ...parsed.goals,
+          ...extrasParsed.goals,
         },
         { onConflict: "user_id,period_start,period_type" },
       ).then(({ error }: { error: { message: string } | null }) => {
@@ -223,22 +255,21 @@ async function syncComprehensive(supabase: any, userId: string, rows: string[][]
     );
   }
 
-  // 7. Weekly summary
-  if (parsed.weekly_summary) {
+  if (extrasParsed.weekly_summary) {
     counts.weekly_summary = 1;
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekEnd.getDate() + 4);
-    promises.push(
+    dbPromises.push(
       supabase.from("weekly_summaries").upsert(
         {
           user_id: userId,
           week_start: weekStart,
           week_end: weekEnd.toISOString().split("T")[0],
           week_label: `Week of ${weekStart}`,
-          overall_summary: parsed.weekly_summary.overall_summary,
-          trading_plan_text: parsed.weekly_summary.trading_plan_text,
-          risk_ladder_config: parsed.weekly_summary.risk_ladder_config,
-          total_trades: parsed.trades.length,
+          overall_summary: extrasParsed.weekly_summary.overall_summary,
+          trading_plan_text: extrasParsed.weekly_summary.trading_plan_text,
+          risk_ladder_config: extrasParsed.weekly_summary.risk_ladder_config,
+          total_trades: tradeParsed.trades.length,
         },
         { onConflict: "user_id,week_start" },
       ).then(({ error }: { error: { message: string } | null }) => {
@@ -247,15 +278,16 @@ async function syncComprehensive(supabase: any, userId: string, rows: string[][]
     );
   }
 
-  await Promise.all(promises);
+  await Promise.all(dbPromises);
 
-  // Build summary message
   const parts = Object.entries(counts).map(([k, v]) => `${v} ${k.replace("_", " ")}`);
-  const message = `Full sync complete: ${parts.join(", ")}. ${parsed.notes}`;
+  const confidence = tradeParsed.confidence === "high" && journalParsed.confidence === "high" ? "high"
+    : tradeParsed.confidence === "low" || journalParsed.confidence === "low" ? "low" : "medium";
+  const message = `Full sync complete: ${parts.join(", ")}. ${notes.filter(Boolean).join(" ")}`;
 
   return NextResponse.json({
     synced: counts,
-    confidence: parsed.confidence,
+    confidence,
     message,
   });
 }
