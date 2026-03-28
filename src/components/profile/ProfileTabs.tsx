@@ -11,10 +11,16 @@ import {
   ChevronDown,
   ChevronUp,
   Heart,
+  Pencil,
+  Save,
+  X,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import ProgressBar from "@/components/ui/ProgressBar";
 import Badge from "@/components/ui/Badge";
 import { LazySkillRadarChart as SkillRadarChart } from "@/components/charts/lazy";
+import { createClient } from "@/lib/supabase/client";
 import type { TraderProfile, PropFirmAccount } from "@/lib/types";
 
 const TABS = ["overview", "psychology", "strengths", "fears", "plan"] as const;
@@ -23,9 +29,11 @@ type Tab = (typeof TABS)[number];
 export default function ProfileTabs({
   profile,
   propAccounts,
+  onRefresh,
 }: {
   profile: TraderProfile;
   propAccounts: PropFirmAccount[];
+  onRefresh?: () => void;
 }) {
   const [tab, setTab] = useState<Tab>("overview");
 
@@ -47,7 +55,7 @@ export default function ProfileTabs({
         ))}
       </div>
 
-      {tab === "overview" && <OverviewTab profile={profile} />}
+      {tab === "overview" && <OverviewTab profile={profile} onRefresh={onRefresh} />}
       {tab === "psychology" && <PsychologyTab profile={profile} />}
       {tab === "strengths" && <StrengthsTab profile={profile} />}
       {tab === "fears" && <FearsTab profile={profile} />}
@@ -56,19 +64,46 @@ export default function ProfileTabs({
   );
 }
 
-function OverviewTab({ profile }: { profile: TraderProfile }) {
+function OverviewTab({ profile, onRefresh }: { profile: TraderProfile; onRefresh?: () => void }) {
+  const [editingStrengths, setEditingStrengths] = useState(false);
+  const [editingWeaknesses, setEditingWeaknesses] = useState(false);
+  const [strengths, setStrengths] = useState(profile.strengths || []);
+  const [weaknesses, setWeaknesses] = useState(profile.weaknesses || []);
+
+  async function saveList(field: "strengths" | "weaknesses", data: { label: string; score: number }[]) {
+    const supabase = createClient();
+    await supabase.from("trader_profiles").update({ [field]: data }).eq("id", profile.id);
+    if (field === "strengths") setEditingStrengths(false);
+    else setEditingWeaknesses(false);
+    onRefresh?.();
+  }
+
   return (
     <div className="space-y-6 pt-4">
-      {(profile.strengths?.length > 0 || profile.weaknesses?.length > 0) && (
+      {(profile.strengths?.length > 0 || profile.weaknesses?.length > 0 || true) && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {profile.strengths?.length > 0 && (
-            <div className="glass rounded-2xl p-5 border border-brand-light/40">
-              <div className="flex items-center gap-2 mb-4">
+          <div className="glass rounded-2xl p-5 border border-brand-light/40">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
                 <CheckCircle size={16} className="text-emerald-400" />
                 <h3 className="text-sm font-semibold text-gray-900">Strengths</h3>
               </div>
+              {editingStrengths ? (
+                <div className="flex gap-1">
+                  <button onClick={() => saveList("strengths", strengths)} className="p-1 text-emerald-500 hover:text-emerald-600"><Save size={14} /></button>
+                  <button onClick={() => { setStrengths(profile.strengths || []); setEditingStrengths(false); }} className="p-1 text-gray-400 hover:text-gray-600"><X size={14} /></button>
+                </div>
+              ) : (
+                <button onClick={() => setEditingStrengths(true)} className="p-1 text-gray-400 hover:text-brand"><Pencil size={12} /></button>
+              )}
+            </div>
+            {editingStrengths ? (
+              <EditableScoreList items={strengths} onChange={setStrengths} color="emerald" />
+            ) : (
               <div className="space-y-3">
-                {profile.strengths.map((s, i) => (
+                {(profile.strengths || []).length === 0 ? (
+                  <p className="text-xs text-gray-400 text-center py-4">No strengths yet. Click edit to add.</p>
+                ) : profile.strengths.map((s, i) => (
                   <div key={i}>
                     <div className="flex justify-between text-xs mb-1">
                       <span className="text-gray-600">{s.label}</span>
@@ -78,16 +113,30 @@ function OverviewTab({ profile }: { profile: TraderProfile }) {
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-          {profile.weaknesses?.length > 0 && (
-            <div className="glass rounded-2xl p-5 border border-brand-light/40">
-              <div className="flex items-center gap-2 mb-4">
+            )}
+          </div>
+          <div className="glass rounded-2xl p-5 border border-brand-light/40">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
                 <AlertTriangle size={16} className="text-amber-400" />
                 <h3 className="text-sm font-semibold text-gray-900">Weaknesses</h3>
               </div>
+              {editingWeaknesses ? (
+                <div className="flex gap-1">
+                  <button onClick={() => saveList("weaknesses", weaknesses)} className="p-1 text-emerald-500 hover:text-emerald-600"><Save size={14} /></button>
+                  <button onClick={() => { setWeaknesses(profile.weaknesses || []); setEditingWeaknesses(false); }} className="p-1 text-gray-400 hover:text-gray-600"><X size={14} /></button>
+                </div>
+              ) : (
+                <button onClick={() => setEditingWeaknesses(true)} className="p-1 text-gray-400 hover:text-brand"><Pencil size={12} /></button>
+              )}
+            </div>
+            {editingWeaknesses ? (
+              <EditableScoreList items={weaknesses} onChange={setWeaknesses} color="red" />
+            ) : (
               <div className="space-y-3">
-                {profile.weaknesses.map((w, i) => (
+                {(profile.weaknesses || []).length === 0 ? (
+                  <p className="text-xs text-gray-400 text-center py-4">No weaknesses yet. Click edit to add.</p>
+                ) : profile.weaknesses.map((w, i) => (
                   <div key={i}>
                     <div className="flex justify-between text-xs mb-1">
                       <span className="text-gray-600">{w.label}</span>
@@ -97,8 +146,8 @@ function OverviewTab({ profile }: { profile: TraderProfile }) {
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
       {profile.radar_scores?.length > 0 && (
@@ -372,6 +421,57 @@ function PlanTab({ profile, propAccounts }: { profile: TraderProfile; propAccoun
           <p className="text-xs text-gray-700 leading-relaxed whitespace-pre-wrap">{profile.trader_type}</p>
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Reusable Editable Score List ────────────────────────────────────────────
+
+function EditableScoreList({ items, onChange, color }: {
+  items: { label: string; score: number }[];
+  onChange: (items: { label: string; score: number }[]) => void;
+  color: "emerald" | "red";
+}) {
+  function update(idx: number, field: "label" | "score", val: string) {
+    const next = [...items];
+    if (field === "score") next[idx] = { ...next[idx], score: parseInt(val) || 0 };
+    else next[idx] = { ...next[idx], label: val };
+    onChange(next);
+  }
+
+  function remove(idx: number) {
+    onChange(items.filter((_, i) => i !== idx));
+  }
+
+  function add() {
+    onChange([...items, { label: "", score: 50 }]);
+  }
+
+  return (
+    <div className="space-y-2">
+      {items.map((item, i) => (
+        <div key={i} className="flex items-center gap-2">
+          <input
+            value={item.label}
+            onChange={(e) => update(i, "label", e.target.value)}
+            placeholder="Label..."
+            className="flex-1 text-xs px-2 py-1.5 bg-white/60 border border-brand-light/40 rounded text-gray-900"
+          />
+          <input
+            type="number"
+            value={item.score}
+            onChange={(e) => update(i, "score", e.target.value)}
+            min={0}
+            max={100}
+            className="w-16 text-xs px-2 py-1.5 bg-white/60 border border-brand-light/40 rounded text-gray-900 text-center"
+          />
+          <span className={`text-[10px] ${color === "emerald" ? "text-emerald-500" : "text-red-500"}`}>%</span>
+          <button onClick={() => remove(i)} className="p-1 text-gray-400 hover:text-red-500"><Trash2 size={12} /></button>
+        </div>
+      ))}
+      <button onClick={add} className="flex items-center gap-1 text-[10px] text-brand hover:text-brand-dark">
+        <Plus size={12} /> Add item
+      </button>
     </div>
   );
 }

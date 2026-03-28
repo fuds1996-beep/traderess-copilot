@@ -1,12 +1,13 @@
 "use client";
 
-import { User, Upload, Brain, Loader2, ChevronDown, ChevronUp, ArrowRight } from "lucide-react";
+import { User, Upload, Brain, Loader2, ChevronDown, ChevronUp, ArrowRight, Pencil, Save, X } from "lucide-react";
 import { ProfileSkeleton } from "@/components/ui/Skeleton";
 import Badge from "@/components/ui/Badge";
 import ProgressBar from "@/components/ui/ProgressBar";
 import ProfileTabs from "@/components/profile/ProfileTabs";
 import ProfileUploader from "@/components/profile/ProfileUploader";
 import { useTraderProfile } from "@/hooks/use-trader-profile";
+import { createClient } from "@/lib/supabase/client";
 import { useState } from "react";
 
 interface AnalysisResult {
@@ -188,6 +189,61 @@ export default function ProfilePage() {
         </div>
       )}
 
+      <EditableProfileHeader profile={profile} onSave={refresh} />
+
+      <ProfileTabs profile={profile} propAccounts={propAccounts} onRefresh={refresh} />
+    </div>
+  );
+}
+
+// ─── Editable Profile Header ─────────────────────────────────────────────────
+
+function EditableProfileHeader({ profile, onSave }: { profile: ReturnType<typeof useTraderProfile>["profile"]; onSave: () => void }) {
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    full_name: profile.full_name,
+    bio: profile.bio,
+    stage: profile.stage,
+    funded_status: profile.funded_status,
+    primary_pair: profile.primary_pair,
+    confluence_pair: profile.confluence_pair,
+    session_focus: profile.session_focus,
+    risk_model: profile.risk_model,
+    trader_type: profile.trader_type,
+    tracking_since: profile.tracking_since,
+  });
+
+  async function handleSave() {
+    setSaving(true);
+    const supabase = createClient();
+    await supabase.from("trader_profiles").update({
+      full_name: form.full_name,
+      bio: form.bio,
+      stage: form.stage,
+      funded_status: form.funded_status,
+      primary_pair: form.primary_pair,
+      confluence_pair: form.confluence_pair,
+      session_focus: form.session_focus,
+      risk_model: form.risk_model,
+      trader_type: form.trader_type,
+      tracking_since: form.tracking_since,
+      avatar_initial: form.full_name?.charAt(0)?.toUpperCase() || "T",
+    }).eq("id", profile.id);
+    setSaving(false);
+    setEditing(false);
+    onSave();
+  }
+
+  if (!editing) {
+    const profileMeta = [
+      { label: "Tracking Since", value: profile.tracking_since ? profile.tracking_since.slice(0, 7).replace("-", " ") : "—" },
+      { label: "Trading Plan", value: `${profile.primary_pair} + ${profile.confluence_pair}` },
+      { label: "Session Focus", value: profile.session_focus },
+      { label: "Risk Model", value: profile.risk_model || "—" },
+    ];
+
+    return (
       <div className="glass rounded-2xl p-6 border border-brand-light/40">
         <div className="flex items-start gap-6">
           <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center text-3xl font-bold text-white shrink-0">
@@ -198,6 +254,9 @@ export default function ProfilePage() {
               <h2 className="text-xl font-bold text-gray-900">{profile.full_name}</h2>
               <Badge variant="info">{profile.stage}</Badge>
               <Badge variant="success">{profile.funded_status}</Badge>
+              <button onClick={() => setEditing(true)} className="ml-auto p-1.5 text-gray-400 hover:text-brand rounded-lg hover:bg-brand/5 transition-colors" title="Edit profile">
+                <Pencil size={14} />
+              </button>
             </div>
             <p className="text-sm text-gray-500 mb-3">{profile.trader_type || profile.bio || "No bio set"}</p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -211,8 +270,59 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+    );
+  }
 
-      <ProfileTabs profile={profile} propAccounts={propAccounts} />
+  return (
+    <div className="glass rounded-2xl p-6 border border-brand/40">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-semibold text-gray-900">Edit Profile</h3>
+        <div className="flex gap-2">
+          <button onClick={() => setEditing(false)} className="flex items-center gap-1 px-3 py-1.5 text-xs text-gray-500 bg-white/60 border border-brand-light/40 rounded-lg hover:bg-gray-50 transition-colors">
+            <X size={12} /> Cancel
+          </button>
+          <button onClick={handleSave} disabled={saving} className="flex items-center gap-1 px-3 py-1.5 text-xs text-white bg-brand hover:bg-brand-dark disabled:opacity-50 rounded-lg transition-colors">
+            <Save size={12} /> {saving ? "Saving..." : "Save"}
+          </button>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <Field label="Full Name" value={form.full_name} onChange={(v) => setForm({ ...form, full_name: v })} />
+        <Field label="Stage" value={form.stage} onChange={(v) => setForm({ ...form, stage: v })} placeholder="e.g. Learning, Funded, Profitable" />
+        <Field label="Funded Status" value={form.funded_status} onChange={(v) => setForm({ ...form, funded_status: v })} placeholder="e.g. 10K Funded, Not yet" />
+        <Field label="Primary Pair" value={form.primary_pair} onChange={(v) => setForm({ ...form, primary_pair: v })} placeholder="e.g. EUR/USD" />
+        <Field label="Confluence Pair" value={form.confluence_pair} onChange={(v) => setForm({ ...form, confluence_pair: v })} placeholder="e.g. DXY" />
+        <Field label="Session Focus" value={form.session_focus} onChange={(v) => setForm({ ...form, session_focus: v })} placeholder="e.g. London Open" />
+        <Field label="Risk Model" value={form.risk_model} onChange={(v) => setForm({ ...form, risk_model: v })} placeholder="e.g. 1% per trade" />
+        <Field label="Tracking Since" value={form.tracking_since} onChange={(v) => setForm({ ...form, tracking_since: v })} type="date" />
+        <div className="sm:col-span-2 lg:col-span-3">
+          <label className="block text-[10px] text-gray-500 mb-1">Bio / Trader Type</label>
+          <textarea
+            value={form.trader_type || form.bio}
+            onChange={(e) => setForm({ ...form, trader_type: e.target.value, bio: e.target.value })}
+            rows={2}
+            className="w-full text-xs px-3 py-2 bg-white/60 border border-brand-light/40 rounded-lg text-gray-900 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
+            placeholder="Describe your trading style and identity..."
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, value, onChange, placeholder, type = "text" }: {
+  label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string;
+}) {
+  return (
+    <div>
+      <label className="block text-[10px] text-gray-500 mb-1">{label}</label>
+      <input
+        type={type}
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full text-xs px-3 py-2 bg-white/60 border border-brand-light/40 rounded-lg text-gray-900 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand/30"
+      />
     </div>
   );
 }
